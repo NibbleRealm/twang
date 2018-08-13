@@ -1,0 +1,26 @@
+# Copyright Jeron Lau 2018.
+# Dual-licensed under either the MIT License or the Boost Software License,
+# Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
+# https://www.boost.org/LICENSE_1_0.txt)
+#
+# XXXX  X                    /5\——————/5\       XXXX      X           X
+# X   X X   XXX   XXXX      |   0    0   |     X      XXX   XXXX XXXX X X   X
+# X   X X  X   X  X   X  /"\|     <>     |/"\  X      X   X    X    X X X   X
+# XXXX  X  X   X  X   X  \  \\_  ====  _//  /  X   XX X   X   X    X  X  X X
+# X     X  X   X  XXXX    \_              _/   X    X X   X  X    X   X   X
+# X     X   XXX   X       / \            / \    XXXX  X   X XXXX XXXX X   X
+#                 X       \                /                            XX
+#                          --____________--
+
+[package]
+name = "twang"
+version = "0.1.0"
+authors = [
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
+]
+
+[dependencies]
+rand = "0.5"
+
+[dev-dependencies]
+adi = { path = "../adi", default-features = false, features = ["speaker"] }
