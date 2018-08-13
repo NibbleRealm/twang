@@ -16,11 +16,19 @@
 name = "twang"
 version = "0.1.0"
 authors = [
-	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
+	"Jeron Lau <jeron.lau@plopgrizzly.com>"
 ]
+license = "MIT / BSL-1.0"
+documentation = "https://docs.rs/twang"
+homepage = "https://gitlab.com/plopgrizzly/audio"
+repository = "https://github.com/plopgrizzly/twang"
+readme = "README.md"
+description = "Synthesize original sounds in pure Rust."
+keywords = ["audio", "synth", "synthesizer", "wave", "sound"]
+categories = ["multimedia::audio", "multimedia"]
 
 [dependencies]
 rand = "0.5"
 
 [dev-dependencies]
-adi = { path = "../adi", default-features = false, features = ["speaker"] }
+adi = { version = "0.12", default-features = false, features = ["speaker"] }

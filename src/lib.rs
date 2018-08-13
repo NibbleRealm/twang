@@ -11,18 +11,20 @@
 //! use twang as t;
 //! 
 //! fn main() {
-//! 	let mut audio = adi::speaker::AudioManager::new();
+//! 	let mut speaker = adi::speaker::Speaker::new(0, false).unwrap();
 //! 	let mut gen = t::Generator::new(440.0, 1.0);
 //! 
 //! 	loop {
+//! 		let x = gen.next();
+//! 
 //! 		// Play synthesized voice.
-//! 		audio.play(&mut || gen.gen(&mut |x| {
+//! 		speaker.update(&mut || {
 //! 			// Do synthesis
-//! 			t::mul(&[
+//! 			t::out(t::mul(&[
 //! 				t::dst(t::sin(x), 2),
 //! 				t::dst(t::saw(x), 2)
-//! 			])
-//! 		}));
+//! 			]))
+//! 		});
 //! 	}
 //! }
 //! ```
@@ -56,52 +58,36 @@ impl Generator {
 		self.1 = volume;
 	}
 
-	/// Generate 1 tone.
+	/// Get the next sample's time value.
 	#[inline(always)]
-	pub fn gen(&mut self, generator: &mut FnMut(f64) -> f64) -> i16 {
-		// Generate the sample
-		let sample = convert(generator(self.2), self.1);
-
-		// Advance time_passed by time_step.
+	pub fn next(&mut self) -> f64 {
 		self.2 += self.0;
 		if self.2 >= 1.0 {
 			self.2 -= 1.0;
 		}
-
-		// Return the sample
-		sample
-	}
-
-	/// Generate fundamental with overtones.
-	pub fn over(&mut self, generator: &mut FnMut(f64) -> f64, overtones: &[f64]) -> i16 {
-		// Find volume for normalization
-		let mut volume = 1.0; // fundamental.
-		for i in overtones {
-			volume += i;
-		}
-
-		// Generate the sample
-		let mut sample = convert(generator(self.2), self.1 / volume);
-		let mut d = 1.0;
-		for i in overtones {
-			d += 2.0;
-			sample += convert(generator((self.2 * d) % 1.0), self.1 * i / volume);
-		}
-
-		// Advance time_passed by time_step.
-		self.2 += self.0;
-		if self.2 >= 1.0 {
-			self.2 -= 1.0;
-		}
-
-		// Return the sample
-		sample
+		self.2
 	}
 }
 
 /// Convert an f64 sample and volume to an i16 sample.
-#[inline(always)] fn convert(sample: f64, volume: f64) -> i16 {
-	(sample * (::std::i16::MAX as f64) * volume) as i16
+#[inline(always)] pub fn out(sample: f64) -> i16 {
+	(sample * (::std::i16::MAX as f64)) as i16
+}
+
+/// Generate sound from fundamental and overtones.  For reverse FFT use
+/// twang::sin for the generator
+#[inline(always)] pub fn ovr(x: f64, generator: &mut FnMut(f64) -> f64,
+	overtones: &[f64]) -> f64
+{
+	let mut o = generator(x);
+	let mut v = 1.0;
+	let mut d = 1.0;
+	for i in overtones {
+		d += 1.0;
+		v += i;
+		o += generator((x * d) % 1.0) * i;
+	}
+	o / v
 }
 
 /// A Saw wave
@@ -134,7 +120,7 @@ impl Generator {
 	pink.gen()
 }
 
-/// Mix sound waves together.  (Add soundwaves together, then divide by 2)
+/// Mix sound waves together.  (Add soundwaves together, then divide by len)
 #[inline(always)] pub fn mix(a: &[f64]) -> f64 {
 	add(a) / (a.len() as f64)
 }
@@ -149,11 +135,17 @@ impl Generator {
 	v
 }
 
-/// Multiply sound waves together.
+/// Multiply sound waves together, avoiding octave jump.
 #[inline(always)] pub fn mul(a: &[f64]) -> f64 {
 	let mut v = a[0];
 	for i in a.iter().skip(1) {
-		v *= i;
+		// 2 negatives multiplied together should be negative, otherwise
+		// the pitch jumps up an octave.
+		if i < &0.0 && v < 0.0 {
+			v *= -i;
+		} else {
+			v *= i;
+		}
 	}
 	v
 }
