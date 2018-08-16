@@ -8,6 +8,7 @@ use std::ops::{Neg, Add, AddAssign, Div, DivAssign, Mul, MulAssign};
 /// A Sample and Timestamp.
 #[derive(Copy, Clone)]
 pub struct Sample {
+	#[allow(unused)]
 	pub(crate) t: f64,
 	pub(crate) v: f64,
 }
