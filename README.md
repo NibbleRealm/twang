@@ -6,35 +6,35 @@ A sound synthesis crate.
 ## Features
 * A bunch of sound synthesization functions.
 
-## Example
+## A4 (440 Hz) Organ Example
 ```rust
 extern crate twang; // for sound generation / effects
 extern crate adi; // for speaker
 
-use twang as t;
+use adi::speaker::Speaker;
+use twang::Sound;
 
 fn main() {
-	let mut speaker = adi::speaker::Speaker::new(0, false).unwrap();
-	let mut gen = t::Generator::new(440.0, 1.0);
+	let mut speaker = Speaker::new(0, false).unwrap();
+	let mut snds = Sound::new(None, 440.0); // A4
 
 	loop {
-		let x = gen.next();
-
-		// Play synthesized voice.
 		speaker.update(&mut || {
-			// Do synthesis
-			t::out(t::mul(&[
-				t::dst(t::sin(x), 2),
-				t::dst(t::saw(x), 2)
-			]))
+			let x = snds.next().unwrap();
+
+			(x.sin().pos() + x.tri().neg()).into()
 		});
 	}
 }
 ```
 
 ## Roadmap to 1.0 (Future Features)
-WIP
+* WIP
 
 ## Change Log
+### 0.2
+* Newtype'd everything.
+* Uses operator overloading now.
+
 ### 0.1
 * First release

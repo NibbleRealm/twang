@@ -3,7 +3,8 @@
 // Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
-//! Generate pink noise
+use quiet::Quiet;
+use Sample;
 
 // Constant Look-up tables
 const PFIRAM: f64 = 2048.0 * 1.190566;
@@ -189,8 +190,8 @@ const PFIRB: [i32; 64] = [
 	(PFIRBM * (2i32 * (56i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64 + PFIRBM2 * (2i32 * (56i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64 + PFIRBM3 * (2i32 * (56i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64 + PFIRBM4 * (2i32 * (56i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64 + PFIRBM5 * (2i32 * (56i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64 + PFIRBM6 * (2i32 * (56i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32
 ];
 
-/// Pink Noise Generator.
-pub struct PnkGenerator {
+/// Pink Noise Sampler.
+pub struct Pink {
 	lfsr: i32,
 	inc: i32,
 	dec: i32,
@@ -198,11 +199,13 @@ pub struct PnkGenerator {
 	pncnt: u8,
 	which: u8,
 	bit: i32,
+	sampler: Quiet,
 }
 
-impl PnkGenerator {
-	/// Create a new Pink Noise Generator.
-	pub fn new() -> Self {
+impl Pink {
+	/// Create a new Pink Noise Sampler.
+	#[inline(always)]
+	pub fn new(hz: Option<f64>) -> Self {
 		Self {
 			lfsr: 0x5eed41f5i32,
 			inc: 0xccc,
@@ -211,6 +214,7 @@ impl PnkGenerator {
 			pncnt: 0,
 			which: 0,
 			bit: 0,
+			sampler: Quiet::new(hz),
 		}
 	}
 
@@ -266,7 +270,7 @@ impl PnkGenerator {
 		self.b()
 	}
 
-	pub(crate) fn gen(&mut self) -> f64 {
+	fn sample(&mut self) -> f64 {
 		// Different functions for each sample.
 		let r = match self.which {
 			0 => {
@@ -293,5 +297,15 @@ impl PnkGenerator {
 		} as f64 / (::std::i16::MAX as f64);
 		self.which = (self.which + 1) % 16;
 		r
+	}
+}
+
+impl Iterator for Pink {
+	type Item = Sample;
+
+	fn next(&mut self) -> Option<Sample> {
+		let mut sample = self.sampler.next().unwrap();
+		sample.v = self.sample();
+		Some(sample)
 	}
 }
