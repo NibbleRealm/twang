@@ -91,6 +91,14 @@ impl Wave {
 			v: ovr(self.0.state, overtones),
 		}
 	}
+
+    /// Sample a sound analyzed by FFT.
+    pub fn ovr(&self, overtones: &[(f64, f64)]) -> Sample {
+        Sample {
+            t: self.0.time,
+            v: ovr_advanced(self.0.state, overtones),
+        }
+    }
 }
 
 #[inline(always)] fn sin(x: f64) -> f64 {
@@ -104,6 +112,17 @@ impl Wave {
 	let mut d = 1.0;
 	for i in overtones {
 		d += 1.0;
+		v += i;
+		o += sin(x * d) * i;
+	}
+	o / v
+}
+
+/// Generate sound from fundamental and overtones (reverse FFT).
+#[inline(always)] fn ovr_advanced(x: f64, overtones: &[(f64, f64)]) -> f64 {
+	let mut o = sin(x);
+	let mut v = 1.0;
+	for (d, i) in overtones {
 		v += i;
 		o += sin(x * d) * i;
 	}
