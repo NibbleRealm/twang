@@ -42,7 +42,7 @@ impl Iterator for Sound {
 		});
 
 		self.time += self.step;
-		self.state = (self.state + (self.step * self.pitch)) % 1.0;
+		self.state = (self.state + (self.step * self.pitch));
 
 		Some(wave)
 	}
