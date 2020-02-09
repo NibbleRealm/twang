@@ -1,5 +1,5 @@
-use quiet::Quiet;
-use Sample;
+use crate::quiet::Quiet;
+use crate::Sample;
 
 use rand::{thread_rng, rngs::ThreadRng, distributions::{Uniform, Distribution}};
 

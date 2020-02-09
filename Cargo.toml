@@ -16,6 +16,7 @@ readme = "README.md"
 description = "Synthesize original sounds in pure Rust."
 keywords = ["audio", "synth", "synthesizer", "wave", "sound"]
 categories = ["multimedia::audio", "multimedia"]
+edition = "2018"
 
 [dependencies]
 rand = "0.7"

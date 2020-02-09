@@ -34,12 +34,12 @@ mod sample;
 mod quiet;
 mod sound;
 
-pub use pink::Pink;
-pub use white::White;
-pub use sample::Sample;
-pub use sound::{Sound,Wave};
+pub use crate::pink::Pink;
+pub use crate::white::White;
+pub use crate::sample::Sample;
+pub use crate::sound::{Sound,Wave};
 
 /// Traits
 pub mod prelude {
-    pub use sample::SampleSlice;
+    pub use crate::sample::SampleSlice;
 }

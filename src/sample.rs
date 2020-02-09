@@ -41,13 +41,13 @@ impl Sample {
     }
 
     /// Only the positve part of the wave.
-    #[inline(always)] pub fn pos(mut self) -> Self {
+    #[inline(always)] pub fn positive(mut self) -> Self {
         self.v = if self.v > 0.0 { self.v } else { 0.0 };
         self
     }
 
     /// Only the negative part of the wave.
-    #[inline(always)] pub fn neg(mut self) -> Self {
+    #[inline(always)] pub fn negative(mut self) -> Self {
         self.v = if self.v < 0.0 { self.v } else { 0.0 };
         self
     }
