@@ -99,6 +99,14 @@ impl Wave {
             v: ovr_advanced(self.0.state, overtones),
         }
     }
+
+    /// Sample a sound analyzed by FFT.
+    pub fn ovr2(&self, overtones: &[(f64, f64)]) -> Sample {
+        Sample {
+            t: self.0.time,
+            v: ovr_advanced_mix(self.0.state, overtones),
+        }
+    }
 }
 
 #[inline(always)] fn sin(x: f64) -> f64 {
@@ -122,9 +130,26 @@ impl Wave {
 #[inline(always)] fn ovr_advanced(x: f64, overtones: &[(f64, f64)]) -> f64 {
 	let mut o = sin(x);
 	let mut v = 1.0;
-	for (d, i) in overtones {
+	let mut _d = overtones[0].0;
+	for (__d, i) in overtones {
+        _d += overtones[0].0;
 		v += i;
-		o += sin(x * d) * i;
+		o += sin(x * _d) * i;
+	}
+	o / v
+}
+
+/// Generate sound from fundamental and overtones (reverse FFT).
+#[inline(always)] fn ovr_advanced_mix(x: f64, overtones: &[(f64, f64)]) -> f64 {
+	let mut o = sin(x);
+	let mut v = 1.0;
+	let mut d2 = overtones[0].0;
+    let mut b = 0;
+	for (d, i) in overtones {
+        d2 += overtones[0].0;
+		v += i;
+        let phase = d - d2; // Fairly random phase.
+		o += sin(x * d2 + phase) * i;
 	}
 	o / v
 }

@@ -6,6 +6,8 @@ A sound synthesis crate.
 ## Features
 * A bunch of sound synthesization functions.
 
+- VCA (Variable Gain Amplifier): Multiplication of signals
+
 ## A4 (440 Hz) Organ Example
 ```rust
 extern crate twang; // for sound generation / effects
