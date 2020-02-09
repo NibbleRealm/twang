@@ -1,12 +1,13 @@
 use crate::quiet::Quiet;
 use crate::Sample;
 
-use rand::{thread_rng, rngs::ThreadRng, distributions::{Uniform, Distribution}};
+use rand::distributions::{Uniform, Distribution};
+use rand_pcg::Mcg128Xsl64;
 
 /// White Noise Sampler.
 pub struct White {
     dist: Uniform<f64>,
-    rng: ThreadRng,
+    rng: Mcg128Xsl64,
     sampler: Quiet,
 }
 
@@ -15,7 +16,7 @@ impl White {
     pub fn new(hz: Option<f64>) -> Self {
         Self {
             dist: Uniform::new_inclusive(-1.0, 1.0),
-            rng: thread_rng(),
+            rng: Mcg128Xsl64::new(0xcafef00dd15ea5e5 /* default from docs */),
             sampler: Quiet::new(hz),
         }
     }
