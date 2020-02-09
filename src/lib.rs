@@ -14,16 +14,16 @@
 //! use twang::Sound;
 //!
 //! fn main() {
-//! 	let mut speaker = Speaker::new(0, false).unwrap();
-//! 	let mut snds = Sound::new(None, 440.0); // A4
+//!     let mut speaker = Speaker::new(0, false).unwrap();
+//!     let mut snds = Sound::new(None, 440.0); // A4
 //!
-//! 	loop {
-//! 		speaker.update(&mut || {
-//! 			let x = snds.next().unwrap();
+//!     loop {
+//!         speaker.update(&mut || {
+//!             let x = snds.next().unwrap();
 //!
-//! 			(x.sin().pos() + x.tri().neg()).into()
-//! 		});
-//! 	}
+//!             (x.sin().pos() + x.tri().neg()).into()
+//!         });
+//!     }
 //! }
 
 extern crate rand; // for noise generation
@@ -41,5 +41,5 @@ pub use sound::{Sound,Wave};
 
 /// Traits
 pub mod prelude {
-	pub use sample::SampleSlice;
+    pub use sample::SampleSlice;
 }

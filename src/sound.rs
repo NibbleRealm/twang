@@ -7,90 +7,90 @@ use Sample;
 
 /// Pitched Sound sampler.
 pub struct Sound {
-	time: f64,
-	step: f64,
-	pitch: f64, // hz
-	state: f64, // 0-1
+    time: f64,
+    step: f64,
+    pitch: f64, // hz
+    state: f64, // 0-1
 }
 
 impl Sound {
-	/// Create a new sampler at sample rate 48KHz or specific Hz.
-	#[inline(always)]
-	pub fn new(hz: Option<f64>, pitch: f64) -> Self {
-		let hz = hz.unwrap_or(48_000.0);
+    /// Create a new sampler at sample rate 48KHz or specific Hz.
+    #[inline(always)]
+    pub fn new(hz: Option<f64>, pitch: f64) -> Self {
+        let hz = hz.unwrap_or(48_000.0);
 
-		Self { time: 0.0, step: 1.0 / hz, pitch, state: 0.0 }
-	}
+        Self { time: 0.0, step: 1.0 / hz, pitch, state: 0.0 }
+    }
 
-	/// Change the pitch of the sound.
-	#[inline(always)]
-	pub fn pitch(&mut self, pitch: f64) {
-		self.pitch = pitch;
-	}
+    /// Change the pitch of the sound.
+    #[inline(always)]
+    pub fn pitch(&mut self, pitch: f64) {
+        self.pitch = pitch;
+    }
 }
 
 impl Iterator for Sound {
-	type Item = Wave;
+    type Item = Wave;
 
-	#[inline(always)]
-	fn next(&mut self) -> Option<Wave> {
-		let wave = Wave(Sound {
-			time: self.time,
-			step: self.step,
-			pitch: self.pitch,
-			state: self.state,
-		});
+    #[inline(always)]
+    fn next(&mut self) -> Option<Wave> {
+        let wave = Wave(Sound {
+            time: self.time,
+            step: self.step,
+            pitch: self.pitch,
+            state: self.state,
+        });
 
-		self.time += self.step;
-		self.state = self.state + (self.step * self.pitch);
+        self.time += self.step;
+        self.state += self.step * self.pitch;
 
-		Some(wave)
-	}
+        Some(wave)
+    }
 }
 
 /// The information necessary to sample a common waveform.
 pub struct Wave(Sound);
 
 impl Wave {
-	/// Sample a sawtooth wave.
-	pub fn saw(&self) -> Sample {
-		Sample {
-			t: self.0.time,
-			v: self.0.state * -2.0 + 1.0,
-		}
-	}
+    /// Sample a sawtooth wave.
+    pub fn saw(&self) -> Sample {
+        Sample {
+            t: self.0.time,
+            v: self.0.state * -2.0 + 1.0,
+        }
+    }
 
-	/// Sample a square wave.
-	pub fn sqr(&self) -> Sample {
-		Sample {
-			t: self.0.time,
-			v: (self.0.state * -2.0 + 1.0).signum(),
-		}
-	}
+    /// Sample a square wave.
+    pub fn sqr(&self) -> Sample {
+        Sample {
+            t: self.0.time,
+            v: (self.0.state * -2.0 + 1.0).signum(),
+        }
+    }
 
-	/// Sample a triangle wave.
-	pub fn tri(&self) -> Sample {
-		Sample {
-			t: self.0.time,
-			v: (self.0.state * -2.0 + 1.0).abs() * 2.0 - 1.0,
-		}
-	}
+    /// Sample a triangle wave.
+    pub fn tri(&self) -> Sample {
+        Sample {
+            t: self.0.time,
+            v: (self.0.state * -2.0 + 1.0).abs() * 2.0 - 1.0,
+        }
+    }
 
-	/// Sample a sine wave.
-	pub fn sin(&self) -> Sample {
-		Sample {
-			t: self.0.time,
-			v: sin(self.0.state),
-		}
-	}
+    /// Sample a sine wave.
+    pub fn sin(&self) -> Sample {
+        Sample {
+            t: self.0.time,
+            v: sin(self.0.state),
+        }
+    }
 
-	/// Sample a harmonic series derived sound.
-	pub fn har(&self, overtones: &[f64]) -> Sample {
-		Sample {
-			t: self.0.time,
-			v: ovr(self.0.state, overtones),
-		}
-	}
+    /// Sample a harmonic series derived sound.
+    pub fn har(&self, overtones: &[f64]) -> Sample {
+        Sample {
+            t: self.0.time,
+            v: ovr(self.0.state, overtones),
+        }
+    }
 
     /// Sample a sound analyzed by FFT.
     pub fn ovr(&self, overtones: &[(f64, f64)]) -> Sample {
@@ -110,46 +110,46 @@ impl Wave {
 }
 
 #[inline(always)] fn sin(x: f64) -> f64 {
-	(x * (::std::f64::consts::PI * 2.0)).sin()
+    (x * (::std::f64::consts::PI * 2.0)).sin()
 }
 
 /// Generate sound from fundamental and overtones (reverse FFT).
 #[inline(always)] fn ovr(x: f64, overtones: &[f64]) -> f64 {
-	let mut o = sin(x);
-	let mut v = 1.0;
-	let mut d = 1.0;
-	for i in overtones {
-		d += 1.0;
-		v += i;
-		o += sin(x * d) * i;
-	}
-	o / v
+    let mut o = sin(x);
+    let mut v = 1.0;
+    let mut d = 1.0;
+    for i in overtones {
+        d += 1.0;
+        v += i;
+        o += sin(x * d) * i;
+    }
+    o / v
 }
 
 /// Generate sound from fundamental and overtones (reverse FFT).
 #[inline(always)] fn ovr_advanced(x: f64, overtones: &[(f64, f64)]) -> f64 {
-	let mut o = sin(x);
-	let mut v = 1.0;
-	let mut _d = overtones[0].0;
-	for (__d, i) in overtones {
+    let mut o = sin(x);
+    let mut v = 1.0;
+    let mut _d = overtones[0].0;
+    for (__d, i) in overtones {
         _d += overtones[0].0;
-		v += i;
-		o += sin(x * _d) * i;
-	}
-	o / v
+        v += i;
+        o += sin(x * _d) * i;
+    }
+    o / v
 }
 
 /// Generate sound from fundamental and overtones (reverse FFT).
 #[inline(always)] fn ovr_advanced_mix(x: f64, overtones: &[(f64, f64)]) -> f64 {
-	let mut o = sin(x);
-	let mut v = 1.0;
-	let mut d2 = overtones[0].0;
+    let mut o = sin(x);
+    let mut v = 1.0;
+    let mut d2 = overtones[0].0;
     // let mut b = 0;
-	for (d, i) in overtones {
+    for (d, i) in overtones {
         d2 += overtones[0].0;
-		v += i;
+        v += i;
         let phase = d - d2; // Fairly random phase.
-		o += sin(x * d2 + phase) * i;
-	}
-	o / v
+        o += sin(x * d2 + phase) * i;
+    }
+    o / v
 }
