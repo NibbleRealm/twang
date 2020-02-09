@@ -275,7 +275,7 @@ impl Pink {
 		let r = match self.which {
 			0 => {
 				let i = self.pncnt;
-				self.pncnt.wrapping_add(1);
+				self.pncnt = self.pncnt.wrapping_add(1);
 				self.f(PNMASK[i as usize] as i32)
 			},
 			1 => self.a(),

@@ -1,34 +1,24 @@
-# Copyright Jeron Lau 2018.
+# Copyright (c) 2018-2020 Jeron Aldaron Lau
+#
 # Dual-licensed under either the MIT License or the Boost Software License,
 # Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt)
-#
-# XXXX  X                    /5\——————/5\       XXXX      X           X
-# X   X X   XXX   XXXX      |   0    0   |     X      XXX   XXXX XXXX X X   X
-# X   X X  X   X  X   X  /"\|     <>     |/"\  X      X   X    X    X X X   X
-# XXXX  X  X   X  X   X  \  \\_  ====  _//  /  X   XX X   X   X    X  X  X X
-# X     X  X   X  XXXX    \_              _/   X    X X   X  X    X   X   X
-# X     X   XXX   X       / \            / \    XXXX  X   X XXXX XXXX X   X
-#                 X       \                /                            XX
-#                          --____________--
 
 [package]
 name = "twang"
 version = "0.2.0"
-authors = [
-	"Jeron Lau <jeron.lau@plopgrizzly.com>"
-]
-license = "MIT / BSL-1.0"
+authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
+license = "MIT OR BSL-1.0"
 documentation = "https://docs.rs/twang"
-homepage = "https://gitlab.com/plopgrizzly/audio"
-repository = "https://github.com/plopgrizzly/twang"
+homepage = "https://github.com/LordAldaron/twang"
+repository = "https://github.com/LordAldaron/twang"
 readme = "README.md"
 description = "Synthesize original sounds in pure Rust."
 keywords = ["audio", "synth", "synthesizer", "wave", "sound"]
 categories = ["multimedia::audio", "multimedia"]
 
 [dependencies]
-rand = "0.5"
+rand = "0.7"
 
 [dev-dependencies]
 adi = { version = "0.12", default-features = false, features = ["speaker"] }

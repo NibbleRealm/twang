@@ -42,7 +42,7 @@ impl Iterator for Sound {
 		});
 
 		self.time += self.step;
-		self.state = (self.state + (self.step * self.pitch));
+		self.state = self.state + (self.step * self.pitch);
 
 		Some(wave)
 	}
@@ -144,7 +144,7 @@ impl Wave {
 	let mut o = sin(x);
 	let mut v = 1.0;
 	let mut d2 = overtones[0].0;
-    let mut b = 0;
+    // let mut b = 0;
 	for (d, i) in overtones {
         d2 += overtones[0].0;
 		v += i;
