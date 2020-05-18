@@ -6,7 +6,7 @@
 //! A sound synthesis crate.
 //!
 //! # A4 (440 Hz) Organ Example
-//! ```rust
+//! ```rust,no_run
 //! extern crate twang; // for sound generation / effects
 //! extern crate adi; // for speaker
 //!
@@ -21,7 +21,7 @@
 //!         speaker.update(&mut || {
 //!             let x = snds.next().unwrap();
 //!
-//!             (x.sin().pos() + x.tri().neg()).into()
+//!             (x.sin().positive() + x.tri().negative()).into()
 //!         });
 //!     }
 //! }

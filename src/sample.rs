@@ -162,9 +162,23 @@ impl MulAssign for Sample {
 }
 
 impl Into<i16> for Sample {
-    /// Convert to an i16 sample.
+    /// Convert sample to an i16.
     fn into(self) -> i16 {
         (self.v * (::std::i16::MAX as f64)) as i16
+    }
+}
+
+impl Into<f64> for Sample {
+    /// Convert sample to an f64.
+    fn into(self) -> f64 {
+        self.v
+    }
+}
+
+impl Into<f32> for Sample {
+    /// Convert sample to an f32.
+    fn into(self) -> f32 {
+        self.v as f32
     }
 }
 

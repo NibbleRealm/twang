@@ -12,7 +12,7 @@ fn main() {
 		speaker.update(&mut || {
 			let x = snds.next().unwrap();
 
-			(x.sin().pos() + x.tri().neg()).into()
+			(x.sin().positive() + x.tri().negative()).into()
 		});
 	}
 }
