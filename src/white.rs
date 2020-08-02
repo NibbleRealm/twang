@@ -1,28 +1,33 @@
+use std::num::Wrapping;
 use crate::quiet::Quiet;
 use crate::Sample;
 
-use rand::distributions::{Uniform, Distribution};
-use rand_pcg::Mcg128Xsl64;
+const SEQUENCE: u64 = 0xb5ad4eceda1ce2a9;
 
-/// White Noise Sampler.
+/// White Noise Sampler.  Uses the Middle Square Weyl Sequence PRNG.
 pub struct White {
-    dist: Uniform<f64>,
-    rng: Mcg128Xsl64,
     sampler: Quiet,
+    x: Wrapping<u64>,
+    w: Wrapping<u64>,
 }
 
 impl White {
     /// Create a new White Noise Sampler.
     pub fn new(hz: Option<f64>) -> Self {
         Self {
-            dist: Uniform::new_inclusive(-1.0, 1.0),
-            rng: Mcg128Xsl64::new(0xcafef00dd15ea5e5 /* default from docs */),
+            x: Wrapping(0),
+            w: Wrapping(0),
             sampler: Quiet::new(hz),
         }
     }
 
     fn sample(&mut self) -> f64 {
-        self.dist.sample(&mut self.rng)
+        // msws (Middle Square Weyl Sequence) algorithm
+        self.x *= self.x;
+        self.w += Wrapping(SEQUENCE);
+        self.x += self.w;
+        self.x = (self.x >> 32) | (self.x << 32);
+        ((self.x.0 as u32) as f64) / u32::MAX as f64
     }
 }
 

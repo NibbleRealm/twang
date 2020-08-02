@@ -8,10 +8,10 @@
 name = "twang"
 version = "0.2.0"
 authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
-license = "MIT OR BSL-1.0"
+license = "MIT OR Apache-2.0 OR Zlib"
 documentation = "https://docs.rs/twang"
-homepage = "https://github.com/LordAldaron/twang"
-repository = "https://github.com/LordAldaron/twang"
+homepage = "https://github.com/AldaronLau/twang"
+repository = "https://github.com/AldaronLau/twang"
 readme = "README.md"
 description = "Synthesize original sounds in pure Rust."
 keywords = ["audio", "synth", "synthesizer", "wave", "sound"]
@@ -19,8 +19,6 @@ categories = ["multimedia::audio", "multimedia"]
 edition = "2018"
 
 [dependencies]
-rand = { version = "0.7", default-features = false }
-rand_pcg = "0.2"
 
 [dev-dependencies]
 adi = { version = "0.12", default-features = false, features = ["speaker"] }

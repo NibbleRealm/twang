@@ -26,8 +26,6 @@
 //!     }
 //! }
 
-extern crate rand; // for noise generation
-
 mod pink;
 mod white;
 mod sample;
