@@ -1,5 +1,5 @@
 use crate::private::Sealed;
-use std::ops::{Div, Mul, Add, Sub};
+use std::ops::{Div, Mul, Add, Sub, Neg};
 use core::cmp::Ordering;
 use std::fmt::Debug;
 
@@ -537,5 +537,41 @@ impl From<Ch8> for Ch32 {
 impl From<Ch8> for Ch64 {
     fn from(c: Ch8) -> Self {
         Ch64(f64::from(c.0) / 65535.0)
+    }
+}
+
+impl Neg for Ch8 {
+    type Output = Ch8;
+
+    /// Invert sound wave (-x).
+    fn neg(mut self) -> Self {
+        Ch8(-self.0)
+    }
+}
+
+impl Neg for Ch16 {
+    type Output = Ch16;
+
+    /// Invert sound wave (-x).
+    fn neg(mut self) -> Self {
+        Ch16(-self.0)
+    }
+}
+
+impl Neg for Ch32 {
+    type Output = Ch32;
+
+    /// Invert sound wave (-x).
+    fn neg(mut self) -> Self {
+        Ch32(-self.0)
+    }
+}
+
+impl Neg for Ch64 {
+    type Output = Ch64;
+
+    /// Invert sound wave (-x).
+    fn neg(mut self) -> Self {
+        Ch64(-self.0)
     }
 }

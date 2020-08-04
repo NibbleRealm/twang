@@ -1,8 +1,5 @@
 // Algorithm inspired by https://github.com/Stenzel/newshadeofpink
 
-use crate::quiet::Quiet;
-use crate::Sample;
-
 // Constant Look-up tables
 const PFIRAM: f64 = 2048.0 * 1.190566;
 const PFIRAM2: f64 = 2048.0 * 0.162580;
@@ -187,7 +184,7 @@ const PFIRB: [i32; 64] = [
     (PFIRBM * (2i32 * (56i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64 + PFIRBM2 * (2i32 * (56i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64 + PFIRBM3 * (2i32 * (56i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64 + PFIRBM4 * (2i32 * (56i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64 + PFIRBM5 * (2i32 * (56i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64 + PFIRBM6 * (2i32 * (56i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32
 ];
 
-/// Pink Noise Sampler.
+/// Pink Noise Generator.  Uses "New Shade of Pink" PRNG.
 pub struct Pink {
     lfsr: i32,
     inc: i32,
@@ -196,13 +193,12 @@ pub struct Pink {
     pncnt: u8,
     which: u8,
     bit: i32,
-    sampler: Quiet,
 }
 
 impl Pink {
     /// Create a new Pink Noise Sampler.
     #[inline(always)]
-    pub fn new(hz: Option<f64>) -> Self {
+    pub fn new() -> Self {
         Self {
             lfsr: 0x5eed41f5i32,
             inc: 0xccc,
@@ -211,7 +207,6 @@ impl Pink {
             pncnt: 0,
             which: 0,
             bit: 0,
-            sampler: Quiet::new(hz),
         }
     }
 
@@ -270,39 +265,18 @@ impl Pink {
     fn sample(&mut self) -> f64 {
         // Different functions for each sample.
         let r = match self.which {
+            _x if _x % 2 != 0 => self.a(), // odd #s
+            _x if _x % 4 != 0 => self.c(),
+            _x if _x % 8 != 0 => self.d(),
             0 => {
                 let i = self.pncnt;
                 self.pncnt = self.pncnt.wrapping_add(1);
                 self.f(PNMASK[i as usize] as i32)
             },
-            1 => self.a(),
-            2 => self.c(),
-            3 => self.a(),
-            4 => self.d(),
-            5 => self.a(),
-            6 => self.c(),
-            7 => self.a(),
             8 => self.e(),
-            9 => self.a(),
-            10 => self.c(),
-            11 => self.a(),
-            12 => self.d(),
-            13 => self.a(),
-            14 => self.c(),
-            15 => self.a(),
             _ => unreachable!()
         } as f64 / (std::i16::MAX as f64);
         self.which = (self.which + 1) % 16;
         r
-    }
-}
-
-impl Iterator for Pink {
-    type Item = Sample;
-
-    fn next(&mut self) -> Option<Sample> {
-        let mut sample = self.sampler.next().unwrap();
-        sample.v = self.sample();
-        Some(sample)
     }
 }

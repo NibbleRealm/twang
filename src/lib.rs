@@ -7,10 +7,7 @@
 //!
 //! # A4 (440 Hz) Organ Example
 //! ```rust,no_run
-//! extern crate twang; // for sound generation / effects
-//! extern crate adi; // for speaker
-//!
-//! use adi::speaker::Speaker;
+//! use cala::speaker::Player;
 //! use twang::Sound;
 //!
 //! fn main() {
@@ -27,20 +24,11 @@
 //! }
 
 mod audio;
+pub mod ops;
 pub mod chan;
+pub mod gen;
 mod private;
-mod pink;
-mod white;
-mod sample;
-mod quiet;
+pub mod sample;
 mod sound;
 
-pub use crate::pink::Pink;
-pub use crate::white::White;
-pub use crate::sample::Sample;
-pub use crate::sound::{Sound,Wave};
-
-/// Traits
-pub mod prelude {
-    pub use crate::sample::SampleSlice;
-}
+pub use audio::{Audio, Hz};

@@ -3,9 +3,10 @@
 // Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
-use crate::Sample;
+// use crate::Sample;
 
-/// Pitched Sound sampler.
+// FIXME: Remove
+/*/// Pitched Sound sampler.
 pub struct Sound {
     time: f64,
     step: f64,
@@ -52,38 +53,6 @@ impl Iterator for Sound {
 pub struct Wave(Sound);
 
 impl Wave {
-    /// Sample a sawtooth wave.
-    pub fn saw(&self) -> Sample {
-        Sample {
-            t: self.0.time,
-            v: self.0.state * -2.0 + 1.0,
-        }
-    }
-
-    /// Sample a square wave.
-    pub fn sqr(&self) -> Sample {
-        Sample {
-            t: self.0.time,
-            v: (self.0.state * -2.0 + 1.0).signum(),
-        }
-    }
-
-    /// Sample a triangle wave.
-    pub fn tri(&self) -> Sample {
-        Sample {
-            t: self.0.time,
-            v: (self.0.state * -2.0 + 1.0).abs() * 2.0 - 1.0,
-        }
-    }
-
-    /// Sample a sine wave.
-    pub fn sin(&self) -> Sample {
-        Sample {
-            t: self.0.time,
-            v: sin(self.0.state),
-        }
-    }
-
     /// Sample a harmonic series derived sound.
     pub fn har(&self, overtones: &[f64]) -> Sample {
         Sample {
@@ -152,4 +121,4 @@ impl Wave {
         o += sin(x * d2 + phase) * i;
     }
     o / v
-}
+}*/
