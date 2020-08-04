@@ -3,7 +3,18 @@
 // Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
-//! A sound synthesis crate.
+//! Library for audio conversions and synthesis.
+//!
+//! An [audio buffer](struct.Audio.html) can be cheaply converted to and from
+//! raw byte buffers, enabling interoperability with other crates.
+//!
+//! Many audio formats are supported:
+//! - Bit depth: 8- or 16-bit integer and 32- or 64-bit float
+//! - All sample rates
+//! - Mono, Stereo, 5.1 Surround and 7.1 Surround
+//!
+//! Synthesis with blending [operations](ops/index.html) is supported for all
+//! formats.
 //!
 //! # A4 (440 Hz) Organ Example
 //! ```rust,no_run
@@ -22,6 +33,7 @@
 //!         });
 //!     }
 //! }
+//! ```
 
 mod audio;
 pub mod ops;

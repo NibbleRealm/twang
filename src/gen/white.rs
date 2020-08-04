@@ -1,3 +1,5 @@
+use super::Generator;
+use std::time::Duration;
 use std::num::Wrapping;
 
 const SEQUENCE: u64 = 0xb5ad4eceda1ce2a9;
@@ -16,8 +18,10 @@ impl White {
             w: Wrapping(0),
         }
     }
+}
 
-    fn sample(&mut self) -> f64 {
+impl Generator for White {
+    fn sample(&mut self, _duration: Duration) -> f64 {
         // msws (Middle Square Weyl Sequence) algorithm
         self.x *= self.x;
         self.w += Wrapping(SEQUENCE);

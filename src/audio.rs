@@ -1,10 +1,12 @@
 use crate::chan::{Ch8, Ch16, Ch32, Ch64, Channel};
 use crate::private::Sealed;
 use crate::sample::Sample;
+use crate::gen::Generator;
 use std::convert::TryFrom;
 use std::fmt::Debug;
 use std::slice::from_raw_parts_mut;
 use std::any::Any;
+use std::time::Duration;
 
 // Channel Identification
 // 0. Front Left (Mono)
@@ -52,33 +54,35 @@ impl Sources for SurroundTheater {
 }
 
 /// Newtype for hertz.
+#[derive(Copy, Clone)]
 pub struct Hz(pub f64);
 
-/// An audio buffer (array of audio Samples).
+/// An audio buffer (array of audio Samples at a specific sample rate in hertz).
 pub struct Audio<S: Sample> {
+    s_rate: Hz,
     samples: Box<[S]>,
 }
 
 impl<S: Sample> Audio<S> {
     /// Construct an `Audio` buffer with all samples set to one value.
-    pub fn with_sample(len: usize, sample: S) -> Self {
+    pub fn with_sample(s_rate: Hz, len: usize, sample: S) -> Self {
         let samples = vec![sample; len].into_boxed_slice();
-        Audio { samples }
+        Audio { s_rate, samples }
     }
 
     /// Construct an `Audio` buffer with all all samples set to the default
     /// value.
-    pub fn with_silence(len: usize) -> Self {
-        Self::with_sample(len, S::default())
+    pub fn with_silence(s_rate: Hz, len: usize) -> Self {
+        Self::with_sample(s_rate, len, S::default())
     }
-
+    
     /// Construct an `Audio` buffer with another `Audio` buffer.
     ///
     /// The audio format can be converted with this function.
-    pub fn with_audio<SrcS: Sample>(src: &Audio<SrcS>) -> Self
+    pub fn with_audio<SrcS: Sample>(s_rate: Hz, src: &Audio<SrcS>) -> Self
         where S::Chan: From<SrcS::Chan>
     {
-        let mut dst = Audio::with_silence(src.len());
+        let mut dst = Audio::with_silence(s_rate, src.len());
         for (dst, src) in dst.samples.iter_mut().zip(src.samples.iter()) {
             *dst = src.convert();
         }
@@ -88,15 +92,13 @@ impl<S: Sample> Audio<S> {
     /// Construct an `Audio` buffer with owned sample data.   You can get
     /// ownership of the pixel data back from the `Audio` buffer as either a
     /// `Vec<S>` or a `Box<[S]>` by calling into().
-    pub fn with_samples<B: Into<Box<[S]>>>(samples: B) -> Self {
+    pub fn with_samples<B: Into<Box<[S]>>>(s_rate: Hz, samples: B) -> Self {
         let samples = samples.into();
-        Audio {
-            samples
-        }
+        Audio { s_rate, samples }
     }
 
     /// Construct an `Audio` buffer from a `u8` buffer.    
-    pub fn with_u8_buffer<B>(buffer: B) -> Self
+    pub fn with_u8_buffer<B>(s_rate: Hz, buffer: B) -> Self
     where
         B: Into<Box<[u8]>>,
         S: Sample<Chan = Ch8>,
@@ -109,13 +111,11 @@ impl<S: Sample> Audio<S> {
             let ptr = (*slice).as_mut_ptr() as *mut S;
             Box::from_raw(from_raw_parts_mut(ptr, len))
         };
-        Audio {
-            samples,
-        }
+        Audio { s_rate, samples }
     }
 
     /// Construct an `Audio` buffer from a `u16` buffer.
-    pub fn with_u16_buffer<B>(buffer: B) -> Self
+    pub fn with_u16_buffer<B>(s_rate: Hz, buffer: B) -> Self
     where
         B: Into<Box<[u16]>>,
         S: Sample<Chan = Ch16>,
@@ -129,14 +129,26 @@ impl<S: Sample> Audio<S> {
             let ptr = (*slice).as_mut_ptr() as *mut S;
             Box::from_raw(from_raw_parts_mut(ptr, len))
         };
-        Audio {
-            samples,
-        }
+        Audio { s_rate, samples }
     }
 
     /// Get the length of the `Audio` buffer.
     pub fn len(&self) -> usize {
         self.samples.len()
+    }
+
+    /// Get the sample rate of the `Audio` buffer.
+    pub fn sample_rate(&self) -> Hz {
+        self.s_rate
+    }
+
+    /// Generate audio in buffer using a generator.    
+    pub fn generate<G: Generator>(&mut self, generator: &mut G) {
+        let time_step = Duration::new(1, 0).div_f64(self.s_rate.0);
+        for sample in self.samples.iter_mut() {
+            let channel = generator.sample(time_step).into();
+            *sample = S::from_channels(&[channel; 8][..S::LEN]);
+        }
     }
 }
 

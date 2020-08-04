@@ -1,3 +1,6 @@
+use super::Generator;
+use std::time::Duration;
+
 // Algorithm inspired by https://github.com/Stenzel/newshadeofpink
 
 // Constant Look-up tables
@@ -261,8 +264,10 @@ impl Pink {
         self.inc ^= self.bit & mask;
         self.b()
     }
+}
 
-    fn sample(&mut self) -> f64 {
+impl Generator for Pink {
+    fn sample(&mut self, duration: Duration) -> f64 {
         // Different functions for each sample.
         let r = match self.which {
             _x if _x % 2 != 0 => self.a(), // odd #s
