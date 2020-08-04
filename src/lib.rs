@@ -26,6 +26,9 @@
 //!     }
 //! }
 
+mod audio;
+pub mod chan;
+mod private;
 mod pink;
 mod white;
 mod sample;

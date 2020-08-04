@@ -1,16 +1,16 @@
-extern crate twang; // for sound generation / effects
-extern crate adi; // for speaker
-
-use adi::speaker::Speaker;
+use cala::*;
+use speaker::Player;
 use twang::{White};
 
-fn main() {
-	let mut speaker = Speaker::new(0, false).unwrap();
+exec!(async_main);
+async fn async_main() {
+	let mut speaker = Player::new().unwrap();
 	let mut whts = White::new(None);
 
 	loop {
-		speaker.update(&mut || {
-			whts.next().unwrap().into()
-		});
+        let _sample_rate = speaker.fut().await;
+        let n_frames = player.play_last(shared.buffer.as_slice());
+
+        whts.next().unwrap().into()
 	}
 }

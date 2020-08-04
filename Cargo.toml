@@ -21,4 +21,4 @@ edition = "2018"
 [dependencies]
 
 [dev-dependencies]
-adi = { version = "0.12", default-features = false, features = ["speaker"] }
+cala = { version = "0.8", features = ["speaker"] }
