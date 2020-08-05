@@ -205,7 +205,7 @@ pub trait Sample: Clone + Copy + Debug + Default + PartialEq + Sealed {
                 let left = self.channels()[0].to_f64();
                 let right = self.channels()[1].to_f64();
                 let center = left * 0.5 + right * 0.5;
-                let lfe = D::Chan::MID;
+                let lfe = D::Chan::MID.to_f64();
                 D::from_channels(&[
                     D::Chan::from(left),
                     D::Chan::from(right),
@@ -219,7 +219,7 @@ pub trait Sample: Clone + Copy + Debug + Default + PartialEq + Sealed {
                 let left = self.channels()[0].to_f64();
                 let right = self.channels()[1].to_f64();
                 let center = left * 0.5 + right * 0.5;
-                let lfe = D::Chan::MID;
+                let lfe = D::Chan::MID.to_f64();
                 D::from_channels(&[
                     D::Chan::from(left),
                     D::Chan::from(right),

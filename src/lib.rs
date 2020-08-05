@@ -21,17 +21,15 @@
 //! use cala::speaker::Player;
 //! use twang::Sound;
 //!
-//! fn main() {
-//!     let mut speaker = Speaker::new(0, false).unwrap();
-//!     let mut snds = Sound::new(None, 440.0); // A4
+//! let mut speaker = Speaker::new(0, false).unwrap();
+//! let mut snds = Sound::new(None, 440.0); // A4
 //!
-//!     loop {
-//!         speaker.update(&mut || {
-//!             let x = snds.next().unwrap();
+//! loop {
+//!     speaker.update(&mut || {
+//!         let x = snds.next().unwrap();
 //!
-//!             (x.sin().positive() + x.tri().negative()).into()
-//!         });
-//!     }
+//!         (x.sin().positive() + x.tri().negative()).into()
+//!     });
 //! }
 //! ```
 

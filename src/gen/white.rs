@@ -5,6 +5,7 @@ use std::time::Duration;
 const SEQUENCE: u64 = 0xb5ad4eceda1ce2a9;
 
 /// White Noise Generator using Middle Square Weyl Sequence PRNG.
+#[derive(Default)]
 pub struct White {
     x: Wrapping<u64>,
     w: Wrapping<u64>,
@@ -13,10 +14,7 @@ pub struct White {
 impl White {
     /// Create a new White Noise Sampler.
     pub fn new() -> Self {
-        Self {
-            x: Wrapping(0),
-            w: Wrapping(0),
-        }
+        Self::default()
     }
 }
 

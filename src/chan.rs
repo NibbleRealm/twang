@@ -176,10 +176,11 @@ where
     Self: From<R>,
 {
     type Output = Self;
+    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: R) -> Self {
         let rhs = Self::from(rhs);
         if rhs.0 > 0 {
-            let ss = i32::from(self.0) << 8;
+            let ss = i32::from(self.0) * 256;
             let rr = i32::from(rhs.0);
             let value = (ss / rr).min(255) as i8;
             Ch8(value)

@@ -136,6 +136,11 @@ impl<S: Sample> Audio<S> {
         self.samples.len()
     }
 
+    /// Check if `Audio` buffer is empty.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Get the sample rate of the `Audio` buffer.
     pub fn sample_rate(&self) -> Hz {
         self.s_rate

@@ -1,817 +1,48 @@
 use super::Generator;
 use std::time::Duration;
 
-// Constant Look-up tables
-const PFIRAM: f64 = 2048.0 * 1.190566;
-const PFIRAM2: f64 = 2048.0 * 0.162580;
-const PFIRAM3: f64 = 2048.0 * 0.002208;
-const PFIRAM4: f64 = 2048.0 * 0.025475;
-const PFIRAM5: f64 = 2048.0 * -0.001522;
-const PFIRAM6: f64 = 2048.0 * 0.007322;
+fn pnmask(pncnt: u8) -> u8 {
+    match pncnt % 16 {
+        _x if _x % 2 != 0 => 0x80,
+        _x if _x % 4 != 0 => 0x40,
+        _x if _x % 8 != 0 => 0x20,
+        8 => 0x10, // _x if _x % 16 != 0
+        _ => match pncnt / 16 {
+            // only 0
+            _x if _x % 2 != 0 => 8,
+            _x if _x % 4 != 0 => 4,
+            _x if _x % 8 != 0 => 2,
+            8 => 1, // _x if _x % 16 != 0
+            _ => 0, // only 0
+        },
+    }
+}
 
-const PFIRBM: f64 = 2048.0 * 0.001774;
-const PFIRBM2: f64 = 2048.0 * 0.004529;
-const PFIRBM3: f64 = 2048.0 * -0.001561;
-const PFIRBM4: f64 = 2048.0 * 0.000776;
-const PFIRBM5: f64 = 2048.0 * -0.000486;
-const PFIRBM6: f64 = 2048.0 * 0.002017;
-
-const PNMASK: [u8; 256] = [
-    0, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 8,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 4,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 8,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 2,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 8,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 4,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 8,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 1,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 8,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 4,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 8,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 2,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 8,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 4,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 8,
-    0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80, 0x10, 0x80, 0x40, 0x80, 0x20, 0x80, 0x40, 0x80,
-];
-
-const PFIRA: [i32; 64] = [
-    (PFIRAM * (2i32 * (0i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (0i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (0i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (0i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (0i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (0i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (0i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (0i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (0i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (0i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (0i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (0i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (0i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (0i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (0i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (0i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (0i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (0i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (0i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (0i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (0i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (0i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (0i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (0i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (0i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (0i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (0i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (0i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (0i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (0i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (0i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (0i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (0i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (0i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (0i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (0i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (0i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (0i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (0i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (0i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (0i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (0i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (0i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (0i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (0i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (0i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (0i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (0i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (8i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (8i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (8i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (8i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (8i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (8i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (8i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (8i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (8i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (8i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (8i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (8i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (8i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (8i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (8i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (8i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (8i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (8i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (8i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (8i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (8i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (8i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (8i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (8i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (8i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (8i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (8i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (8i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (8i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (8i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (8i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (8i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (8i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (8i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (8i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (8i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (8i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (8i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (8i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (8i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (8i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (8i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (8i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (8i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (8i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (8i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (8i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (8i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (16i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (16i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (16i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (16i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (16i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (16i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (16i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (16i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (16i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (16i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (16i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (16i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (16i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (16i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (16i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (16i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (16i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (16i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (16i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (16i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (16i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (16i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (16i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (16i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (16i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (16i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (16i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (16i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (16i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (16i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (16i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (16i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (16i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (16i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (16i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (16i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (16i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (16i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (16i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (16i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (16i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (16i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (16i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (16i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (16i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (16i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (16i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (16i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (24i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (24i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (24i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (24i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (24i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (24i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (24i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (24i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (24i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (24i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (24i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (24i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (24i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (24i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (24i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (24i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (24i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (24i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (24i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (24i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (24i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (24i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (24i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (24i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (24i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (24i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (24i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (24i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (24i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (24i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (24i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (24i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (24i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (24i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (24i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (24i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (24i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (24i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (24i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (24i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (24i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (24i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (24i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (24i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (24i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (24i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (24i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (24i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (32i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (32i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (32i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (32i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (32i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (32i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (32i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (32i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (32i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (32i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (32i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (32i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (32i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (32i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (32i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (32i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (32i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (32i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (32i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (32i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (32i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (32i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (32i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (32i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (32i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (32i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (32i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (32i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (32i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (32i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (32i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (32i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (32i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (32i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (32i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (32i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (32i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (32i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (32i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (32i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (32i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (32i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (32i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (32i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (32i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (32i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (32i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (32i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (40i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (40i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (40i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (40i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (40i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (40i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (40i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (40i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (40i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (40i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (40i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (40i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (40i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (40i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (40i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (40i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (40i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (40i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (40i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (40i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (40i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (40i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (40i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (40i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (40i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (40i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (40i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (40i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (40i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (40i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (40i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (40i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (40i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (40i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (40i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (40i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (40i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (40i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (40i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (40i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (40i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (40i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (40i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (40i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (40i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (40i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (40i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (40i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (48i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (48i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (48i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (48i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (48i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (48i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (48i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (48i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (48i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (48i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (48i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (48i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (48i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (48i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (48i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (48i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (48i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (48i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (48i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (48i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (48i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (48i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (48i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (48i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (48i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (48i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (48i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (48i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (48i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (48i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (48i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (48i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (48i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (48i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (48i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (48i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (48i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (48i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (48i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (48i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (48i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (48i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (48i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (48i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (48i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (48i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (48i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (48i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (56i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (56i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (56i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (56i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (56i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (56i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (56i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (56i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (56i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (56i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (56i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (56i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (56i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (56i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (56i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (56i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (56i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (56i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (56i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (56i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (56i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (56i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (56i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (56i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (56i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (56i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (56i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (56i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (56i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (56i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (56i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (56i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (56i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (56i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (56i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (56i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (56i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (56i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (56i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (56i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (56i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (56i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRAM * (2i32 * (56i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRAM2 * (2i32 * (56i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRAM3 * (2i32 * (56i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRAM4 * (2i32 * (56i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRAM5 * (2i32 * (56i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRAM6 * (2i32 * (56i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-];
-
-const PFIRB: [i32; 64] = [
-    (PFIRBM * (2i32 * (0i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (0i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (0i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (0i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (0i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (0i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (0i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (0i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (0i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (0i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (0i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (0i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (0i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (0i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (0i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (0i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (0i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (0i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (0i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (0i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (0i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (0i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (0i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (0i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (0i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (0i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (0i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (0i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (0i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (0i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (0i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (0i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (0i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (0i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (0i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (0i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (0i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (0i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (0i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (0i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (0i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (0i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (0i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (0i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (0i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (0i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (0i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (0i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (8i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (8i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (8i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (8i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (8i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (8i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (8i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (8i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (8i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (8i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (8i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (8i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (8i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (8i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (8i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (8i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (8i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (8i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (8i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (8i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (8i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (8i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (8i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (8i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (8i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (8i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (8i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (8i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (8i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (8i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (8i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (8i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (8i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (8i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (8i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (8i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (8i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (8i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (8i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (8i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (8i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (8i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (8i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (8i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (8i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (8i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (8i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (8i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (16i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (16i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (16i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (16i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (16i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (16i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (16i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (16i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (16i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (16i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (16i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (16i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (16i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (16i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (16i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (16i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (16i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (16i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (16i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (16i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (16i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (16i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (16i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (16i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (16i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (16i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (16i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (16i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (16i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (16i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (16i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (16i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (16i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (16i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (16i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (16i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (16i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (16i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (16i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (16i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (16i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (16i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (16i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (16i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (16i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (16i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (16i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (16i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (24i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (24i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (24i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (24i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (24i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (24i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (24i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (24i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (24i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (24i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (24i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (24i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (24i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (24i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (24i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (24i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (24i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (24i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (24i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (24i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (24i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (24i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (24i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (24i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (24i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (24i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (24i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (24i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (24i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (24i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (24i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (24i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (24i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (24i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (24i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (24i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (24i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (24i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (24i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (24i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (24i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (24i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (24i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (24i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (24i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (24i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (24i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (24i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (32i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (32i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (32i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (32i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (32i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (32i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (32i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (32i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (32i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (32i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (32i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (32i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (32i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (32i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (32i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (32i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (32i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (32i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (32i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (32i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (32i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (32i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (32i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (32i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (32i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (32i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (32i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (32i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (32i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (32i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (32i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (32i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (32i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (32i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (32i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (32i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (32i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (32i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (32i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (32i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (32i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (32i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (32i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (32i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (32i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (32i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (32i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (32i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (40i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (40i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (40i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (40i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (40i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (40i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (40i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (40i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (40i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (40i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (40i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (40i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (40i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (40i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (40i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (40i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (40i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (40i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (40i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (40i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (40i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (40i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (40i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (40i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (40i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (40i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (40i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (40i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (40i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (40i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (40i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (40i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (40i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (40i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (40i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (40i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (40i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (40i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (40i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (40i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (40i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (40i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (40i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (40i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (40i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (40i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (40i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (40i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (48i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (48i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (48i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (48i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (48i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (48i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (48i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (48i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (48i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (48i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (48i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (48i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (48i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (48i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (48i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (48i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (48i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (48i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (48i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (48i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (48i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (48i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (48i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (48i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (48i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (48i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (48i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (48i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (48i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (48i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (48i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (48i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (48i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (48i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (48i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (48i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (48i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (48i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (48i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (48i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (48i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (48i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (48i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (48i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (48i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (48i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (48i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (48i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (56i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (56i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (56i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (56i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (56i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (56i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (56i32 + 1i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (56i32 + 1i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (56i32 + 1i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (56i32 + 1i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (56i32 + 1i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (56i32 + 1i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (56i32 + 2i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (56i32 + 2i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (56i32 + 2i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (56i32 + 2i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (56i32 + 2i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (56i32 + 2i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (56i32 + 3i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (56i32 + 3i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (56i32 + 3i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (56i32 + 3i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (56i32 + 3i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (56i32 + 3i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (56i32 + 4i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (56i32 + 4i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (56i32 + 4i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (56i32 + 4i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (56i32 + 4i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (56i32 + 4i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (56i32 + 5i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (56i32 + 5i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (56i32 + 5i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (56i32 + 5i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (56i32 + 5i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (56i32 + 5i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (56i32 + 6i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (56i32 + 6i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (56i32 + 6i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (56i32 + 6i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (56i32 + 6i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (56i32 + 6i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-    (PFIRBM * (2i32 * (56i32 + 7i32 >> 0i32 & 1i32) - 1i32) as f64
-        + PFIRBM2 * (2i32 * (56i32 + 7i32 >> 1i32 & 1i32) - 1i32) as f64
-        + PFIRBM3 * (2i32 * (56i32 + 7i32 >> 2i32 & 1i32) - 1i32) as f64
-        + PFIRBM4 * (2i32 * (56i32 + 7i32 >> 3i32 & 1i32) - 1i32) as f64
-        + PFIRBM5 * (2i32 * (56i32 + 7i32 >> 4i32 & 1i32) - 1i32) as f64
-        + PFIRBM6 * (2i32 * (56i32 + 7i32 >> 5i32 & 1i32) - 1i32) as f64) as i32,
-];
+fn pfir(pfirm: [f64; 6]) -> [i32; 64] {
+    let mut pfir = [0; 64];
+    for (i, v) in pfir.iter_mut().enumerate() {
+        let i = i as i32;
+        let a = i / 8;
+        let a = a * 8;
+        let b = match i % 8 {
+            0 => [0, 1, 2, 3, 4, 5],
+            b => [b; 6],
+        };
+        *v = (pfirm[0] * (2 * (a >> b[0] & 1) - 1) as f64
+            + pfirm[1] * (2 * (a >> b[1] & 1) - 1) as f64
+            + pfirm[2] * (2 * (a >> b[2] & 1) - 1) as f64
+            + pfirm[3] * (2 * (a >> b[3] & 1) - 1) as f64
+            + pfirm[4] * (2 * (a >> b[4] & 1) - 1) as f64
+            + pfirm[5] * (2 * (a >> b[5] & 1) - 1) as f64) as i32
+    }
+    pfir
+}
 
 /// Pink Noise Generator using algorithm described in research paper
 /// [A New Shade of Pink](https://github.com/Stenzel/newshadeofpink/blob/master/newshadeofpink.pdf).
 pub struct Pink {
+    pfira: [i32; 64],
+    pfirb: [i32; 64],
     lfsr: i32,
     inc: i32,
     dec: i32,
@@ -821,11 +52,33 @@ pub struct Pink {
     bit: i32,
 }
 
+impl Default for Pink {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Pink {
     /// Create a new Pink Noise Sampler.
     #[inline(always)]
     pub fn new() -> Self {
         Self {
+            pfira: pfir([
+                2048.0 * 1.190566,
+                2048.0 * 0.162580,
+                2048.0 * 0.002208,
+                2048.0 * 0.025475,
+                2048.0 * -0.001522,
+                2048.0 * 0.007322,
+            ]),
+            pfirb: pfir([
+                2048.0 * 0.001774,
+                2048.0 * 0.004529,
+                2048.0 * -0.001561,
+                2048.0 * 0.000776,
+                2048.0 * -0.000486,
+                2048.0 * 0.002017,
+            ]),
             lfsr: 0x5eed41f5i32,
             inc: 0xccc,
             dec: 0xccc,
@@ -849,8 +102,8 @@ impl Pink {
         self.accu += self.inc - self.dec;
         self.lfsr ^= self.bit & 0x46000001i32;
         (self.accu
-            + PFIRA[(self.lfsr & 0x3fi32) as usize]
-            + PFIRB[(self.lfsr >> 6i32 & 0x3fi32) as usize]) as i16
+            + self.pfira[(self.lfsr & 0x3fi32) as usize]
+            + self.pfirb[(self.lfsr >> 6i32 & 0x3fi32) as usize]) as i16
     }
 
     fn c(&mut self) -> i16 {
@@ -898,15 +151,16 @@ impl Generator for Pink {
             _x if _x % 4 != 0 => self.c(),
             _x if _x % 8 != 0 => self.d(),
             0 => {
-                let i = self.pncnt;
+                let mask = pnmask(self.pncnt).into();
                 self.pncnt = self.pncnt.wrapping_add(1);
-                self.f(PNMASK[i as usize] as i32)
+                self.f(mask)
             }
             8 => self.e(),
             _ => unreachable!(),
         } as f64
             / (std::i16::MAX as f64);
-        self.which = (self.which + 1) % 16;
+        self.which += 1;
+        self.which %= 16;
         r
     }
 }
