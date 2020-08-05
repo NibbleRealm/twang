@@ -58,7 +58,7 @@ impl Blend for Src {
 }
 
 impl Blend for Dest {
-    fn synthesize<C: Channel>(dst: &mut C, src: &C) {
+    fn synthesize<C: Channel>(_dst: &mut C, _src: &C) {
         // leave _dst as is
     }
 }
@@ -76,7 +76,7 @@ impl Blend for Xor {
 }
 
 impl Blend for Clear {
-    fn synthesize<C: Channel>(dst: &mut C, src: &C) {
+    fn synthesize<C: Channel>(dst: &mut C, _src: &C) {
         *dst = C::default();
     }
 }
@@ -113,7 +113,7 @@ impl Blend for Max {
 }
 
 impl Blend for Squared {
-    fn synthesize<C: Channel>(dst: &mut C, src: &C) {
+    fn synthesize<C: Channel>(dst: &mut C, _src: &C) {
         *dst = *dst * *dst;
     }
 }

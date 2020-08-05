@@ -1,12 +1,12 @@
 use std::time::Duration;
 
 mod pink;
-mod white;
 mod triangle;
+mod white;
 
 pub use pink::Pink;
-pub use white::White;
 pub use triangle::Triangle;
+pub use white::White;
 
 /// A generator for audio.
 pub trait Generator {

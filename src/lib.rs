@@ -36,9 +36,9 @@
 //! ```
 
 mod audio;
-pub mod ops;
 pub mod chan;
 pub mod gen;
+pub mod ops;
 mod private;
 pub mod sample;
 mod sound;

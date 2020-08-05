@@ -1,11 +1,9 @@
-use crate::chan::{Ch8, Ch16, Ch32, Ch64, Channel};
+use crate::chan::{Ch16, Ch8};
+use crate::gen::Generator;
 use crate::private::Sealed;
 use crate::sample::Sample;
-use crate::gen::Generator;
-use std::convert::TryFrom;
 use std::fmt::Debug;
 use std::slice::from_raw_parts_mut;
-use std::any::Any;
 use std::time::Duration;
 
 // Channel Identification
@@ -75,12 +73,13 @@ impl<S: Sample> Audio<S> {
     pub fn with_silence(s_rate: Hz, len: usize) -> Self {
         Self::with_sample(s_rate, len, S::default())
     }
-    
+
     /// Construct an `Audio` buffer with another `Audio` buffer.
     ///
     /// The audio format can be converted with this function.
     pub fn with_audio<SrcS: Sample>(s_rate: Hz, src: &Audio<SrcS>) -> Self
-        where S::Chan: From<SrcS::Chan>
+    where
+        S::Chan: From<SrcS::Chan>,
     {
         let mut dst = Audio::with_silence(s_rate, src.len());
         for (dst, src) in dst.samples.iter_mut().zip(src.samples.iter()) {
@@ -151,7 +150,6 @@ impl<S: Sample> Audio<S> {
         }
     }
 }
-
 
 impl<S: Sample> From<Audio<S>> for Box<[S]> {
     /// Get internal pixel data as boxed slice.

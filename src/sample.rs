@@ -5,11 +5,10 @@
 
 //! Sample types
 
-use crate::Hz;
 use crate::chan::Channel;
 use crate::ops::Blend;
 use crate::private::Sealed;
-use std::ops::{Neg, Add, AddAssign, Div, DivAssign, Mul, MulAssign};
+use crate::Hz;
 use std::fmt::Debug;
 
 /*
@@ -80,14 +79,15 @@ pub trait Sample: Clone + Copy + Debug + Default + PartialEq + Sealed {
     }
 
     /// Synthesize two sample slices together.
-    fn blend_channels<O>(&mut self, src: &Self, op: O)
-        where O: Blend
+    fn blend_channels<O>(&mut self, src: &Self, _op: O)
+    where
+        O: Blend,
     {
         for (d, s) in self.channels_mut().iter_mut().zip(src.channels().iter()) {
             O::synthesize(d, s)
         }
     }
-    
+
     #[inline(always)]
     fn convert<D>(self) -> D
     where
@@ -152,18 +152,25 @@ pub trait Sample: Clone + Copy + Debug + Default + PartialEq + Sealed {
                 right += self.channels()[7].to_f64() * 0.25;
                 D::from_channels(&[D::Chan::from(left), D::Chan::from(right)])
             }
-            (8, 5) => {
+            (8, 6) => {
                 let mut left = self.channels()[0].to_f64() * (2.0 / 3.0);
                 let mut right = self.channels()[1].to_f64() * (2.0 / 3.0);
-                let mut center = self.channels()[2].to_f64();
+                let center = self.channels()[2].to_f64();
                 let mut back_left = self.channels()[3].to_f64() * (2.0 / 3.0);
                 let mut back_right = self.channels()[4].to_f64() * (2.0 / 3.0);
-                let mut lfe = self.channels()[5].to_f64();
+                let lfe = self.channels()[5].to_f64();
                 left += self.channels()[6].to_f64() * (1.0 / 3.0);
                 right += self.channels()[7].to_f64() * (1.0 / 3.0);
                 back_left += self.channels()[6].to_f64() * (1.0 / 3.0);
                 back_right += self.channels()[7].to_f64() * (1.0 / 3.0);
-                D::from_channels(&[D::Chan::from(left), D::Chan::from(right)])
+                D::from_channels(&[
+                    D::Chan::from(left),
+                    D::Chan::from(right),
+                    D::Chan::from(center),
+                    D::Chan::from(back_left),
+                    D::Chan::from(back_right),
+                    D::Chan::from(lfe),
+                ])
             }
             // Upsampling
             (1, 2) => {
@@ -172,26 +179,58 @@ pub trait Sample: Clone + Copy + Debug + Default + PartialEq + Sealed {
             }
             (1, 6) => {
                 let mono = self.channels()[0];
-                D::from_channels(&[D::Chan::from(mono), D::Chan::from(mono), D::Chan::from(mono), D::Chan::from(mono), D::Chan::from(mono), D::Chan::from(mono)])
+                D::from_channels(&[
+                    D::Chan::from(mono),
+                    D::Chan::from(mono),
+                    D::Chan::from(mono),
+                    D::Chan::from(mono),
+                    D::Chan::from(mono),
+                    D::Chan::from(mono),
+                ])
             }
             (1, 8) => {
                 let mono = self.channels()[0];
-                D::from_channels(&[D::Chan::from(mono), D::Chan::from(mono), D::Chan::from(mono), D::Chan::from(mono), D::Chan::from(mono), D::Chan::from(mono), D::Chan::from(mono), D::Chan::from(mono)])
+                D::from_channels(&[
+                    D::Chan::from(mono),
+                    D::Chan::from(mono),
+                    D::Chan::from(mono),
+                    D::Chan::from(mono),
+                    D::Chan::from(mono),
+                    D::Chan::from(mono),
+                    D::Chan::from(mono),
+                    D::Chan::from(mono),
+                ])
             }
             (2, 6) => {
                 let left = self.channels()[0].to_f64();
                 let right = self.channels()[1].to_f64();
                 let center = left * 0.5 + right * 0.5;
                 let lfe = D::Chan::MID;
-                D::from_channels(&[D::Chan::from(left), D::Chan::from(right), D::Chan::from(center), D::Chan::from(left), D::Chan::from(right), D::Chan::from(lfe)])
+                D::from_channels(&[
+                    D::Chan::from(left),
+                    D::Chan::from(right),
+                    D::Chan::from(center),
+                    D::Chan::from(left),
+                    D::Chan::from(right),
+                    D::Chan::from(lfe),
+                ])
             }
             (2, 8) => {
                 let left = self.channels()[0].to_f64();
                 let right = self.channels()[1].to_f64();
                 let center = left * 0.5 + right * 0.5;
                 let lfe = D::Chan::MID;
-                D::from_channels(&[D::Chan::from(left), D::Chan::from(right), D::Chan::from(center), D::Chan::from(left), D::Chan::from(right), D::Chan::from(lfe), D::Chan::from(left), D::Chan::from(right)])
-            },
+                D::from_channels(&[
+                    D::Chan::from(left),
+                    D::Chan::from(right),
+                    D::Chan::from(center),
+                    D::Chan::from(left),
+                    D::Chan::from(right),
+                    D::Chan::from(lfe),
+                    D::Chan::from(left),
+                    D::Chan::from(right),
+                ])
+            }
             (5, 8) => {
                 let left = self.channels()[0].to_f64();
                 let right = self.channels()[1].to_f64();
@@ -201,8 +240,17 @@ pub trait Sample: Clone + Copy + Debug + Default + PartialEq + Sealed {
                 let lfe = self.channels()[5].to_f64();
                 let side_left = (left + back_left) * 0.5;
                 let side_right = (right + back_right) * 0.5;
-                D::from_channels(&[D::Chan::from(left), D::Chan::from(right), D::Chan::from(center), D::Chan::from(left), D::Chan::from(right), D::Chan::from(lfe), D::Chan::from(side_left), D::Chan::from(side_right)])
-            },
+                D::from_channels(&[
+                    D::Chan::from(left),
+                    D::Chan::from(right),
+                    D::Chan::from(center),
+                    D::Chan::from(left),
+                    D::Chan::from(right),
+                    D::Chan::from(lfe),
+                    D::Chan::from(side_left),
+                    D::Chan::from(side_right),
+                ])
+            }
             // Unreachable because of sealed traits
             (_, _) => unreachable!(),
         }

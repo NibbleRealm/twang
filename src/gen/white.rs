@@ -1,10 +1,10 @@
 use super::Generator;
-use std::time::Duration;
 use std::num::Wrapping;
+use std::time::Duration;
 
 const SEQUENCE: u64 = 0xb5ad4eceda1ce2a9;
 
-/// White Noise Generator.  Uses "Middle Square Weyl Sequence" PRNG.
+/// White Noise Generator using Middle Square Weyl Sequence PRNG.
 pub struct White {
     x: Wrapping<u64>,
     w: Wrapping<u64>,

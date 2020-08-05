@@ -1,5 +1,5 @@
-use crate::chan::{Ch8, Ch16, Ch32, Ch64};
 use crate::audio::{Mono, Stereo, Surround, SurroundTheater};
+use crate::chan::{Ch16, Ch32, Ch64, Ch8};
 use std::any::Any;
 
 pub trait Sealed: Any {}

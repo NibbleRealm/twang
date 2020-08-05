@@ -1,7 +1,7 @@
 use crate::private::Sealed;
-use std::ops::{Div, Mul, Add, Sub, Neg};
 use core::cmp::Ordering;
 use std::fmt::Debug;
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 pub trait Channel:
     Copy
@@ -23,10 +23,10 @@ pub trait Channel:
 
     /// Maximum value (*one*)
     const MAX: Self;
-    
+
     /// Convert to `f64`
     fn to_f64(self) -> f64;
-    
+
     /// Linear interpolation
     fn lerp(self, rhs: Self, t: Self) -> Self;
 }
@@ -423,7 +423,6 @@ fn scale_i32(t: i8, v: i32) -> i32 {
     ((c + 1) + (c / 255)) / 255
 }
 
-
 /// Scale an i64 value by a i16 (for lerp)
 #[inline]
 fn scale_i64(t: i16, v: i64) -> i64 {
@@ -544,7 +543,7 @@ impl Neg for Ch8 {
     type Output = Ch8;
 
     /// Invert sound wave (-x).
-    fn neg(mut self) -> Self {
+    fn neg(self) -> Self {
         Ch8(-self.0)
     }
 }
@@ -553,7 +552,7 @@ impl Neg for Ch16 {
     type Output = Ch16;
 
     /// Invert sound wave (-x).
-    fn neg(mut self) -> Self {
+    fn neg(self) -> Self {
         Ch16(-self.0)
     }
 }
@@ -562,7 +561,7 @@ impl Neg for Ch32 {
     type Output = Ch32;
 
     /// Invert sound wave (-x).
-    fn neg(mut self) -> Self {
+    fn neg(self) -> Self {
         Ch32(-self.0)
     }
 }
@@ -571,7 +570,7 @@ impl Neg for Ch64 {
     type Output = Ch64;
 
     /// Invert sound wave (-x).
-    fn neg(mut self) -> Self {
+    fn neg(self) -> Self {
         Ch64(-self.0)
     }
 }
