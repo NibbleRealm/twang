@@ -1,4 +1,6 @@
-use std::time::Duration;
+//! Audio generators
+
+use core::time::Duration;
 
 mod pink;
 mod triangle;

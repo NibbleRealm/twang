@@ -1,9 +1,11 @@
 use super::Generator;
-use std::time::Duration;
+use core::time::Duration;
 
 use crate::Hz;
 
 /// A simple triangle wave generator.
+#[derive(Clone, Debug)]
+#[allow(missing_copy_implementations)]
 pub struct Triangle {
     hertz: Hz,
     value: f64,

@@ -1,5 +1,5 @@
 use super::Generator;
-use std::time::Duration;
+use core::time::Duration;
 
 fn pnmask(pncnt: u8) -> u8 {
     match pncnt % 16 {
@@ -40,6 +40,8 @@ fn pfir(pfirm: [f64; 6]) -> [i32; 64] {
 
 /// Pink Noise Generator using algorithm described in research paper
 /// [A New Shade of Pink](https://github.com/Stenzel/newshadeofpink/blob/master/newshadeofpink.pdf).
+#[derive(Clone)]
+#[allow(missing_copy_implementations)]
 pub struct Pink {
     pfira: [i32; 64],
     pfirb: [i32; 64],
@@ -50,6 +52,12 @@ pub struct Pink {
     pncnt: u8,
     which: u8,
     bit: i32,
+}
+
+impl std::fmt::Debug for Pink {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Pink")
+    }
 }
 
 impl Default for Pink {

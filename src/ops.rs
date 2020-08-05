@@ -3,7 +3,7 @@
 //! Used in `Audio` methods `blend_sample` and `blend_audio`.
 
 use crate::chan::Channel;
-use std::any::Any;
+use core::any::Any;
 
 /// Blending operation for mixing
 pub trait Blend: Any + Copy + Clone {
@@ -12,43 +12,43 @@ pub trait Blend: Any + Copy + Clone {
 }
 
 /// Source only (ignore destination)
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Src;
 /// Destination only (ignore source)
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Dest;
 /// Source or destination with no overlap
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Xor;
 /// Clear (set to default)
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Clear;
 /// VCA (Voltage Controlled Amplitude) mixing.  Multiplication of signals.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Gain;
 /// Standard audio mixing.  Addition of signals
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Add;
 /// Squared compression audio mixing.  Addition of signals squared.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct AddSquared;
 /// Minimum of destination and source
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Min;
 /// Maximum of destination and source
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Max;
 /// Squared compression.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Squared;
 /// Apply sine function to input.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Sine;
 /// Apply sawtooth function to input.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Sawtooth;
 /// Apply square function to input.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Square;
 
 impl Blend for Src {

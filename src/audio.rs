@@ -1,10 +1,6 @@
-use crate::chan::{Ch16, Ch8};
-use crate::gen::Generator;
-use crate::private::Sealed;
-use crate::sample::Sample;
-use std::fmt::Debug;
-use std::slice::from_raw_parts_mut;
-use std::time::Duration;
+use crate::{ops::Blend, chan::{Ch16, Ch8}, gen::Generator, sample::Sample, config::Config};
+use core::{fmt::Debug, slice::from_raw_parts_mut, time::Duration};
+use std::convert::TryInto;
 
 // Channel Identification
 // 0. Front Left (Mono)
@@ -16,68 +12,34 @@ use std::time::Duration;
 // 6. Side Left
 // 7. Side Right
 
-/// 1 Channel (front center)
-#[derive(Debug, Copy, Clone)]
-pub struct Mono;
-/// 2 Channels (front left, front right)
-#[derive(Debug, Copy, Clone)]
-pub struct Stereo;
-/// 6 Channels ITU 5.1 Surround Sound Standard (most common surround sound
-/// configuration).
-#[derive(Debug, Copy, Clone)]
-pub struct Surround;
-/// 8 Channels Blu-ray 7.1 Surround Sound.
-#[derive(Debug, Copy, Clone)]
-pub struct SurroundTheater;
-
-pub trait Sources: Copy + Clone + Debug + Sealed {
-    /// Number of channels for this configuration
-    const CHANNEL_COUNT: usize;
-}
-
-impl Sources for Mono {
-    const CHANNEL_COUNT: usize = 1;
-}
-
-impl Sources for Stereo {
-    const CHANNEL_COUNT: usize = 2;
-}
-
-impl Sources for Surround {
-    const CHANNEL_COUNT: usize = 6;
-}
-
-impl Sources for SurroundTheater {
-    const CHANNEL_COUNT: usize = 8;
-}
-
 /// Newtype for hertz.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Hz(pub f64);
 
 /// An audio buffer (array of audio Samples at a specific sample rate in hertz).
+#[derive(Debug)]
 pub struct Audio<S: Sample> {
-    s_rate: Hz,
+    s_rate: usize,
     samples: Box<[S]>,
 }
 
 impl<S: Sample> Audio<S> {
     /// Construct an `Audio` buffer with all samples set to one value.
-    pub fn with_sample(s_rate: Hz, len: usize, sample: S) -> Self {
+    pub fn with_sample(s_rate: usize, len: usize, sample: S) -> Self {
         let samples = vec![sample; len].into_boxed_slice();
         Audio { s_rate, samples }
     }
 
     /// Construct an `Audio` buffer with all all samples set to the default
     /// value.
-    pub fn with_silence(s_rate: Hz, len: usize) -> Self {
+    pub fn with_silence(s_rate: usize, len: usize) -> Self {
         Self::with_sample(s_rate, len, S::default())
     }
 
     /// Construct an `Audio` buffer with another `Audio` buffer.
     ///
     /// The audio format can be converted with this function.
-    pub fn with_audio<SrcS: Sample>(s_rate: Hz, src: &Audio<SrcS>) -> Self
+    pub fn with_audio<SrcS: Sample>(s_rate: usize, src: &Audio<SrcS>) -> Self
     where
         S::Chan: From<SrcS::Chan>,
     {
@@ -91,13 +53,14 @@ impl<S: Sample> Audio<S> {
     /// Construct an `Audio` buffer with owned sample data.   You can get
     /// ownership of the pixel data back from the `Audio` buffer as either a
     /// `Vec<S>` or a `Box<[S]>` by calling into().
-    pub fn with_samples<B: Into<Box<[S]>>>(s_rate: Hz, samples: B) -> Self {
+    pub fn with_samples<B: Into<Box<[S]>>>(s_rate: usize, samples: B) -> Self {
         let samples = samples.into();
         Audio { s_rate, samples }
     }
 
-    /// Construct an `Audio` buffer from a `u8` buffer.    
-    pub fn with_u8_buffer<B>(s_rate: Hz, buffer: B) -> Self
+    /// Construct an `Audio` buffer from a `u8` buffer.
+    #[allow(unsafe_code)]
+    pub fn with_u8_buffer<B>(s_rate: usize, buffer: B) -> Self
     where
         B: Into<Box<[u8]>>,
         S: Sample<Chan = Ch8>,
@@ -114,7 +77,8 @@ impl<S: Sample> Audio<S> {
     }
 
     /// Construct an `Audio` buffer from a `u16` buffer.
-    pub fn with_u16_buffer<B>(s_rate: Hz, buffer: B) -> Self
+    #[allow(unsafe_code)]
+    pub fn with_u16_buffer<B>(s_rate: usize, buffer: B) -> Self
     where
         B: Into<Box<[u16]>>,
         S: Sample<Chan = Ch16>,
@@ -142,17 +106,27 @@ impl<S: Sample> Audio<S> {
     }
 
     /// Get the sample rate of the `Audio` buffer.
-    pub fn sample_rate(&self) -> Hz {
+    pub fn sample_rate(&self) -> usize {
         self.s_rate
     }
 
     /// Generate audio in buffer using a generator.    
     pub fn generate<G: Generator>(&mut self, generator: &mut G) {
-        let time_step = Duration::new(1, 0).div_f64(self.s_rate.0);
+        let time_step = Duration::new(1, 0) / self.s_rate.try_into().unwrap();
         for sample in self.samples.iter_mut() {
             let channel = generator.sample(time_step).into();
-            *sample = S::from_channels(&[channel; 8][..S::LEN]);
+            *sample = S::from_channels(&[channel; 8][..S::Conf::CHANNEL_COUNT]);
         }
+    }
+    
+    /// Blend `Audio` buffer with a single sample.
+    pub fn blend_sample<O: Blend>(&mut self, sample: S, op: O) {
+        S::blend_sample(&mut self.samples, &sample, op)
+    }
+    
+    /// Blend `Audio` buffer with another `Audio` buffer.
+    pub fn blend_audio<O: Blend>(&mut self, other: &Self, op: O) {
+        S::blend_slice(&mut self.samples, &other.samples, op)
     }
 }
 
@@ -175,6 +149,7 @@ where
     S: Sample<Chan = Ch8>,
 {
     /// Get internal pixel data as boxed slice of *u8*.
+    #[allow(unsafe_code)]
     fn from(audio: Audio<S>) -> Self {
         let samples = audio.samples;
         let capacity = samples.len() * std::mem::size_of::<S>();
@@ -192,6 +167,7 @@ where
     S: Sample<Chan = Ch16>,
 {
     /// Get internal pixel data as boxed slice of *u16*.
+    #[allow(unsafe_code)]
     fn from(audio: Audio<S>) -> Self {
         let samples = audio.samples;
         let capacity = samples.len() * std::mem::size_of::<S>() / 2;

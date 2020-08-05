@@ -9,9 +9,9 @@
 //! raw byte buffers, enabling interoperability with other crates.
 //!
 //! Many audio formats are supported:
-//! - Bit depth: 8- or 16-bit integer and 32- or 64-bit float
-//! - All sample rates
-//! - Mono, Stereo, 5.1 Surround and 7.1 Surround
+//! - Any sample rate
+//! - Bit depth: [8]- or [16]-bit integer and [32]- or [64]-bit float
+//! - [Mono], [Stereo], [5.1 Surround] and [7.1 Surround]
 //!
 //! Synthesis with blending [operations](ops/index.html) is supported for all
 //! formats.
@@ -32,11 +32,43 @@
 //!     });
 //! }
 //! ```
+//!
+//! [8]: chan/struct.Ch8.html
+//! [16]: chan/struct.Ch16.html
+//! [32]: chan/struct.Ch32.html
+//! [64]: chan/struct.Ch64.html
+//! [Mono]: config/struct.Mono.html
+//! [Stereo]: config/struct.Stereo.html
+//! [5.1 Surround]: config/struct.Surround.html
+//! [7.1 Surround]: config/struct.Surround8.html
+
+#![doc(
+    html_logo_url = "https://libcala.github.io/logo.svg",
+    html_favicon_url = "https://libcala.github.io/icon.svg",
+    html_root_url = "https://docs.rs/twang"
+)]
+#![deny(unsafe_code)]
+#![warn(
+    anonymous_parameters,
+    missing_copy_implementations,
+    missing_debug_implementations,
+    missing_docs,
+    nonstandard_style,
+    rust_2018_idioms,
+    single_use_lifetimes,
+    trivial_casts,
+    trivial_numeric_casts,
+    unreachable_pub,
+    unused_extern_crates,
+    unused_qualifications,
+    variant_size_differences
+)]
 
 mod audio;
 pub mod chan;
 pub mod gen;
 pub mod ops;
+pub mod config;
 mod private;
 pub mod sample;
 mod sound;

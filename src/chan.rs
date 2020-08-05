@@ -1,8 +1,9 @@
-use crate::private::Sealed;
-use core::cmp::Ordering;
-use std::fmt::Debug;
-use std::ops::{Add, Div, Mul, Neg, Sub};
+//! Component channels
 
+use crate::private::Sealed;
+use core::{cmp::Ordering, fmt::Debug, ops::{Add, Div, Mul, Neg, Sub}};
+
+/// Component of a speaker configuration, such as *front left*, *lfe*, *etc*.
 pub trait Channel:
     Copy
     + Debug

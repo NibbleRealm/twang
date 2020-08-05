@@ -1,26 +1,35 @@
-extern crate adi;
-extern crate twang; // for sound generation / effects // for speaker
+use twang::{Audio, Hz, ops::{Sine, Add}, gen::Triangle, chan::Ch64};
 
-use adi::speaker::Speaker;
-use twang::{prelude::*, Sound};
+mod wav;
+
+/// First ten harmonic volumes of a piano sample (sounds like electric piano).
+const HARMONICS: [f64; 10] = [0.700, 0.243, 0.229, 0.095, 0.139, 0.087, 0.288, 0.199, 0.124, 0.090];
+/// The three pitches in a perfectly tuned A3 minor chord
+const PITCHES: [f64; 3] = [220.0, 220.0 * 32.0 / 27.0, 220.0 * 3.0 / 2.0];
 
 fn main() {
-    let mut speaker = Speaker::new(0, false).unwrap();
-    let piano = [
-        0.700, 0.243, 0.229, 0.095, 0.139, 0.087, 0.288, 0.199, 0.124, 0.090,
-    ];
-    let mut gen = Sound::new(None, 220.0); // A3
-    let mut gen2 = Sound::new(None, 220.0 * 32.0 / 27.0); // third
-    let mut gen3 = Sound::new(None, 220.0 * 3.0 / 2.0); // fifth
+    let mut gen = Triangle::new(Hz(220.0));
 
-    loop {
-        speaker.update(&mut || {
-            // Play A Minor Chord on Synthesized Piano
-            let x1 = gen.next().unwrap().har(&piano);
-            let x2 = gen2.next().unwrap().har(&piano);
-            let x3 = gen3.next().unwrap().har(&piano);
+    // Five seconds of 48 KHz Audio
+    let mut chord = Audio::with_silence(48_000, 48_000 * 5);
+    let mut note;
+    let mut temp;
 
-            [x1, x2, x3].mix().into()
-        });
+    // Synthesize an A minor chord.
+    for pitch in PITCHES.iter().cloned() {
+        note = Audio::with_silence(48_000, 48_000 * 5);
+        for (i, harmonic) in HARMONICS.iter().cloned().enumerate() {
+            gen = Triangle::new(Hz(pitch * i.into()));
+            temp = Audio::with_silence(48_000, 48_000 * 5);
+            temp.generate(&mut gen);
+            temp.blend_sample(Ch64::new(harmonic), Sine);
+            // Add harmonic to note
+            note.blend_audio(&temp, Add);
+        }
+        // Add note to chord
+        chord.blend_audio(&note, Add);
     }
+
+    // Write chord to file
+    wav::write(chord, "aminor.wav");
 }
