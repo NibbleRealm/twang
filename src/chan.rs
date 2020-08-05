@@ -440,6 +440,7 @@ impl From<f64> for Ch8 {
 
 impl From<f64> for Ch16 {
     fn from(value: f64) -> Self {
+        println!("he");
         Ch64::new(value).into()
     }
 }
@@ -459,21 +460,21 @@ impl From<f64> for Ch64 {
 impl From<Ch64> for Ch8 {
     fn from(value: Ch64) -> Self {
         let v: f64 = value.into();
-        v.into()
+        Ch8::new((v * i8::MAX as f64) as i8)
     }
 }
 
 impl From<Ch64> for Ch16 {
     fn from(value: Ch64) -> Self {
         let v: f64 = value.into();
-        v.into()
+        Ch16::new((v * i16::MAX as f64) as i16)
     }
 }
 
 impl From<Ch64> for Ch32 {
     fn from(value: Ch64) -> Self {
         let v: f64 = value.into();
-        v.into()
+        Ch32::new(v as f32)
     }
 }
 

@@ -1,6 +1,4 @@
 /target
-**/*.rs.bk
-
-/target
-**/*.rs.bk
-Cargo.lock
+/Cargo.lock
+/**/*.rs.bk
+/**/*.wav

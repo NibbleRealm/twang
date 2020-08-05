@@ -343,7 +343,8 @@ pub trait Sample: Clone + Copy + Debug + Default + PartialEq + Sealed {
             // Upsampling
             (1, 2) => {
                 let mono = self.channels()[0];
-                D::from_channels(&[D::Chan::from(mono), D::Chan::from(mono)])
+                let channels = [D::Chan::from(mono), D::Chan::from(mono)];
+                D::from_channels(&channels)
             }
             (1, 6) => {
                 let mono = self.channels()[0];

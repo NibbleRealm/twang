@@ -24,6 +24,28 @@ pub struct Audio<S: Sample> {
 }
 
 impl<S: Sample> Audio<S> {
+    /// Get view of samples as a `u8` slice.
+    #[allow(unsafe_code)]
+    pub fn as_u8_slice(&self) -> &[u8] {
+        unsafe {
+            let (prefix, v, suffix) = self.samples.align_to::<u8>();
+            debug_assert!(prefix.is_empty());
+            debug_assert!(suffix.is_empty());
+            v
+        }
+    }
+
+    /// Get view of samples as a mutable `u8` slice.
+    #[allow(unsafe_code)]
+    pub fn as_u8_slice_mut(&mut self) -> &mut [u8] {
+        unsafe {
+            let (prefix, v, suffix) = self.samples.align_to_mut::<u8>();
+            debug_assert!(prefix.is_empty());
+            debug_assert!(suffix.is_empty());
+            v
+        }
+    }
+
     /// Construct an `Audio` buffer with all samples set to one value.
     pub fn with_sample(s_rate: usize, len: usize, sample: S) -> Self {
         let samples = vec![sample; len].into_boxed_slice();

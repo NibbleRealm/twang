@@ -1,4 +1,4 @@
-use twang::{Audio, Hz, ops::{Sine, Add}, gen::Triangle, chan::Ch64};
+use twang::{Audio, Hz, ops::{Sine, Add}, gen::Triangle, mono::Mono64};
 
 mod wav;
 
@@ -8,7 +8,7 @@ const HARMONICS: [f64; 10] = [0.700, 0.243, 0.229, 0.095, 0.139, 0.087, 0.288, 0
 const PITCHES: [f64; 3] = [220.0, 220.0 * 32.0 / 27.0, 220.0 * 3.0 / 2.0];
 
 fn main() {
-    let mut gen = Triangle::new(Hz(220.0));
+    let mut gen;
 
     // Five seconds of 48 KHz Audio
     let mut chord = Audio::with_silence(48_000, 48_000 * 5);
@@ -16,13 +16,15 @@ fn main() {
     let mut temp;
 
     // Synthesize an A minor chord.
+    let volume = 0.25; // To avoid clipping
     for pitch in PITCHES.iter().cloned() {
         note = Audio::with_silence(48_000, 48_000 * 5);
         for (i, harmonic) in HARMONICS.iter().cloned().enumerate() {
-            gen = Triangle::new(Hz(pitch * i.into()));
-            temp = Audio::with_silence(48_000, 48_000 * 5);
+            let i: f64 = (i as i32).into();
+            gen = Triangle::new(Hz(pitch * i));
+            temp = Audio::<Mono64>::with_silence(48_000, 48_000 * 5);
             temp.generate(&mut gen);
-            temp.blend_sample(Ch64::new(harmonic), Sine);
+            temp.blend_sample(Mono64::new(harmonic * volume), Sine);
             // Add harmonic to note
             note.blend_audio(&temp, Add);
         }
@@ -31,5 +33,5 @@ fn main() {
     }
 
     // Write chord to file
-    wav::write(chord, "aminor.wav");
+    wav::write(chord, "aminor.wav").expect("Failed to write WAV file");
 }
