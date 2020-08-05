@@ -40,6 +40,7 @@ pub struct Sample1<C: Channel, F: Config> {
 }
 
 impl<C: Channel, F: Config> Sample1<C, F> {
+    /// Create a one-channel Sample.
     pub fn new<H>(one: H) -> Self
         where C: From<H>
     {
@@ -76,6 +77,7 @@ pub struct Sample2<C: Channel, F: Config> {
 }
 
 impl<C: Channel, F: Config> Sample2<C, F> {
+    /// Create a two-channel Sample.
     pub fn new<H>(one: H, two: H) -> Self
         where C: From<H>
     {
@@ -114,6 +116,7 @@ pub struct Sample6<C: Channel, F: Config> {
 }
 
 impl<C: Channel, F: Config> Sample6<C, F> {
+    /// Create a six-channel Sample.
     pub fn new<H>(one: H, two: H, three: H, four: H, five: H, six: H) -> Self
         where C: From<H>
     {
@@ -160,6 +163,7 @@ pub struct Sample8<C: Channel, F: Config> {
 }
 
 impl<C: Channel, F: Config> Sample8<C, F> {
+    /// Create an eight-channel Sample.
     pub fn new<H>(one: H, two: H, three: H, four: H, five: H, six: H, seven: H, eight: H) -> Self
         where C: From<H>
     {

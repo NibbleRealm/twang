@@ -1,4 +1,7 @@
-use crate::config::{Mono, Stereo, Surround, Surround8, Config};
+use crate::Config;
+use crate::mono::Mono;
+use crate::stereo::Stereo;
+use crate::surround::{Surround, SurroundHD};
 use crate::chan::{Channel, Ch16, Ch32, Ch64, Ch8};
 use crate::sample::{Sample1, Sample2, Sample6, Sample8};
 use core::any::Any;
@@ -19,7 +22,7 @@ impl Sealed for Stereo {}
 
 impl Sealed for Surround {}
 
-impl Sealed for Surround8 {}
+impl Sealed for SurroundHD {}
 
 impl<C: Channel, F: Config> Sealed for Sample1<C, F> {}
 

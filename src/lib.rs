@@ -68,9 +68,13 @@ mod audio;
 pub mod chan;
 pub mod gen;
 pub mod ops;
-pub mod config;
+mod config;
 mod private;
 pub mod sample;
 mod sound;
+pub mod stereo;
+pub mod mono;
+pub mod surround;
 
 pub use audio::{Audio, Hz};
+pub use config::Config;
