@@ -7,7 +7,7 @@
 // your option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! Library for audio conversions and synthesis.
+//! Library for audio processing, conversions, and synthesis.
 //!
 //! An [audio buffer](struct.Audio.html) can be cheaply converted to and from
 //! raw byte buffers, enabling interoperability with other crates.
@@ -62,10 +62,10 @@
 //! [16]: chan/struct.Ch16.html
 //! [32]: chan/struct.Ch32.html
 //! [64]: chan/struct.Ch64.html
-//! [Mono]: config/struct.Mono.html
-//! [Stereo]: config/struct.Stereo.html
-//! [5.1 Surround]: config/struct.Surround.html
-//! [7.1 Surround]: config/struct.Surround8.html
+//! [Mono]: mono/struct.Mono.html
+//! [Stereo]: stereo/struct.Stereo.html
+//! [5.1 Surround]: surround/struct.Surround.html
+//! [7.1 Surround]: surround/struct.SurroundHD.html
 
 #![doc(
     html_logo_url = "https://libcala.github.io/logo.svg",
