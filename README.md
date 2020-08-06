@@ -14,11 +14,11 @@ examples folder.
 The `twang` crate is distributed under any of
 
 - The terms of the
-  [MIT License](https://github.com/libcala/twang/blob/master/LICENSE-MIT)
+  [MIT License](https://github.com/AldaronLau/twang/blob/master/LICENSE-MIT)
 - The terms of the
-  [Apache License (Version 2.0)](https://github.com/twang/ogg_opus/blob/master/LICENSE-APACHE)
+  [Apache License (Version 2.0)](https://github.com/AldaronLau/twang/blob/master/LICENSE-APACHE)
 - The terms of the
-  [Zlib License](https://github.com/libcala/twang/blob/master/LICENSE-ZLIB)
+  [Zlib License](https://github.com/AldaronLau/twang/blob/master/LICENSE-ZLIB)
 
 at your option.
 
