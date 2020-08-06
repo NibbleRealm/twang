@@ -1,14 +1,16 @@
-extern crate adi;
-extern crate twang; // for sound generation / effects // for speaker
+use twang::{
+    gen::{Triangle},
+    mono::Mono64,
+    ops::Square,
+    Audio, Hz,
+};
 
-use adi::speaker::Speaker;
-use twang::Sound;
+mod wav;
 
 fn main() {
-    let mut speaker = Speaker::new(0, false).unwrap();
-    let mut snds = Sound::new(None, 440.0); // A4
-
-    loop {
-        speaker.update(&mut || snds.next().unwrap().sqr().into());
-    }
+    let mut tri = Triangle::new(Hz(220.0)); // A4
+    let mut out = Audio::<Mono64>::with_silence(48_000, 48_000 * 5);
+    out.generate(&mut tri);
+    out.blend_sample(Mono64::new(1.0), Square);
+    wav::write(out, "square.wav").expect("Failed to write WAV file");
 }

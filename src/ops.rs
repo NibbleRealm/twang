@@ -17,9 +17,6 @@ pub struct Src;
 /// Destination only (ignore source)
 #[derive(Clone, Copy, Debug)]
 pub struct Dest;
-/// Source or destination with no overlap
-#[derive(Clone, Copy, Debug)]
-pub struct Xor;
 /// Clear (set to default)
 #[derive(Clone, Copy, Debug)]
 pub struct Clear;
@@ -50,6 +47,16 @@ pub struct Sawtooth;
 /// Apply square function to input.
 #[derive(Clone, Copy, Debug)]
 pub struct Square;
+/// Apply absolute value function to input (useful for multiplying waveforms
+/// together without octave jump).
+#[derive(Clone, Copy, Debug)]
+pub struct Abs;
+/// Hard clipping and amplification at source power to destination.
+#[derive(Clone, Copy, Debug)]
+pub struct ClipHard;
+/// Soft clipping and amplification at source power to destination.
+#[derive(Clone, Copy, Debug)]
+pub struct ClipSoft;
 
 impl Blend for Src {
     fn synthesize<C: Channel>(dst: &mut C, src: &C) {
@@ -60,18 +67,6 @@ impl Blend for Src {
 impl Blend for Dest {
     fn synthesize<C: Channel>(_dst: &mut C, _src: &C) {
         // leave _dst as is
-    }
-}
-
-impl Blend for Xor {
-    fn synthesize<C: Channel>(dst: &mut C, src: &C) {
-        *dst = if *dst == C::MID {
-            *src
-        } else if *src == C::MID {
-            *dst
-        } else {
-            C::MID
-        };
     }
 }
 
@@ -133,5 +128,27 @@ impl Blend for Sawtooth {
 impl Blend for Square {
     fn synthesize<C: Channel>(dst: &mut C, src: &C) {
         *dst = C::from(dst.to_f64().signum()) * *src;
+    }
+}
+
+impl Blend for Abs {
+    fn synthesize<C: Channel>(dst: &mut C, src: &C) {
+        *dst = C::from(dst.to_f64().abs()) * *src;
+    }
+}
+
+impl Blend for ClipHard {
+    fn synthesize<C: Channel>(dst: &mut C, src: &C) {
+        *dst = C::from((dst.to_f64() * src.to_f64().recip()).max(1.0).min(-1.0))
+    }
+}
+
+impl Blend for ClipSoft {
+    fn synthesize<C: Channel>(dst: &mut C, src: &C) {
+        let input = dst.to_f64();
+        let volume = src.to_f64().recip();
+        let max = (1.0 / (1.0 + (-volume).exp()) ) * 2.0 - 1.0;
+        let out = ((1.0 / (1.0 + (input * -volume).exp()) ) * 2.0 - 1.0) / max;
+        *dst = C::from(out);
     }
 }

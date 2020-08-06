@@ -1,6 +1,10 @@
 //! Mono speaker configuration and types.
 
-use crate::{chan::{Ch8, Ch16, Ch32, Ch64}, sample::Sample1, Config};
+use crate::{
+    chan::{Ch16, Ch32, Ch64, Ch8},
+    sample::Sample1,
+    Config,
+};
 
 /// 1 speaker/channel arrangement (front center)
 #[derive(Default, Debug, Copy, Clone, PartialEq)]

@@ -1,6 +1,10 @@
 //! Surround speaker configurations and types.
 
-use crate::{chan::{Ch8, Ch16, Ch32, Ch64}, sample::{Sample6, Sample8}, Config};
+use crate::{
+    chan::{Ch16, Ch32, Ch64, Ch8},
+    sample::{Sample6, Sample8},
+    Config,
+};
 
 /// 6 speaker/channel arrangement (ITU 5.1 Surround Sound Standard)
 /// - front left

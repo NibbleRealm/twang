@@ -1,6 +1,10 @@
 //! Stereo speaker configuration and types.
 
-use crate::{chan::{Ch8, Ch16, Ch32, Ch64}, sample::Sample2, Config};
+use crate::{
+    chan::{Ch16, Ch32, Ch64, Ch8},
+    sample::Sample2,
+    Config,
+};
 
 /// 2 speaker/channel arrangement (left, right)
 #[derive(Default, Debug, Copy, Clone, PartialEq)]

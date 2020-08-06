@@ -1,4 +1,10 @@
-use crate::{ops::Blend, chan::{Ch16, Ch8}, gen::Generator, sample::Sample, config::Config};
+use crate::{
+    chan::{Ch16, Ch8},
+    config::Config,
+    gen::Generator,
+    ops::Blend,
+    sample::Sample,
+};
 use core::{fmt::Debug, slice::from_raw_parts_mut, time::Duration};
 use std::convert::TryInto;
 
@@ -140,12 +146,12 @@ impl<S: Sample> Audio<S> {
             *sample = S::from_channels(&[channel; 8][..S::Conf::CHANNEL_COUNT]);
         }
     }
-    
+
     /// Blend `Audio` buffer with a single sample.
     pub fn blend_sample<O: Blend>(&mut self, sample: S, op: O) {
         S::blend_sample(&mut self.samples, &sample, op)
     }
-    
+
     /// Blend `Audio` buffer with another `Audio` buffer.
     pub fn blend_audio<O: Blend>(&mut self, other: &Self, op: O) {
         S::blend_slice(&mut self.samples, &other.samples, op)

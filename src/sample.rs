@@ -5,7 +5,7 @@
 
 //! Sample types
 
-use crate::{chan::Channel, ops::Blend, private::Sealed, config::Config};
+use crate::{chan::Channel, config::Config, ops::Blend, private::Sealed};
 use std::{fmt::Debug, marker::PhantomData};
 
 /*
@@ -13,15 +13,6 @@ use std::{fmt::Debug, marker::PhantomData};
 /// any effect.
 #[inline(always)] pub fn hrd(mut self, volume: f64) -> Self {
     self.v = (self.v * volume).min(1.0).max(-1.0);
-    self
-}
-
-/// Distort sound wave with soft clipping.  Volume should be more than 1 to have
-/// any effect.
-#[inline(always)] pub fn sft(mut self, volume: f64) -> Self {
-    let max = (1.0 / (1.0 + (-volume).exp()) ) * 2.0 - 1.0;
-
-    self.v = ((1.0 / (1.0 + (self.v * -volume).exp()) ) * 2.0 - 1.0) / max;
     self
 }
 
@@ -42,7 +33,8 @@ pub struct Sample1<C: Channel, F: Config> {
 impl<C: Channel, F: Config> Sample1<C, F> {
     /// Create a one-channel Sample.
     pub fn new<H>(one: H) -> Self
-        where C: From<H>
+    where
+        C: From<H>,
     {
         let _config = PhantomData;
         let one = C::from(one);
@@ -79,7 +71,8 @@ pub struct Sample2<C: Channel, F: Config> {
 impl<C: Channel, F: Config> Sample2<C, F> {
     /// Create a two-channel Sample.
     pub fn new<H>(one: H, two: H) -> Self
-        where C: From<H>
+    where
+        C: From<H>,
     {
         let _config = PhantomData;
         let one = C::from(one);
@@ -118,7 +111,8 @@ pub struct Sample6<C: Channel, F: Config> {
 impl<C: Channel, F: Config> Sample6<C, F> {
     /// Create a six-channel Sample.
     pub fn new<H>(one: H, two: H, three: H, four: H, five: H, six: H) -> Self
-        where C: From<H>
+    where
+        C: From<H>,
     {
         let _config = PhantomData;
         let one = C::from(one);
@@ -164,8 +158,19 @@ pub struct Sample8<C: Channel, F: Config> {
 
 impl<C: Channel, F: Config> Sample8<C, F> {
     /// Create an eight-channel Sample.
-    pub fn new<H>(one: H, two: H, three: H, four: H, five: H, six: H, seven: H, eight: H) -> Self
-        where C: From<H>
+    #[allow(clippy::too_many_arguments)]
+    pub fn new<H>(
+        one: H,
+        two: H,
+        three: H,
+        four: H,
+        five: H,
+        six: H,
+        seven: H,
+        eight: H,
+    ) -> Self
+    where
+        C: From<H>,
     {
         let _config = PhantomData;
         let one = C::from(one);
@@ -250,7 +255,8 @@ pub trait Sample: Clone + Copy + Debug + Default + PartialEq + Sealed {
     where
         O: Blend,
     {
-        for (d, s) in self.channels_mut().iter_mut().zip(src.channels().iter()) {
+        for (d, s) in self.channels_mut().iter_mut().zip(src.channels().iter())
+        {
             O::synthesize(d, s)
         }
     }

@@ -66,14 +66,14 @@
 
 mod audio;
 pub mod chan;
-pub mod gen;
-pub mod ops;
 mod config;
+pub mod gen;
+pub mod mono;
+pub mod ops;
 mod private;
 pub mod sample;
 mod sound;
 pub mod stereo;
-pub mod mono;
 pub mod surround;
 
 pub use audio::{Audio, Hz};

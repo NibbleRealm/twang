@@ -1,16 +1,10 @@
-use cala::*;
-use speaker::Player;
-use twang::White;
+use twang::{Audio, gen::White, mono::Mono64};
 
-exec!(async_main);
-async fn async_main() {
-    let mut speaker = Player::new().unwrap();
-    let mut whts = White::new(None);
+mod wav;
 
-    loop {
-        let _sample_rate = speaker.fut().await;
-        let n_frames = player.play_last(shared.buffer.as_slice());
-
-        whts.next().unwrap().into()
-    }
+fn main() {
+    let mut out = Audio::<Mono64>::with_silence(48_000, 48_000 * 5);
+    let mut pink = White::new();
+    out.generate(&mut pink);
+    wav::write(out, "white.wav").expect("Failed to write WAV file");
 }

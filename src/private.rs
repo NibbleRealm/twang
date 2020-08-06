@@ -1,9 +1,9 @@
-use crate::Config;
+use crate::chan::{Ch16, Ch32, Ch64, Ch8, Channel};
 use crate::mono::Mono;
+use crate::sample::{Sample1, Sample2, Sample6, Sample8};
 use crate::stereo::Stereo;
 use crate::surround::{Surround, SurroundHD};
-use crate::chan::{Channel, Ch16, Ch32, Ch64, Ch8};
-use crate::sample::{Sample1, Sample2, Sample6, Sample8};
+use crate::Config;
 use core::any::Any;
 
 pub trait Sealed: Any {}

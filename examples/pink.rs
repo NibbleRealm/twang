@@ -1,14 +1,10 @@
-extern crate adi;
-extern crate twang; // for sound generation / effects // for speaker
+use twang::{Audio, gen::Pink, mono::Mono64};
 
-use adi::speaker::Speaker;
-use twang::Pink;
+mod wav;
 
 fn main() {
-    let mut speaker = Speaker::new(0, false).unwrap();
-    let mut pnks = Pink::new(None);
-
-    loop {
-        speaker.update(&mut || pnks.next().unwrap().into());
-    }
+    let mut out = Audio::<Mono64>::with_silence(48_000, 48_000 * 5);
+    let mut pink = Pink::new();
+    out.generate(&mut pink);
+    wav::write(out, "pink.wav").expect("Failed to write WAV file");
 }

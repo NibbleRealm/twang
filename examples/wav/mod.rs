@@ -2,13 +2,17 @@
 //!
 //! http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
 
-use twang::{chan::Ch16, sample::Sample, Audio, stereo::Stereo16};
-use std::{fs, io, mem::size_of};
 use std::convert::TryInto;
+use std::{fs, io, mem::size_of};
+use twang::{chan::Ch16, sample::Sample, stereo::Stereo16, Audio};
 
 /// Write a 16-bit PCM WAV file
-pub(super) fn write<S: Sample>(audio: Audio<S>, filename: &str) -> io::Result<()>
-    where Ch16: From<S::Chan>
+pub(super) fn write<S: Sample>(
+    audio: Audio<S>,
+    filename: &str,
+) -> io::Result<()>
+where
+    Ch16: From<S::Chan>,
 {
     let audio = Audio::<Stereo16>::with_audio(audio.sample_rate(), &audio);
     let mut buf = vec![];
