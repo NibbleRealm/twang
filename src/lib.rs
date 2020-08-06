@@ -1,7 +1,11 @@
-// Copyright Jeron Lau 2018.
-// Dual-licensed under either the MIT License or the Boost Software License,
-// Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
-// https://www.boost.org/LICENSE_1_0.txt)
+// Copyright (c) 2018-2020 Jeron Aldaron Lau
+//
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://www.apache.org/licenses/LICENSE-2.0>, the MIT license
+// <LICENSE-MIT or http://opensource.org/licenses/MIT>, or the ZLib
+// license <LICENSE-ZLIB or https://www.zlib.net/zlib_license.html> at
+// your option. This file may not be copied, modified, or distributed
+// except according to those terms.
 
 //! Library for audio conversions and synthesis.
 //!
@@ -24,20 +28,20 @@
 //!     ops::{Add, Sine},
 //!     Audio, Hz,
 //! };
-//! 
+//!
 //! /// First ten harmonic volumes of a piano sample (sounds like electric piano).
 //! const HARMONICS: [f64; 10] = [
 //!     0.700, 0.243, 0.229, 0.095, 0.139, 0.087, 0.288, 0.199, 0.124, 0.090,
 //! ];
 //! /// The three pitches in a perfectly tuned A3 minor chord
 //! const PITCHES: [f64; 3] = [220.0, 220.0 * 32.0 / 27.0, 220.0 * 3.0 / 2.0];
-//! 
+//!
 //! let mut gen;
-//! 
+//!
 //! // Five seconds of 48 KHz Audio
 //! let mut chord = Audio::with_silence(48_000, 48_000 * 5);
 //! let mut temp;
-//! 
+//!
 //! // Synthesize an A minor chord.
 //! let volume = 0.25; // To avoid clipping
 //! for pitch in PITCHES.iter().cloned() {
@@ -93,7 +97,6 @@ pub mod mono;
 pub mod ops;
 mod private;
 pub mod sample;
-mod sound;
 pub mod stereo;
 pub mod surround;
 

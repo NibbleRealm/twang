@@ -1,27 +1,16 @@
-// Copyright Jeron Lau 2018.
-// Dual-licensed under either the MIT License or the Boost Software License,
-// Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
-// https://www.boost.org/LICENSE_1_0.txt)
+// Copyright (c) 2018-2020 Jeron Aldaron Lau
+//
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://www.apache.org/licenses/LICENSE-2.0>, the MIT license
+// <LICENSE-MIT or http://opensource.org/licenses/MIT>, or the ZLib
+// license <LICENSE-ZLIB or https://www.zlib.net/zlib_license.html> at
+// your option. This file may not be copied, modified, or distributed
+// except according to those terms.
 
 //! Sample types
 
 use crate::{chan::Channel, config::Config, ops::Blend, private::Sealed};
 use std::{fmt::Debug, marker::PhantomData};
-
-/*
-/// Distort sound wave with hard clipping.  Volume should be more than 1 to have
-/// any effect.
-#[inline(always)] pub fn hrd(mut self, volume: f64) -> Self {
-    self.v = (self.v * volume).min(1.0).max(-1.0);
-    self
-}
-
-/// X power of sound wave.  x=2 for squaring, x=1/2 for square root.
-#[inline(always)] pub fn pow(mut self, x: f64) -> Self {
-    self.v = self.v.powf(x);
-    self
-}
-*/
 
 /// Sample with one [channel](chan/trait.Channel.html).
 #[derive(Default, PartialEq, Copy, Clone, Debug)]

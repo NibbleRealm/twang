@@ -1,9 +1,4 @@
-use twang::{
-    gen::Saw,
-    mono::Mono64,
-    ops::Sine,
-    Audio, Hz,
-};
+use twang::{gen::Saw, mono::Mono64, ops::Sine, Audio, Hz};
 
 mod wav;
 

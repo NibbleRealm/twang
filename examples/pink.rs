@@ -1,4 +1,4 @@
-use twang::{Audio, gen::Pink, mono::Mono64};
+use twang::{gen::Pink, mono::Mono64, Audio};
 
 mod wav;
 

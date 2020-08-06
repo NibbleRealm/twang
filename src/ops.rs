@@ -1,3 +1,12 @@
+// Copyright (c) 2018-2020 Jeron Aldaron Lau
+//
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://www.apache.org/licenses/LICENSE-2.0>, the MIT license
+// <LICENSE-MIT or http://opensource.org/licenses/MIT>, or the ZLib
+// license <LICENSE-ZLIB or https://www.zlib.net/zlib_license.html> at
+// your option. This file may not be copied, modified, or distributed
+// except according to those terms.
+
 //! Synthesis and mixing operations.
 //!
 //! Used in `Audio` methods `blend_sample` and `blend_audio`.
@@ -38,9 +47,12 @@ pub struct Min;
 /// Maximum of destination and source
 #[derive(Clone, Copy, Debug)]
 pub struct Max;
-/// Squared compression of destination, ignore source.
+/// Raise destination to the power of source
 #[derive(Clone, Copy, Debug)]
-pub struct Squared;
+pub struct Pow;
+/// Raise destination to the power of the inverse of source.
+#[derive(Clone, Copy, Debug)]
+pub struct Root;
 /// Sawtooth -> Sine function to destination, multiplied by source.
 #[derive(Clone, Copy, Debug)]
 pub struct Sine;
@@ -110,9 +122,15 @@ impl Blend for Max {
     }
 }
 
-impl Blend for Squared {
-    fn synthesize<C: Channel>(dst: &mut C, _src: &C) {
-        *dst = *dst * *dst;
+impl Blend for Pow {
+    fn synthesize<C: Channel>(dst: &mut C, src: &C) {
+        *dst = C::from(dst.to_f64().powf(src.to_f64()));
+    }
+}
+
+impl Blend for Root {
+    fn synthesize<C: Channel>(dst: &mut C, src: &C) {
+        *dst = C::from(dst.to_f64().powf(src.to_f64().recip()));
     }
 }
 
@@ -150,8 +168,8 @@ impl Blend for ClipSoft {
     fn synthesize<C: Channel>(dst: &mut C, src: &C) {
         let input = dst.to_f64();
         let volume = src.to_f64().recip();
-        let max = (1.0 / (1.0 + (-volume).exp()) ) * 2.0 - 1.0;
-        let out = ((1.0 / (1.0 + (input * -volume).exp()) ) * 2.0 - 1.0) / max;
+        let max = (1.0 / (1.0 + (-volume).exp())) * 2.0 - 1.0;
+        let out = ((1.0 / (1.0 + (input * -volume).exp())) * 2.0 - 1.0) / max;
         *dst = C::from(out);
     }
 }
