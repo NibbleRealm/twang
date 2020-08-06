@@ -1,7 +1,7 @@
 use twang::{
     gen::{Pink, Saw},
     mono::Mono64,
-    ops::{Abs, Add, ClipSoft, Gain, Max, Triangle, ClipHard},
+    ops::{Abs, Add, Gain, Max, Triangle, ClipHard},
     Audio, Hz,
 };
 
