@@ -1,5 +1,5 @@
 use twang::{
-    gen::Triangle,
+    gen::Saw,
     mono::Mono64,
     ops::{Add, Sine},
     Audio, Hz,
@@ -27,7 +27,7 @@ fn main() {
         // Add note to chord
         for (i, harmonic) in HARMONICS.iter().cloned().enumerate() {
             let i: f64 = (i as i32).into();
-            gen = Triangle::new(Hz(pitch * i));
+            gen = Saw::new(Hz(pitch * i));
             temp = Audio::<Mono64>::with_silence(48_000, 48_000 * 5);
             temp.generate(&mut gen);
             temp.blend_sample(Mono64::new(harmonic * volume), Sine);

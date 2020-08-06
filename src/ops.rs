@@ -20,7 +20,10 @@ pub struct Dest;
 /// Clear (set to default)
 #[derive(Clone, Copy, Debug)]
 pub struct Clear;
-/// VCA (Voltage Controlled Amplitude) mixing.  Multiplication of signals.
+/// VCA (Voltage Controlled Amplifier) mixing.  Multiplication of signals.
+/// Careful to use `Abs` on either destination or source before calling on
+/// periodic waveforms (otherwise the resulting audio will sound exactly one
+/// octave higher than expected).
 #[derive(Clone, Copy, Debug)]
 pub struct Gain;
 /// Standard audio mixing.  Addition of signals
@@ -35,20 +38,20 @@ pub struct Min;
 /// Maximum of destination and source
 #[derive(Clone, Copy, Debug)]
 pub struct Max;
-/// Squared compression.
+/// Squared compression of destination, ignore source.
 #[derive(Clone, Copy, Debug)]
 pub struct Squared;
-/// Apply sine function to input.
+/// Sawtooth -> Sine function to destination, multiplied by source.
 #[derive(Clone, Copy, Debug)]
 pub struct Sine;
-/// Apply sawtooth function to input.
+/// Sawtooth -> Triangle function to destination, multiplied by source.
 #[derive(Clone, Copy, Debug)]
-pub struct Sawtooth;
-/// Apply square function to input.
+pub struct Triangle;
+/// Sawtooth -> Square function to destination, multiplied by source.
 #[derive(Clone, Copy, Debug)]
 pub struct Square;
-/// Apply absolute value function to input (useful for multiplying waveforms
-/// together without octave jump).
+/// Apply absolute value function to destination (useful for multiplying
+/// waveforms together without octave jump), multiplied by source.
 #[derive(Clone, Copy, Debug)]
 pub struct Abs;
 /// Hard clipping and amplification at source power to destination.
@@ -119,7 +122,7 @@ impl Blend for Sine {
     }
 }
 
-impl Blend for Sawtooth {
+impl Blend for Triangle {
     fn synthesize<C: Channel>(dst: &mut C, src: &C) {
         *dst = C::from(dst.to_f64().abs() * 2.0 - 1.0) * *src;
     }
@@ -139,7 +142,7 @@ impl Blend for Abs {
 
 impl Blend for ClipHard {
     fn synthesize<C: Channel>(dst: &mut C, src: &C) {
-        *dst = C::from((dst.to_f64() * src.to_f64().recip()).max(1.0).min(-1.0))
+        *dst = C::from((dst.to_f64() / src.to_f64()).min(1.0).max(-1.0));
     }
 }
 

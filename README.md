@@ -1,12 +1,5 @@
-[![Plop Grizzly](https://plopgrizzly.com/images/logo-bar.png)](https://plopgrizzly.com)
-
 # Twang
-A sound synthesis crate.
-
-## Features
-* A bunch of sound synthesization functions.
-
-- VCA (Variable Gain Amplifier): Multiplication of signals
+Library for audio conversions and synthesis.
 
 ## A4 (440 Hz) Organ Example
 ```rust

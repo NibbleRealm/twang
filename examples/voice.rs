@@ -1,18 +1,18 @@
 use twang::{
-    gen::{Triangle},
+    gen::Saw,
     mono::Mono64,
-    ops::{Sine, Abs, Sawtooth, Gain},
+    ops::{Sine, Abs, Gain},
     Audio, Hz,
 };
 
 mod wav;
 
 fn main() {
-    let mut tri = Triangle::new(Hz(440.0)); // A4
+    let mut saw = Saw::new(Hz(440.0)); // A4
     let mut note;
     let mut temp = Audio::with_silence(48_000, 48_000 * 5);
     
-    temp.generate(&mut tri);
+    temp.generate(&mut saw);
     note = Audio::with_audio(temp.sample_rate(), &temp);
     temp.blend_sample(Mono64::new(1.0), Abs);
     note.blend_sample(Mono64::new(1.0), Sine);

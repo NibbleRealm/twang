@@ -1,44 +1,39 @@
 use twang::{
-    gen::{Pink, Triangle},
+    gen::{Pink, Saw},
     mono::Mono64,
-    ops::{Abs, Add, ClipHard, ClipSoft, Gain, Sawtooth, Sine},
+    ops::{Abs, Add, ClipSoft, Gain, Max, Triangle, ClipHard},
     Audio, Hz,
 };
 
 mod wav;
 
 fn main() {
-    let mut tri = Triangle::new(Hz(440.0)); // A4
     let mut pink = Pink::new();
 
     // Five seconds of 48 KHz Audio
-    let mut note = Audio::with_silence(48_000, 48_000 * 5);
-    let mut temp = Audio::with_silence(48_000, 48_000 * 5);
-    let mut tmp2;
-
-    // Add the main sound
-    temp.generate(&mut tri);
-    tmp2 = Audio::with_audio(temp.sample_rate(), &temp);
-    tmp2.blend_sample(Mono64::new(1.0), Sawtooth);
-    tmp2.blend_sample(Mono64::new(1.0), Abs);
-    temp.blend_sample(Mono64::new(1.0), Sine);
-    temp.blend_sample(Mono64::new(0.25), ClipHard);
-    temp.blend_audio(&tmp2, Gain);
-    temp.blend_sample(Mono64::new(0.85), Gain);
-    note.blend_audio(&temp, Add);
+    let mut note = Audio::<Mono64>::with_silence(48_000, 48_000 * 5);
+    let mut temp = Audio::<Mono64>::with_silence(48_000, 48_000 * 5);
+    let mut tmp2 = Audio::<Mono64>::with_silence(48_000, 48_000 * 5);
 
     // Add airy brass noise
-    temp.generate(&mut tri);
-    temp.blend_sample(Mono64::new(1.0), Sine);
-    temp.blend_audio(&tmp2, Gain);
+    let mut saw = Saw::new(Hz(220.0)); // A4
+    temp.generate(&mut saw);
+    temp.blend_sample(Mono64::new(0.075), ClipHard);
     tmp2.generate(&mut pink);
-    temp.blend_audio(&tmp2, Gain);
-    temp.blend_sample(Mono64::new(0.15), Gain);
+    tmp2.blend_sample(Mono64::new(1.0), Abs);
+    temp.blend_audio(&tmp2, Max);
+    temp.blend_sample(Mono64::new(0.75), Gain);
     note.blend_audio(&temp, Add);
 
-    // Distortion
-    note.blend_sample(Mono64::new(0.25), ClipSoft);
-    note.blend_sample(Mono64::new(2.0 / 3.0), ClipHard);
+    // Add the main sound
+    saw = Saw::new(Hz(220.0)); // A4
+    temp.generate(&mut saw);
+    temp.blend_sample(Mono64::new(0.075), ClipHard);
+    tmp2 = Audio::with_audio(temp.sample_rate(), &temp);
+    tmp2.blend_sample(Mono64::new(1.0), Abs);
+    temp.blend_sample(Mono64::new(1.0), Triangle);
+    temp.blend_audio(&tmp2, Gain);
+    note.blend_audio(&temp, Add);
 
     // Write chord to file
     wav::write(note, "brass.wav").expect("Failed to write WAV file");

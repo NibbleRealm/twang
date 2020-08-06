@@ -3,11 +3,11 @@
 use core::time::Duration;
 
 mod pink;
-mod triangle;
+mod saw;
 mod white;
 
 pub use pink::Pink;
-pub use triangle::Triangle;
+pub use saw::Saw;
 pub use white::White;
 
 /// A generator for audio.
