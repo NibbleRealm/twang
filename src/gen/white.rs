@@ -7,6 +7,7 @@
 // your option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use crate::mono::Mono64;
 use super::Generator;
 use core::num::Wrapping;
 use core::time::Duration;
@@ -29,12 +30,12 @@ impl White {
 }
 
 impl Generator for White {
-    fn sample(&mut self, _duration: Duration) -> f64 {
+    fn sample(&mut self, _duration: Duration) -> Mono64 {
         // msws (Middle Square Weyl Sequence) algorithm
         self.x *= self.x;
         self.w += Wrapping(SEQUENCE);
         self.x += self.w;
         self.x = (self.x >> 32) | (self.x << 32);
-        ((self.x.0 as i32) as f64 + 0.5) * (i32::MAX as f64 + 0.5).recip()
+        Mono64::new(((self.x.0 as i32) as f64 + 0.5) * (i32::MAX as f64 + 0.5).recip())
     }
 }

@@ -225,7 +225,7 @@ pub trait Sample: Clone + Copy + Debug + Default + PartialEq + Sealed {
         O: Blend,
     {
         for d in dst.iter_mut() {
-            d.blend_channels(sample, op);
+            d.blend(sample, op);
         }
     }
 
@@ -235,12 +235,12 @@ pub trait Sample: Clone + Copy + Debug + Default + PartialEq + Sealed {
         O: Blend,
     {
         for (d, s) in dst.iter_mut().zip(src) {
-            d.blend_channels(s, op);
+            d.blend(s, op);
         }
     }
 
-    /// Synthesize two sample slices together.
-    fn blend_channels<O>(&mut self, src: &Self, _op: O)
+    /// Synthesize two samples together.
+    fn blend<O>(&mut self, src: &Self, _op: O)
     where
         O: Blend,
     {

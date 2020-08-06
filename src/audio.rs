@@ -8,8 +8,7 @@
 // except according to those terms.
 
 use crate::{
-    chan::{Ch16, Ch8},
-    config::Config,
+    chan::{Ch64, Ch16, Ch8},
     gen::Generator,
     ops::Blend,
     sample::Sample,
@@ -59,6 +58,16 @@ impl<S: Sample> Audio<S> {
             debug_assert!(suffix.is_empty());
             v
         }
+    }
+
+    /// Returns an iterator over the samples.
+    pub fn iter(&self) -> std::slice::Iter<'_, S> {
+        self.samples.iter()
+    }
+    
+    /// Returns an iterator that allows modifying each sample.
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, S> {
+        self.samples.iter_mut()
     }
 
     /// Construct an `Audio` buffer with all samples set to one value.
@@ -148,11 +157,12 @@ impl<S: Sample> Audio<S> {
     }
 
     /// Generate audio in buffer using a generator.    
-    pub fn generate<G: Generator>(&mut self, generator: &mut G) {
+    pub fn generate<G: Generator>(&mut self, generator: &mut G)
+        where S::Chan: From<Ch64>
+    {
         let time_step = Duration::new(1, 0) / self.s_rate.try_into().unwrap();
         for sample in self.samples.iter_mut() {
-            let channel = generator.sample(time_step).into();
-            *sample = S::from_channels(&[channel; 8][..S::Conf::CHANNEL_COUNT]);
+            *sample = generator.sample(time_step).convert();
         }
     }
 

@@ -7,6 +7,7 @@
 // your option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use crate::mono::Mono64;
 use super::Generator;
 use core::time::Duration;
 
@@ -161,7 +162,7 @@ impl Pink {
 }
 
 impl Generator for Pink {
-    fn sample(&mut self, _duration: Duration) -> f64 {
+    fn sample(&mut self, _duration: Duration) -> Mono64 {
         // Different functions for each sample.
         let r = match self.which {
             _x if _x % 2 != 0 => self.a(), // odd #s
@@ -178,6 +179,6 @@ impl Generator for Pink {
             / (std::i16::MAX as f64);
         self.which += 1;
         self.which %= 16;
-        r
+        Mono64::new(r)
     }
 }

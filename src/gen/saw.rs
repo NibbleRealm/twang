@@ -7,6 +7,7 @@
 // your option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use crate::mono::Mono64;
 use super::Generator;
 use core::time::Duration;
 
@@ -39,8 +40,8 @@ impl Saw {
 }
 
 impl Generator for Saw {
-    fn sample(&mut self, duration: Duration) -> f64 {
+    fn sample(&mut self, duration: Duration) -> Mono64 {
         self.value = (self.value + duration.as_secs_f64() * self.hertz.0) % 1.0;
-        self.value * 2.0 - 1.0
+        Mono64::new(self.value * 2.0 - 1.0)
     }
 }

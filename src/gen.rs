@@ -9,6 +9,7 @@
 
 //! Audio generators
 
+use crate::mono::Mono64;
 use core::time::Duration;
 
 mod pink;
@@ -22,5 +23,5 @@ pub use white::White;
 /// A generator for audio.
 pub trait Generator {
     /// Sample audio with duration since last sampled.
-    fn sample(&mut self, duration: Duration) -> f64;
+    fn sample(&mut self, duration: Duration) -> Mono64;
 }
