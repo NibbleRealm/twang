@@ -16,11 +16,12 @@ documentation = "https://docs.rs/twang"
 homepage = "https://github.com/AldaronLau/twang"
 repository = "https://github.com/AldaronLau/twang"
 readme = "README.md"
-description = "Library for audio processing, conversions, and synthesis."
+description = "Library for pure Rust advanced audio synthesis."
 keywords = ["audio", "synth", "synthesizer", "wave", "sound"]
 categories = ["multimedia::audio", "multimedia"]
 edition = "2018"
 
 [dependencies]
+fon = { path = "../fon" }
 
 [dev-dependencies]

@@ -7,7 +7,7 @@
 // your option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! Library for audio processing, conversions, and synthesis.
+//! Library for pure Rust advanced audio synthesis.
 //!
 //! An [audio buffer](struct.Audio.html) can be cheaply converted to and from
 //! raw byte buffers, enabling interoperability with other crates.

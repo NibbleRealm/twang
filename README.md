@@ -1,5 +1,5 @@
 # Twang
-Library for audio processing, conversions, and synthesis.
+Library for pure Rust advanced audio synthesis.
 
 ## Goals
 - Auto-vectorized audio conversion and synthesis.

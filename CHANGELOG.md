@@ -5,7 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
 ## [0.3.0] - Unreleased (2020-08-??)
-- 
+### Changed
+- Depend on `fon` for audio types.
+- Use simple PRNG for white noise instead of `rand` crate.
 
 ## [0.2.0] - 2018-08-16
 ### Changed
