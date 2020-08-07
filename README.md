@@ -27,13 +27,16 @@ Oscillators:
 - Pulse Wave (When duty cycle set to 0.5 is a Square Wave, Sawtooth wave minus
   phase shifted version of itself)
 - Sine Wave
+
 "Voltage" Controlled filter:
 - Lowpass (Most Common) / Highpass
 - Bandpass / Notch
+
 Envelope (ADSR example):
 - Press: Attack (time, oscillator:Fc), Hold?, Decay (time, oscillator:Fc.inv), …
 - Hold: Sustain (oscillator:Pulse(1.0).Gain(level))
 - Release: Release (time, oscillator:Fc.inv)
+
 "Voltage" Controlled amplifier (multiplication)
 
 ## Getting Started
