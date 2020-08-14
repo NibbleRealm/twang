@@ -9,7 +9,7 @@
 
 use super::Generator;
 use core::time::Duration;
-use fon::{Hz, mono::Mono64};
+use fon::{mono::Mono64, Hz};
 
 /// Sawtooth wave generator.
 #[derive(Clone, Debug)]

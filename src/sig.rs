@@ -9,8 +9,12 @@
 
 //! Digital audio signal.
 
+use fon::{
+    chan::{Ch64, Channel},
+    mono::Mono,
+    sample::Sample1,
+};
 use std::f64::consts::PI;
-use fon::{mono::Mono, chan::{Channel, Ch64}, sample::Sample1};
 
 /// A signed digital audio signal that can be routed through processing
 /// components.  This differs from `Mono64` in that the values are not clamped
@@ -19,9 +23,24 @@ use fon::{mono::Mono, chan::{Channel, Ch64}, sample::Sample1};
 pub struct Signal(f64);
 
 impl Signal {
-    /// Sine generator component (takes a triangle wave).
-    pub fn sine(self, volume: f64) -> Self {
-        Self((self.0 * PI).sin() * volume)
+    /// Sine generator component - takes a sawtooth (`Fc`) wave.
+    pub fn sine(self) -> Self {
+        Self((self.0 * PI).sin())
+    }
+
+    /// Amplify signal.
+    pub fn amp(self, volume: f64) -> Self {
+        Self(self.0 * volume)
+    }
+
+    /*    /// Square generator component - takes a sawtooth (`Fc`) wave.
+    pub fn square(self, volume: f64) -> Self {
+        Self(self.0.signum() * volume)
+    }*/
+
+    /// Signal inversion (negation).
+    pub fn invert(self) -> Self {
+        Self(-self.0)
     }
 }
 
@@ -38,10 +57,12 @@ impl From<Signal> for f64 {
 }
 
 impl<Ch> From<Signal> for Sample1<Ch, Mono>
-    where Ch: From<Ch64> + Channel
+where
+    Ch: From<Ch64> + Channel,
 {
     fn from(signal: Signal) -> Self {
-        let ch: Ch = Ch64::new(signal.into()).into();
+        let power: f64 = signal.into();
+        let ch: Ch = Ch64::new(power.min(1.0).max(-1.0)).into();
         Self::new(ch)
     }
 }

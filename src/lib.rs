@@ -20,8 +20,8 @@
 //! ([`Fc`](struct.Fc.html)) with your target **sample rate**.  A **sample
 //! rate** is how many times per second you generate an audio sample.  The
 //! **frequency counter** allows us to generate continuous pitched waveforms.
-//! 
-//! 
+//!
+//!
 //!
 //! # A4 (440 Hz) Organ Example
 //! ```rust,no_run
@@ -92,9 +92,9 @@
     variant_size_differences
 )]
 
+mod fc;
 pub mod gen;
 pub mod sig;
-mod fc;
 mod synth;
 
 pub use fc::Fc;

@@ -36,6 +36,8 @@ impl Generator for White {
         self.w += Wrapping(SEQUENCE);
         self.x += self.w;
         self.x = (self.x >> 32) | (self.x << 32);
-        Mono64::new(((self.x.0 as i32) as f64 + 0.5) * (i32::MAX as f64 + 0.5).recip())
+        Mono64::new(
+            ((self.x.0 as i32) as f64 + 0.5) * (i32::MAX as f64 + 0.5).recip(),
+        )
     }
 }

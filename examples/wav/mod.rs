@@ -2,9 +2,9 @@
 //!
 //! http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
 
+use fon::{chan::Ch16, sample::Sample, stereo::Stereo16, Audio};
 use std::convert::TryInto;
 use std::{fs, io, mem::size_of};
-use fon::{chan::Ch16, sample::Sample, stereo::Stereo16, Audio};
 
 /// Write a 16-bit PCM WAV file
 pub(super) fn write<S: Sample>(

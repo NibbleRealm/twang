@@ -7,9 +7,9 @@
 // your option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::time::Duration;
-use fon::Hz;
 use crate::sig::Signal;
+use fon::Hz;
+use std::time::Duration;
 
 /// Frequency counter.
 #[derive(Copy, Clone, Debug)]
@@ -24,16 +24,7 @@ impl Fc {
     pub fn new(sample_freq: u32) -> Self {
         let counter = Duration::new(0, 0);
         let stepper = Duration::new(1, 0) / sample_freq;
-        Self {
-            counter,
-            stepper,
-        }
-    }
-
-    /// Advance to the next sample.
-    #[inline]
-    pub fn step(&mut self) {
-        self.counter += self.stepper
+        Self { counter, stepper }
     }
 
     /// Sample frequency counter with a frequency.
@@ -43,5 +34,14 @@ impl Fc {
         let nano = self.counter.as_nanos();
         // Return signal between -1 and 1
         (((nano % modu) << 1) as f64 / modu as f64 - 1.0).into()
+    }
+}
+
+impl Iterator for Fc {
+    type Item = Fc;
+
+    fn next(&mut self) -> Option<Fc> {
+        self.counter += self.stepper;
+        Some(*self)
     }
 }

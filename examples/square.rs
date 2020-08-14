@@ -1,5 +1,5 @@
-use twang::gen::{Generator, Saw};
 use fon::{mono::Mono64, ops::Square, Audio, Hz};
+use twang::gen::{Generator, Saw};
 
 mod wav;
 

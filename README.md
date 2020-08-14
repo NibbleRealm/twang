@@ -6,7 +6,7 @@ Library for pure Rust advanced audio synthesis.
 - Pure Rust
 
 Links to examples for each will be provided as they are implemented.
-- [Additive synthesis](https://github.com/AldaronLau/twang/blob/master/examples/additive.rs)
+- [Additive synthesis](https://github.com/AldaronLau/twang/blob/master/examples/piano.rs)
   (Compositing sounds, usually sine waves - used in analysis / resynthesis along
   with FFT)
 - Subtractive synthesis (Oscillators to generate waves, then shape with filters

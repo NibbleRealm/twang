@@ -15,9 +15,8 @@ pub trait Synth {
     fn mix(self) -> Signal;
 }
 
-#[allow(single_use_lifetimes)]
-impl<'a, I: IntoIterator<Item = &'a Signal>> Synth for I {
+impl<I: IntoIterator<Item = Signal>> Synth for I {
     fn mix(self) -> Signal {
-        self.into_iter().cloned().map(f64::from).sum::<f64>().into()
+        self.into_iter().map(f64::from).sum::<f64>().into()
     }
 }
