@@ -1,4 +1,4 @@
-use twang::Fc;
+use twang::{Synth, Fc};
 use fon::{Audio, mono::Mono64};
 
 mod wav;
@@ -15,8 +15,24 @@ fn main() {
     // Synthesis
     for sample in audio.iter_mut() {
         fc.step();
-        let fundamental = fc.freq(440.0).sine();
-        *sample = fundamental.into();
+        // Leaf Nodes
+        let fundamental = fc.freq(440.0).sine(0.2);
+        let harmonic_ab = fc.freq(440.0 * 2.0).sine(0.3);
+        let harmonic_ac = fc.freq(440.0 * 3.0).sine(0.5);
+        let harmonic_ad = fc.freq(440.0 * 4.0).sine(0.1);
+        let harmonic_ae = fc.freq(440.0 * 5.0).sine(0.05);
+        let harmonic_af = fc.freq(440.0 * 6.0).sine(0.02);
+        // Build the synthesis tree
+        let tree = [
+            fundamental,
+            harmonic_ab,
+            harmonic_ac,
+            harmonic_ad,
+            harmonic_ae,
+            harmonic_af,
+        ].mix();
+        // 
+        *sample = tree.into();
     }
 
     // Write chord to file

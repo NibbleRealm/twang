@@ -6,8 +6,9 @@ Library for pure Rust advanced audio synthesis.
 - Pure Rust
 
 Links to examples for each will be provided as they are implemented.
-- Additive synthesis (Compositing sounds, usually sine waves - used in analysis
-  / resynthesis along with FFT)
+- [Additive synthesis](https://github.com/AldaronLau/twang/blob/master/examples/additive.rs)
+  (Compositing sounds, usually sine waves - used in analysis / resynthesis along
+  with FFT)
 - Subtractive synthesis (Oscillators to generate waves, then shape with filters
   to boost or reduce frequencies)
 - Frequency Modulation synthesis (Modulating *frequency* with a waveform)
@@ -23,7 +24,7 @@ Links to examples for each will be provided as they are implemented.
 
 ### Waveforms
 Oscillators:
-- Frequency Counter (Fc / Sawtooth)
+- [Frequency Counter (Fc / Sawtooth)](https://docs.rs/twang/0.3.0/twang/struct.Fc.html)
 - Pulse Wave (When duty cycle set to 0.5 is a Square Wave, Sawtooth wave minus
   phase shifted version of itself)
 - Sine Wave

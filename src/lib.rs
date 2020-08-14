@@ -95,5 +95,7 @@
 pub mod gen;
 pub mod sig;
 mod fc;
+mod synth;
 
 pub use fc::Fc;
+pub use synth::Synth;

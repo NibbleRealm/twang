@@ -8,7 +8,7 @@
 // except according to those terms.
 
 use std::time::Duration;
-use fon::{Hz, chan::Ch64};
+use fon::Hz;
 use crate::sig::Signal;
 
 /// Frequency counter.
