@@ -25,9 +25,8 @@ Links to examples for each will be provided as they are implemented.
 ### Waveforms
 Oscillators:
 - [Frequency Counter (Fc / Sawtooth)](https://docs.rs/twang/0.3.0/twang/struct.Fc.html)
-- Pulse Wave (When duty cycle set to 0.5 is a Square Wave, Sawtooth wave minus
-  phase shifted version of itself)
-- Sine Wave
+- [Pulse Wave](https://docs.rs/twang/0.3.0/twang/sig/struct.Signal.html#method.pulse) (When ½ duty cycle set to 1.0 is a Square Wave)
+- [Sine Wave](https://docs.rs/twang/0.3.0/twang/sig/struct.Signal.html#method.sine)
 
 "Voltage" Controlled filter:
 - Lowpass (Most Common) / Highpass

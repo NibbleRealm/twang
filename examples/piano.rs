@@ -23,10 +23,9 @@ fn main() {
     // Set up the frequency counter.
     let fc = Fc::new(S_RATE);
 
-    // Synthesis
+    // Tree-style synthesis
     for (sample, fc) in audio.iter_mut().zip(fc) {
-        // Build the synthesis tree
-        let tree = PITCHES
+        *sample = PITCHES
             .iter()
             .cloned()
             .map(|p| {
@@ -39,9 +38,8 @@ fn main() {
                     })
                     .mix()
             })
-            .mix();
-        // Write out
-        *sample = tree.into();
+            .mix()
+            .into_mono();
     }
 
     // Write chord to file

@@ -1,12 +1,21 @@
-use fon::{mono::Mono64, ops::Square, Audio, Hz};
-use twang::gen::{Generator, Saw};
+use fon::{mono::Mono64, Audio};
+use twang::Fc;
 
 mod wav;
 
+// Target sample rate set to 48 KHz
+const S_RATE: u32 = 48_000;
+
 fn main() {
-    let mut saw = Saw::new(Hz(220.0)); // A4
-    let mut out = Audio::<Mono64>::with_silence(48_000, 48_000 * 5);
-    saw.generate(&mut out);
-    out.blend_sample(Mono64::new(1.0), Square);
-    wav::write(out, "square.wav").expect("Failed to write WAV file");
+    // Generate five seconds of silence.
+    let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
+    // Set up the frequency counter.
+    let fc = Fc::new(S_RATE);
+
+    // Tree-style synthesis
+    for (sample, fc) in audio.iter_mut().zip(fc) {
+        *sample = fc.freq(220.0).pulse(1.0).amp(0.7).to_mono()
+    }
+
+    wav::write(audio, "square.wav").expect("Failed to write WAV file");
 }

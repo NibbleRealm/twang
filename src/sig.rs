@@ -23,12 +23,33 @@ use std::f64::consts::PI;
 pub struct Signal(f64);
 
 impl Signal {
-    /// Sine generator component - takes a sawtooth (`Fc`) wave.
+    /// Sine wave generator component - takes a sawtooth (`Fc`) wave.
+    #[inline]
     pub fn sine(self) -> Self {
         Self((self.0 * PI).sin())
     }
 
+    /// Pulse wave generator component - takes a sawtooth (`Fc`) wave.
+    /// - `half_duty`: ½ Duty cycle - range: 0~1 (1.0 for square wave)
+    #[inline]
+    pub fn pulse(self, half_duty: f64) -> Self {
+        let phase_shifted = self.shift(half_duty);
+        Self((self.0 - phase_shifted.0).signum())
+    }
+
+    /// Shift signal.  Takes a signal and adds an amount to it, wrapping if it
+    /// goes over or under one.
+    #[inline]
+    pub fn shift(self, amount: f64) -> Self {
+        match (self.0 + amount) % 2.0 {
+            x if x < -1.0 => Self(x + 2.0),
+            x if x > 1.0 => Self(x - 2.0),
+            x => Self(x),
+        }
+    }
+
     /// Amplify signal.
+    #[inline]
     pub fn amp(self, volume: f64) -> Self {
         Self(self.0 * volume)
     }
@@ -38,9 +59,19 @@ impl Signal {
         Self(self.0.signum() * volume)
     }*/
 
-    /// Signal inversion (negation).
+    /// Invert (negate) signal.
+    #[inline]
     pub fn invert(self) -> Self {
         Self(-self.0)
+    }
+
+    /// Convert signal into Mono channel.
+    pub fn to_mono<Ch>(self) -> Sample1<Ch, Mono>
+    where
+        Ch: From<Ch64> + Channel,
+    {
+        let ch: Ch = Ch64::new(self.0.min(1.0).max(-1.0)).into();
+        Sample1::new(ch)
     }
 }
 
@@ -53,16 +84,5 @@ impl From<f64> for Signal {
 impl From<Signal> for f64 {
     fn from(signal: Signal) -> f64 {
         signal.0
-    }
-}
-
-impl<Ch> From<Signal> for Sample1<Ch, Mono>
-where
-    Ch: From<Ch64> + Channel,
-{
-    fn from(signal: Signal) -> Self {
-        let power: f64 = signal.into();
-        let ch: Ch = Ch64::new(power.min(1.0).max(-1.0)).into();
-        Self::new(ch)
     }
 }
