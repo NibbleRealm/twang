@@ -7,11 +7,9 @@
 // your option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::mono::Mono64;
 use super::Generator;
 use core::time::Duration;
-
-use crate::Hz;
+use fon::{Hz, mono::Mono64};
 
 /// Sawtooth wave generator.
 #[derive(Clone, Debug)]

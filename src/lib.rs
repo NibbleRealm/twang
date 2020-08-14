@@ -22,8 +22,8 @@
 //!
 //! # A4 (440 Hz) Organ Example
 //! ```rust,no_run
-//! use twang::{
-//!     gen::Saw,
+//! use twang::gen::{Generator, Saw};
+//! use fon::{
 //!     mono::Mono64,
 //!     ops::{Add, Sine},
 //!     Audio, Hz,
@@ -50,7 +50,7 @@
 //!         let i: f64 = (i as i32).into();
 //!         gen = Saw::new(Hz(pitch * i));
 //!         temp = Audio::<Mono64>::with_silence(48_000, 48_000 * 5);
-//!         temp.generate(&mut gen);
+//!         gen.generate(&mut temp);
 //!         temp.blend_sample(Mono64::new(harmonic * volume), Sine);
 //!         // Add harmonic to chord
 //!         chord.blend_audio(&temp, Add);
@@ -89,16 +89,4 @@
     variant_size_differences
 )]
 
-mod audio;
-pub mod chan;
-mod config;
 pub mod gen;
-pub mod mono;
-pub mod ops;
-mod private;
-pub mod sample;
-pub mod stereo;
-pub mod surround;
-
-pub use audio::{Audio, Hz};
-pub use config::Config;

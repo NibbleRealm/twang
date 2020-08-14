@@ -7,9 +7,9 @@
 // your option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::mono::Mono64;
 use super::Generator;
 use core::time::Duration;
+use fon::mono::Mono64;
 
 fn pnmask(pncnt: u8) -> u8 {
     match pncnt % 16 {

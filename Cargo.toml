@@ -23,5 +23,3 @@ edition = "2018"
 
 [dependencies]
 fon = { path = "../fon" }
-
-[dev-dependencies]

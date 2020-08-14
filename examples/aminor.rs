@@ -1,5 +1,5 @@
-use twang::{
-    gen::{Generator, Saw},
+use twang::gen::{Generator, Saw};
+use fon::{
     mono::Mono64,
     ops::{Add, Sine, Gain},
     sample::Sample,

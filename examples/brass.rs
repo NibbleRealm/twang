@@ -1,5 +1,5 @@
-use twang::{
-    gen::{Pink, Saw},
+use twang::gen::{Generator, Pink, Saw};
+use fon::{
     mono::Mono64,
     ops::{Abs, Add, ClipHard, Gain, Max, Triangle},
     Audio, Hz,
@@ -17,9 +17,9 @@ fn main() {
 
     // Add airy brass noise
     let mut saw = Saw::new(Hz(220.0)); // A4
-    temp.generate(&mut saw);
+    saw.generate(&mut temp);
     temp.blend_sample(Mono64::new(0.075), ClipHard);
-    tmp2.generate(&mut pink);
+    pink.generate(&mut tmp2);
     tmp2.blend_sample(Mono64::new(1.0), Abs);
     temp.blend_audio(&tmp2, Max);
     temp.blend_sample(Mono64::new(0.75), Gain);
@@ -27,7 +27,7 @@ fn main() {
 
     // Add the main sound
     saw = Saw::new(Hz(220.0)); // A4
-    temp.generate(&mut saw);
+    saw.generate(&mut temp);
     temp.blend_sample(Mono64::new(0.075), ClipHard);
     tmp2 = Audio::with_audio(temp.sample_rate(), &temp);
     tmp2.blend_sample(Mono64::new(1.0), Abs);

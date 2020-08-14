@@ -1,10 +1,11 @@
-use twang::{gen::Pink, mono::Mono64, Audio};
+use twang::gen::{Generator, Pink};
+use fon::{mono::Mono64, Audio};
 
 mod wav;
 
 fn main() {
     let mut out = Audio::<Mono64>::with_silence(48_000, 48_000 * 5);
     let mut pink = Pink::new();
-    out.generate(&mut pink);
+    pink.generate(&mut out);
     wav::write(out, "pink.wav").expect("Failed to write WAV file");
 }

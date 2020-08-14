@@ -7,10 +7,10 @@
 // your option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::mono::Mono64;
 use super::Generator;
 use core::num::Wrapping;
 use core::time::Duration;
+use fon::mono::Mono64;
 
 const SEQUENCE: u64 = 0xb5ad4eceda1ce2a9;
 
