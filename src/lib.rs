@@ -9,16 +9,19 @@
 
 //! Library for pure Rust advanced audio synthesis.
 //!
-//! An [audio buffer](struct.Audio.html) can be cheaply converted to and from
-//! raw byte buffers, enabling interoperability with other crates.
+//! Most audio DSP (Digital Signal Processing) libraries have a concept of an
+//! audio graph which connects sources to destinations.  Twang uses a simplified
+//! model: a synthesis tree.  Twang doesn't deal with having speakers as a node
+//! on a graph, as it's only focus is synthesis.  A synthesis tree can all of
+//! the things that an audio graph can do, but it's simpler and much easier to
+//! learn.
 //!
-//! Many audio formats are supported:
-//! - Any sample rate
-//! - Bit depth: [8]- or [16]-bit integer and [32]- or [64]-bit float
-//! - [Mono], [Stereo], [5.1 Surround] and [7.1 Surround]
-//!
-//! Synthesis with blending [operations](ops/index.html) is supported for all
-//! formats.
+//! To start, first you need to construct a **frequency counter**
+//! ([`Fc`](struct.Fc.html)) with your target **sample rate**.  A **sample
+//! rate** is how many times per second you generate an audio sample.  The
+//! **frequency counter** allows us to generate continuous pitched waveforms.
+//! 
+//! 
 //!
 //! # A4 (440 Hz) Organ Example
 //! ```rust,no_run
@@ -90,3 +93,7 @@
 )]
 
 pub mod gen;
+pub mod sig;
+mod fc;
+
+pub use fc::Fc;
