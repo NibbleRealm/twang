@@ -60,15 +60,6 @@
 //!     }
 //! }
 //! ```
-//!
-//! [8]: chan/struct.Ch8.html
-//! [16]: chan/struct.Ch16.html
-//! [32]: chan/struct.Ch32.html
-//! [64]: chan/struct.Ch64.html
-//! [Mono]: mono/struct.Mono.html
-//! [Stereo]: stereo/struct.Stereo.html
-//! [5.1 Surround]: surround/struct.Surround.html
-//! [7.1 Surround]: surround/struct.SurroundHD.html
 
 #![doc(
     html_logo_url = "https://libcala.github.io/logo.svg",

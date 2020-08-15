@@ -26,7 +26,13 @@ impl Signal {
     /// Sine wave generator component - takes a sawtooth (`Fc`) wave.
     #[inline]
     pub fn sine(self) -> Self {
-        Self((self.0 * PI).sin())
+        Self((self.0 * PI).cos())
+    }
+
+    /// Triangle wave generator component - takes a sawtooth (`Fc`) wave.
+    #[inline]
+    pub fn triangle(self) -> Self {
+        Self(self.0.abs() * 2.0 - 1.0)
     }
 
     /// Pulse wave generator component - takes a sawtooth (`Fc`) wave.
@@ -37,8 +43,8 @@ impl Signal {
         Self((self.0 - phase_shifted.0).signum())
     }
 
-    /// Shift signal.  Takes a signal and adds an amount to it, wrapping if it
-    /// goes over or under one.
+    /// Shift signal.  Takes a signal and adds an amount to it, wrapping to -1
+    /// if it goes over 1, and to 1 if it goes under -1.
     #[inline]
     pub fn shift(self, amount: f64) -> Self {
         match (self.0 + amount) % 2.0 {
