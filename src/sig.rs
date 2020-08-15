@@ -60,18 +60,54 @@ impl Signal {
         Self(self.0 * volume)
     }
 
-    /*    /// Square generator component - takes a sawtooth (`Fc`) wave.
-    pub fn square(self, volume: f64) -> Self {
-        Self(self.0.signum() * volume)
-    }*/
-
     /// Invert (negate) signal.
     #[inline]
     pub fn invert(self) -> Self {
         Self(-self.0)
     }
+    
+    /// Absolute value of signal.
+    #[inline]
+    pub fn abs(self) -> Self {
+        Self(self.0.abs())
+    }
+
+    /// The minimum of two signals.
+    #[inline]
+    pub fn min<I: Into<Self>>(self, limit: I) -> Self {
+        Self(self.0.min(limit.into().0))
+    }
+
+    /// The maximum of two signals.
+    #[inline]
+    pub fn max<I: Into<Self>>(self, limit: I) -> Self {
+        Self(self.0.min(limit.into().0))
+    }
+
+    /// Raise a signal to a power.  This can be used to get the `x` root of a
+    /// signal as well with `1 / x`.
+    #[inline]
+    pub fn pow(self, exp: f64) -> Self {
+        Self(self.0.powf(exp))
+    }
+
+    /// Amplify a signal with soft clipping.
+    #[inline]
+    pub fn clip_soft(self, volume: f64) -> Self {
+        Self(
+            (2.0 / (1.0 + (self.0 * -volume).exp()) - 1.0)
+            / (2.0 / (1.0 + (-volume).exp()) - 1.0)
+        )
+    }
+
+    /// Clamp a signal -1 to 1 (hard clipping)
+    #[inline]
+    pub fn clamp(self) -> Self {
+        self.min(1.0).max(-1.0)
+    }
 
     /// Convert signal into Mono channel.
+    #[inline]
     pub fn to_mono<Ch>(self) -> Sample1<Ch, Mono>
     where
         Ch: From<Ch64> + Channel,
