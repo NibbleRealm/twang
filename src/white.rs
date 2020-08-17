@@ -7,10 +7,8 @@
 // your option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use super::Generator;
 use core::num::Wrapping;
-use core::time::Duration;
-use fon::mono::Mono64;
+use crate::sig::Signal;
 
 const SEQUENCE: u64 = 0xb5ad4eceda1ce2a9;
 
@@ -27,16 +25,15 @@ impl White {
     pub fn new() -> Self {
         Self::default()
     }
-}
 
-impl Generator for White {
-    fn sample(&mut self, _duration: Duration) -> Mono64 {
+    /// Get next sample of white noise.
+    pub fn noise(&mut self) -> Signal {
         // msws (Middle Square Weyl Sequence) algorithm
         self.x *= self.x;
         self.w += Wrapping(SEQUENCE);
         self.x += self.w;
         self.x = (self.x >> 32) | (self.x << 32);
-        Mono64::new(
+        Signal::from(
             ((self.x.0 as i32) as f64 + 0.5) * (i32::MAX as f64 + 0.5).recip(),
         )
     }
