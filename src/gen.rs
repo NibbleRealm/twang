@@ -9,7 +9,7 @@
 
 //! Audio generators
 
-use core::{convert::TryInto, time::Duration};
+use core::time::Duration;
 use fon::{chan::Ch64, mono::Mono64, sample::Sample, Audio};
 
 mod pink;
@@ -30,7 +30,7 @@ pub trait Generator {
     where
         S::Chan: From<Ch64>,
     {
-        let s_rate = audio.sample_rate().try_into().unwrap();
+        let s_rate = audio.sample_rate();
         let time_step = Duration::new(1, 0) / s_rate;
         for sample in audio.iter_mut() {
             *sample = self.sample(time_step).convert();

@@ -65,7 +65,7 @@ impl Signal {
     pub fn invert(self) -> Self {
         Self(-self.0)
     }
-    
+
     /// Absolute value of signal.
     #[inline]
     pub fn abs(self) -> Self {
@@ -96,7 +96,7 @@ impl Signal {
     pub fn clip_soft(self, volume: f64) -> Self {
         Self(
             (2.0 / (1.0 + (self.0 * -volume).exp()) - 1.0)
-            / (2.0 / (1.0 + (-volume).exp()) - 1.0)
+                / (2.0 / (1.0 + (-volume).exp()) - 1.0),
         )
     }
 

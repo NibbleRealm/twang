@@ -83,10 +83,8 @@
     variant_size_differences
 )]
 
-mod fc;
 pub mod gen;
 pub mod sig;
 mod synth;
 
-pub use fc::Fc;
-pub use synth::Synth;
+pub use synth::{Fc, Mix, Synth};
