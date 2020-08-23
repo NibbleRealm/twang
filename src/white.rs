@@ -7,8 +7,8 @@
 // your option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use core::num::Wrapping;
 use crate::sig::Signal;
+use core::num::Wrapping;
 
 const SEQUENCE: u64 = 0xb5ad4eceda1ce2a9;
 

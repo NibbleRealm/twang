@@ -11,7 +11,6 @@
 
 use fon::{
     chan::{Ch64, Channel},
-    mono::Mono,
     sample::Sample1,
 };
 use std::f64::consts::PI;
@@ -108,10 +107,7 @@ impl Signal {
 
     /// Convert signal into Mono channel.
     #[inline]
-    pub fn to_mono<Ch>(self) -> Sample1<Ch, Mono>
-    where
-        Ch: From<Ch64> + Channel,
-    {
+    pub fn to_mono<Ch: From<Ch64> + Channel>(self) -> Sample1<Ch> {
         let ch: Ch = Ch64::new(self.0.min(1.0).max(-1.0)).into();
         Sample1::new(ch)
     }

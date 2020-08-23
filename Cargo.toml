@@ -23,3 +23,6 @@ edition = "2018"
 
 [dependencies]
 fon = "0.1"
+
+[replace]
+"fon:0.1.0" = { path = "../fon" }

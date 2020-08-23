@@ -83,12 +83,12 @@
     variant_size_differences
 )]
 
+mod pink;
 mod sig;
 mod synth;
 mod white;
-mod pink;
 
+pub use pink::Pink;
 pub use sig::Signal;
 pub use synth::{Fc, Mix, Synth};
-pub use pink::Pink;
 pub use white::White;

@@ -8,8 +8,8 @@
 // except according to those terms.
 
 use crate::sig::Signal;
-use fon::{mono::Mono64, sample::Sample, Audio, Hz};
-use std::time::Duration;
+use fon::{mono::Mono64, sample::Sample, Sink};
+use std::{marker::PhantomData, time::Duration};
 
 /// Frequency counter.
 #[derive(Copy, Clone, Debug)]
@@ -18,35 +18,43 @@ pub struct Fc(Duration);
 impl Fc {
     /// Sample frequency counter with a frequency.
     #[inline]
-    pub fn freq<H: Into<Hz>>(&self, freq: H) -> Signal {
-        let modu = Duration::new(1, 0).div_f64(freq.into().0).as_nanos();
+    pub fn freq(&self, freq: f64) -> Signal {
+        let modu = Duration::new(1, 0).div_f64(freq).as_nanos();
         let nano = self.0.as_nanos();
         // Return signal between -1 and 1
         (((nano % modu) << 1) as f64 / modu as f64 - 1.0).into()
     }
 }
 
-/// A synthesizer for an `Audio` buffer.
-#[derive(Debug, Copy, Clone, Default)]
-pub struct Synth {
+/// A streaming synthesizer into an audio `Sink`.  Rather than implementing
+/// `Stream`, which has it's own associated sample rate, `Synth` generates the
+/// audio directly at the destination sample rate.
+#[derive(Debug, Copy, Clone)]
+pub struct Synth<S: Sample + From<Mono64>, K: Sink<S>> {
+    sink: K,
     counter: Duration,
+    _phantom: PhantomData<S>,
 }
 
-impl Synth {
-    /// Create a new synthesizer
-    pub fn new() -> Self {
-        Self::default()
+impl<S: Sample + From<Mono64>, K: Sink<S>> Synth<S, K> {
+    /// Create a new synthesizer that feeds into an audio `Sink` (the opposite
+    /// end of a stream).
+    pub fn new(sink: K) -> Self {
+        Self {
+            sink,
+            counter: Duration::new(0, 0),
+            _phantom: PhantomData,
+        }
     }
 
-    /// Generate audio samples to fill a buffer.
-    pub fn gen<S: Sample + From<Mono64>, F: FnMut(Fc) -> Signal>(
-        &mut self,
-        audio: &mut Audio<S>,
-        mut f: F,
-    ) {
-        let stepper = Duration::new(1, 0) / audio.sample_rate();
-        for sample in audio.iter_mut() {
-            *sample = f(Fc(self.counter)).to_mono().into();
+    /// Generate audio samples.
+    /// - `count`: How many samples to stream into the audio `Sink`.
+    /// - `synth`: Synthesis function to generate the audio signal.
+    pub fn gen<F: FnMut(Fc) -> Signal>(&mut self, count: usize, mut synth: F) {
+        let stepper = Duration::new(1, 0) / self.sink.sample_rate();
+        for _ in 0..count {
+            self.sink
+                .sink_sample(synth(Fc(self.counter)).to_mono().into());
             self.counter += stepper;
         }
     }
