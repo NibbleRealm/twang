@@ -12,16 +12,16 @@
 //! Most audio DSP (Digital Signal Processing) libraries have a concept of an
 //! audio graph which connects sources to destinations.  Twang uses a simplified
 //! model: a synthesis tree.  Twang doesn't deal with having speakers as a node
-//! on a graph, as it's only focus is synthesis.  A synthesis tree can all of
+//! on a graph, as it's only focus is synthesis.  A synthesis tree can do all of
 //! the things that an audio graph can do, but it's simpler and much easier to
 //! learn.
 //!
-//! To start, first you need to construct a **frequency counter**
-//! ([`Fc`](struct.Fc.html)) with your target **sample rate**.  A **sample
-//! rate** is how many times per second you generate an audio sample.  The
-//! **frequency counter** allows us to generate continuous pitched waveforms.
-//!
-//!
+//! To start, first you need to construct a **synthesizer**
+//! ([`Synth`](struct.Synth.html)).  Then you need a type that implements the
+//! `Sink` trait.  `Audio` buffers have a `sink` method you can use to get a
+//! `Sink`.  Once you have those, you can synthesize audio with a closure that
+//! has one paramter representing the **frequency counter**.  You can use the
+//! **frequency counter** to generate continuous pitched waveforms.
 //!
 //! # A4 (440 Hz) Organ Example
 //! ```rust,no_run
