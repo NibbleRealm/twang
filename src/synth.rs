@@ -29,32 +29,30 @@ impl Fc {
 /// A streaming synthesizer into an audio `Sink`.  Rather than implementing
 /// `Stream`, which has it's own associated sample rate, `Synth` generates the
 /// audio directly at the destination sample rate.
-#[derive(Debug, Copy, Clone)]
-pub struct Synth<S: Sample + From<Mono64>, K: Sink<S>> {
-    sink: K,
+#[derive(Debug, Copy, Clone, Default)]
+pub struct Synth<S: Sample + From<Mono64>> {
     counter: Duration,
     _phantom: PhantomData<S>,
 }
 
-impl<S: Sample + From<Mono64>, K: Sink<S>> Synth<S, K> {
+impl<S: Sample + From<Mono64>> Synth<S> {
     /// Create a new synthesizer that feeds into an audio `Sink` (the opposite
     /// end of a stream).
-    pub fn new(sink: K) -> Self {
-        Self {
-            sink,
-            counter: Duration::new(0, 0),
-            _phantom: PhantomData,
-        }
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Generate audio samples.
     /// - `count`: How many samples to stream into the audio `Sink`.
     /// - `synth`: Synthesis function to generate the audio signal.
-    pub fn gen<F: FnMut(Fc) -> Signal>(&mut self, count: usize, mut synth: F) {
-        let stepper = Duration::new(1, 0) / self.sink.sample_rate();
-        for _ in 0..count {
-            self.sink
-                .sink_sample(synth(Fc(self.counter)).to_mono().into());
+    pub fn gen<F: FnMut(Fc) -> Signal, K: Sink<S>>(
+        &mut self,
+        mut sink: K,
+        mut synth: F,
+    ) {
+        let stepper = Duration::new(1, 0) / sink.sample_rate();
+        for _ in 0..sink.capacity() {
+            sink.sink_sample(synth(Fc(self.counter)).to_mono().into());
             self.counter += stepper;
         }
     }
