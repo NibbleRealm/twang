@@ -9,7 +9,7 @@
 
 use crate::sig::Signal;
 use fon::{mono::Mono64, sample::Sample, Sink};
-use std::{marker::PhantomData, time::Duration};
+use std::{borrow::Borrow, marker::PhantomData, time::Duration};
 
 /// Frequency counter.
 #[derive(Copy, Clone, Debug)]
@@ -64,8 +64,11 @@ pub trait Mix {
     fn mix(self) -> Signal;
 }
 
-impl<I: IntoIterator<Item = Signal>> Mix for I {
+impl<B: Borrow<Signal>, I: IntoIterator<Item = B>> Mix for I {
     fn mix(self) -> Signal {
-        self.into_iter().map(f64::from).sum::<f64>().into()
+        self.into_iter()
+            .map(|a| f64::from(*a.borrow()))
+            .sum::<f64>()
+            .into()
     }
 }

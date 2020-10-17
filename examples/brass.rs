@@ -23,7 +23,7 @@ fn main() {
         let ptwo = fc.freq(220.0).triangle();
         let main = pone.gain(ptwo);
 
-        [airy, main].iter().cloned().mix()
+        [airy, main].mix()
     });
 
     // Write synthesized audio to WAV file.

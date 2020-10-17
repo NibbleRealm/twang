@@ -15,7 +15,7 @@ fn main() {
     synth.gen(audio.sink(..), |fc| {
         let pt_a = fc.freq(220.0).triangle().max(0.0);
         let pt_b = fc.freq(220.0).sine().min(0.0);
-        [pt_a, pt_b].iter().cloned().mix()
+        [pt_a, pt_b].mix()
     });
 
     // Write synthesized audio to WAV file.
