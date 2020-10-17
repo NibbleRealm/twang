@@ -55,8 +55,8 @@ fn write_fmt_header(buf: &mut Vec<u8>, audio: &Audio<Stereo16>) {
 fn write_audio_data(buf: &mut Vec<u8>, audio: &Audio<Stereo16>) {
     // RIFF Subchunk: "data"
     buf.extend(b"data");
-    // cksize
-    buf.extend(&(audio.len() as u32).to_le_bytes());
+    // cksize (Bytes): Stereo (2) * i16 (2) * Frame Length
+    buf.extend(&(4 * audio.len() as u32).to_le_bytes());
     // Sampled data
     for sample in audio.samples() {
         for channel in sample.channels().iter().cloned() {

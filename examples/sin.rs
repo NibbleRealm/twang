@@ -12,9 +12,7 @@ fn main() {
     // Create the synthesizer.
     let mut synth = Synth::new();
     // Generate audio samples.
-    synth.gen(audio.sink(..), |fc| {
-        fc.freq(220.0).sine()
-    });
+    synth.gen(audio.sink(..), |fc| fc.freq(440.0).sine());
 
     // Write synthesized audio to WAV file.
     wav::write(audio, "sine.wav").expect("Failed to write WAV file");

@@ -17,5 +17,5 @@ fn main() {
     synth.gen(audio.sink(..), |_fc| pink.noise());
 
     // Write synthesized audio to WAV file.
-    wav::write(audio, "white.wav").expect("Failed to write WAV file");
+    wav::write(audio, "pink.wav").expect("Failed to write WAV file");
 }
