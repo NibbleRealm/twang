@@ -4,6 +4,10 @@ All notable changes to `twang` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
+## [0.4.0] - Unreleased
+### Changed
+ - Rename `Sample.amp()` to `Sample.gain()`
+
 ## [0.3.0] - 2020-08-26
 ### Changed
  - Depend on `fon` for audio types.

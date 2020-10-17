@@ -53,9 +53,9 @@ impl Signal {
         }
     }
 
-    /// Amplify signal.
+    /// Increase (amplify) or decrease the gain of the signal.
     #[inline]
-    pub fn amp(self, volume: f64) -> Self {
+    pub fn gain(self, volume: f64) -> Self {
         Self(self.0 * volume)
     }
 

@@ -13,7 +13,7 @@ fn main() {
     let mut synth = Synth::new();
     // Generate audio samples.
     synth.gen(audio.sink(..), |fc| {
-        fc.freq(220.0).pulse(1.0).amp(0.7)
+        fc.freq(220.0).pulse(1.0).gain(0.7)
     });
 
     // Write synthesized audio to WAV file.

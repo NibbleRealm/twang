@@ -74,7 +74,7 @@
 //!                 .cloned()
 //!                 .enumerate()
 //!                 .map(|(i, v)| {
-//!                     fc.freq(p * (i + 1) as f64).sine().amp(v * VOLUME)
+//!                     fc.freq(p * (i + 1) as f64).sine().gain(v * VOLUME)
 //!                 })
 //!                 .mix()
 //!         })

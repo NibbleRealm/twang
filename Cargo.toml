@@ -9,7 +9,7 @@
 
 [package]
 name = "twang"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
 license = "MIT OR Apache-2.0 OR Zlib"
 documentation = "https://docs.rs/twang"
