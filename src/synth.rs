@@ -59,8 +59,11 @@ impl<S: Sample + From<Mono64>> Synth<S> {
 }
 
 /// Trait for synthesizing multiple sounds together.
+///
+/// This works on arrays, slices, and iterators over either `Signal` or
+/// `&Signal`.
 pub trait Mix {
-    /// Add two signals together.
+    /// Add multiple signals together.
     fn mix(self) -> Signal;
 }
 
