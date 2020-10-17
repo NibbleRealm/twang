@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/
 
 ## [0.4.0] - Unreleased
 ### Changed
+ - `Mix` trait can now be used with borrowed or unborrowed data.
  - All methods on Signal that took `f64` now take `Into<Self>`
  - Rename `Sample.amp()` to `Sample.gain()`
 
