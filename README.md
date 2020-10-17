@@ -51,6 +51,21 @@ Envelope (example: ADSR):
 
 "Voltage" Controlled amplifier (multiplication)
 
+## Effects
+### Gated Reverb
+Reverb without reflections.
+
+ 1. Generate Percussive Sound
+ 2. Add Reverb
+ 3. Compress (optional)
+ 4. Apply Noise Gate To Resulting Sound (Side chaining the original sound)
+ 5. About 1/2 second hold, few millisecond release time envelope on Noise Gate
+ 6. Mix with original sound
+
+### Reverb And Echo
+Reverb is just echo that takes place in less than 50 milliseconds, so you can
+use the same APIs.
+
 ## Decibel Normalization
 When generating waveforms you may want to normalize by the volume of the wave,
 which the amplitude doesn't always accurately approximate.  First, calculate the

@@ -1,23 +1,24 @@
 use fon::{
     mono::Mono64,
-    ops::{Abs, Gain, Sine},
-    Audio, Hz,
+    Audio,
 };
-use twang::gen::{Generator, Saw};
+use twang::{Synth};
 
 mod wav;
 
-fn main() {
-    let mut saw = Saw::new(Hz(440.0)); // A4
-    let mut note;
-    let mut temp = Audio::with_silence(48_000, 48_000 * 5);
+// Target sample rate set to 48 KHz
+const S_RATE: u32 = 48_000;
 
-    saw.generate(&mut temp);
-    note = Audio::with_audio(temp.sample_rate(), &temp);
-    temp.blend_sample(Mono64::new(1.0), Abs);
-    note.blend_sample(Mono64::new(1.0), Sine);
-    note.blend_audio(&temp, Gain);
+fn main() {
+    // Initialize audio with five seconds of silence.
+    let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
+    // Create the synthesizer.
+    let mut synth = Synth::new();
+    // Generate audio samples.
+    synth.gen(audio.sink(..), |fc| {
+        fc.freq(440.0).abs().amp(fc.freq(440.0).sine().into())
+    });
 
     // Write chord to file
-    wav::write(note, "voice.wav").expect("Failed to write WAV file");
+    wav::write(audio, "voice.wav").expect("Failed to write WAV file");
 }

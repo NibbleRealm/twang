@@ -24,7 +24,7 @@ where
 
 fn write_header(buf: &mut Vec<u8>, audio: &Audio<Stereo16>) {
     // Predict size of WAV subchunks.
-    let n: u32 = audio.as_u8_slice().len().try_into().unwrap();
+    let n: u32 = audio.len().try_into().unwrap();
     // RIFF Chunk: ckID
     buf.extend(b"RIFF");
     // RIFF Chunk: cksize
@@ -56,7 +56,12 @@ fn write_audio_data(buf: &mut Vec<u8>, audio: &Audio<Stereo16>) {
     // RIFF Subchunk: "data"
     buf.extend(b"data");
     // cksize
-    buf.extend(&(audio.as_u8_slice().len() as u32).to_le_bytes());
+    buf.extend(&(audio.len() as u32).to_le_bytes());
     // Sampled data
-    buf.extend(audio.as_u8_slice());
+    for sample in audio.samples() {
+        for channel in sample.channels().iter().cloned() {
+            let channel: i16 = channel.into();
+            buf.extend(&channel.to_le_bytes());
+        }
+    }
 }

@@ -1,25 +1,23 @@
-use fon::{
-    mono::Mono64,
-    ops::{Add, Max, Min, Sine, Triangle},
-    Audio, Hz,
-};
-use twang::gen::{Generator, Saw};
+use fon::{mono::Mono64, Audio};
+use twang::{Synth, Mix};
 
 mod wav;
 
+// Target sample rate set to 48 KHz
+const S_RATE: u32 = 48_000;
+
 fn main() {
-    let mut tri = Saw::new(Hz(220.0)); // A4
-    let mut note;
-    let mut temp = Audio::with_silence(48_000, 48_000 * 5);
+    // Initialize audio with five seconds of silence.
+    let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
+    // Create the synthesizer.
+    let mut synth = Synth::new();
+    // Generate audio samples.
+    synth.gen(audio.sink(..), |fc| {
+        let pt_a = fc.freq(220.0).triangle().max(0.0);
+        let pt_b = fc.freq(220.0).sine().min(0.0);
+        [pt_a, pt_b].iter().cloned().mix()
+    });
 
-    tri.generate(&mut temp);
-    note = Audio::with_audio(temp.sample_rate(), &temp);
-    temp.blend_sample(Mono64::new(1.0), Triangle);
-    temp.blend_sample(Mono64::new(0.0), Max);
-    note.blend_sample(Mono64::new(1.0), Sine);
-    note.blend_sample(Mono64::new(0.0), Min);
-    note.blend_audio(&temp, Add);
-
-    // Write chord to file
-    wav::write(note, "organ.wav").expect("Failed to write WAV file");
+    // Write synthesized audio to WAV file.
+    wav::write(audio, "organ.wav").expect("Failed to write WAV file");
 }

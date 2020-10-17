@@ -18,7 +18,7 @@
 //! ```
 
 use fon::{mono::Mono64, Audio};
-use twang::Fc;
+use twang::Synth;
 
 mod wav;
 
@@ -26,17 +26,17 @@ mod wav;
 const S_RATE: u32 = 48_000;
 
 fn main() {
-    // Generate five seconds of silence.
+    // Initialize audio with five seconds of silence.
     let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
-    // Set up the frequency counter.
-    let fc = Fc::new(S_RATE);
-
-    // Tree-style synthesis
-    for (sample, fc) in audio.iter_mut().zip(fc) {
+    // Create the synthesizer.
+    let mut synth = Synth::new();
+    // Generate audio samples.
+    synth.gen(audio.sink(..), |fc| {
         let freq_modulator: f64 = fc.freq(880.0).sine().into();
         let norm_modulator = (freq_modulator + 1.0) * 0.5;
-        *sample = fc.freq(220.0 * norm_modulator).sine().amp(0.7).to_mono()
-    }
+        fc.freq(220.0 * norm_modulator).sine().amp(0.7)
+    });
 
+    // Write synthesized audio to WAV file.
     wav::write(audio, "synth.wav").expect("Failed to write WAV file");
 }
