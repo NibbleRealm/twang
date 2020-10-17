@@ -20,11 +20,11 @@ fn main() {
     synth.gen(audio.sink(..), |fc| {
         let pink = pink.noise();
         let tone = fc.freq(220.0).gain(12.0).clamp().gain(0.75);
-        let airy = tone.abs().gain(pink.abs().into());
+        let airy = tone.abs().gain(pink.abs());
         
         let pone = fc.freq(220.0).gain(12.0).clamp().abs();
         let ptwo = fc.freq(220.0).triangle();
-        let main = pone.gain(ptwo.into());
+        let main = pone.gain(ptwo);
 
         [airy, main].iter().cloned().mix()
     }); 

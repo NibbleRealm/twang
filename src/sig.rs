@@ -37,16 +37,16 @@ impl Signal {
     /// Pulse wave generator component - takes a sawtooth (`Fc`) wave.
     /// - `half_duty`: ½ Duty cycle - range: 0~1 (1.0 for square wave)
     #[inline]
-    pub fn pulse(self, half_duty: f64) -> Self {
-        let phase_shifted = self.shift(half_duty);
+    pub fn pulse<S: Into<Self>>(self, half_duty: S) -> Self {
+        let phase_shifted = self.shift(half_duty.into().0);
         Self((self.0 - phase_shifted.0).signum())
     }
 
     /// Shift signal.  Takes a signal and adds an amount to it, wrapping to -1
     /// if it goes over 1, and to 1 if it goes under -1.
     #[inline]
-    pub fn shift(self, amount: f64) -> Self {
-        match (self.0 + amount) % 2.0 {
+    pub fn shift<S: Into<Self>>(self, amount: S) -> Self {
+        match (self.0 + amount.into().0) % 2.0 {
             x if x < -1.0 => Self(x + 2.0),
             x if x > 1.0 => Self(x - 2.0),
             x => Self(x),
@@ -55,8 +55,8 @@ impl Signal {
 
     /// Increase (amplify) or decrease the gain of the signal.
     #[inline]
-    pub fn gain(self, volume: f64) -> Self {
-        Self(self.0 * volume)
+    pub fn gain<S: Into<Self>>(self, volume: S) -> Self {
+        Self(self.0 * volume.into().0)
     }
 
     /// Invert (negate) signal.
@@ -73,26 +73,27 @@ impl Signal {
 
     /// The minimum of two signals.
     #[inline]
-    pub fn min<I: Into<Self>>(self, limit: I) -> Self {
+    pub fn min<S: Into<Self>>(self, limit: S) -> Self {
         Self(self.0.min(limit.into().0))
     }
 
     /// The maximum of two signals.
     #[inline]
-    pub fn max<I: Into<Self>>(self, limit: I) -> Self {
+    pub fn max<S: Into<Self>>(self, limit: S) -> Self {
         Self(self.0.min(limit.into().0))
     }
 
     /// Raise a signal to a power.  This can be used to get the `x` root of a
     /// signal as well with `1 / x`.
     #[inline]
-    pub fn pow(self, exp: f64) -> Self {
-        Self(self.0.powf(exp))
+    pub fn pow<S: Into<Self>>(self, exp: S) -> Self {
+        Self(self.0.powf(exp.into().0))
     }
 
     /// Amplify a signal with soft clipping.
     #[inline]
-    pub fn clip_soft(self, volume: f64) -> Self {
+    pub fn clip_soft<S: Into<Self>>(self, volume: S) -> Self {
+        let volume = volume.into().0;
         Self(
             (2.0 / (1.0 + (self.0 * -volume).exp()) - 1.0)
                 / (2.0 / (1.0 + (-volume).exp()) - 1.0),

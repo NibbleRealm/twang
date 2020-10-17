@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/
 
 ## [0.4.0] - Unreleased
 ### Changed
+ - All methods on Signal that took `f64` now take `Into<Self>`
  - Rename `Sample.amp()` to `Sample.gain()`
 
 ## [0.3.0] - 2020-08-26
