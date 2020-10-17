@@ -15,7 +15,7 @@ const HARMONICS: [f64; 10] = [
 /// The three pitches in a perfectly tuned A3 minor chord
 const PITCHES: [f64; 3] = [220.0, 220.0 * 32.0 / 27.0, 220.0 * 3.0 / 2.0];
 /// Volume of the piano
-const VOLUME: f64 = 0.25;
+const VOLUME: f64 = 0.1;
 
 fn main() {
     // Initialize audio with five seconds of silence.
