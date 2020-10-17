@@ -23,42 +23,63 @@
 //! has one paramter representing the **frequency counter**.  You can use the
 //! **frequency counter** to generate continuous pitched waveforms.
 //!
-//! # A4 (440 Hz) Organ Example
-//! ```rust,no_run
-//! use twang::gen::{Generator, Saw};
-//! use fon::{
-//!     mono::Mono64,
-//!     ops::{Add, Sine},
-//!     Audio, Hz,
-//! };
+//! # A3 (220 Hz) Minor Piano Example
+//! This example uses the first ten piano harmonics to generate a sound that
+//! sounds like an electric piano.  This is an example of additive synthesis,
+//! since it uses the `Mix` trait.
 //!
-//! /// First ten harmonic volumes of a piano sample (sounds like electric piano).
+//! ```rust,no_run
+//! use fon::{mono::Mono64, Audio};
+//! use twang::{Synth, Mix};
+//! 
+//! // Target sample rate set to 48 KHz
+//! const S_RATE: u32 = 48_000;
+//! 
+//! /// First ten harmonic volumes of a piano sample.
 //! const HARMONICS: [f64; 10] = [
-//!     0.700, 0.243, 0.229, 0.095, 0.139, 0.087, 0.288, 0.199, 0.124, 0.090,
+//!     0.700,
+//!     0.243,
+//!     0.229,
+//!     0.095,
+//!     0.139,
+//!     0.087,
+//!     0.288,
+//!     0.199,
+//!     0.124,
+//!     0.090,
 //! ];
 //! /// The three pitches in a perfectly tuned A3 minor chord
-//! const PITCHES: [f64; 3] = [220.0, 220.0 * 32.0 / 27.0, 220.0 * 3.0 / 2.0];
-//!
-//! let mut gen;
-//!
-//! // Five seconds of 48 KHz Audio
-//! let mut chord = Audio::with_silence(48_000, 48_000 * 5);
-//! let mut temp;
-//!
-//! // Synthesize an A minor chord.
-//! let volume = 0.25; // To avoid clipping
-//! for pitch in PITCHES.iter().cloned() {
-//!     // Add note to chord
-//!     for (i, harmonic) in HARMONICS.iter().cloned().enumerate() {
-//!         let i: f64 = (i as i32).into();
-//!         gen = Saw::new(Hz(pitch * i));
-//!         temp = Audio::<Mono64>::with_silence(48_000, 48_000 * 5);
-//!         gen.generate(&mut temp);
-//!         temp.blend_sample(Mono64::new(harmonic * volume), Sine);
-//!         // Add harmonic to chord
-//!         chord.blend_audio(&temp, Add);
-//!     }
-//! }
+//! const PITCHES: [f64; 3] = [
+//!     220.0,
+//!     220.0 * 32.0 / 27.0,
+//!     220.0 * 3.0 / 2.0
+//! ];
+//! 
+//! /// Volume of the piano
+//! const VOLUME: f64 = 0.1;
+//! 
+//! // Initialize audio with five seconds of silence.
+//! let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
+//! // Create the synthesizer.
+//! let mut synth = Synth::new();
+//! // Generate audio samples.
+//! synth.gen(audio.sink(..), |fc| {
+//!     // Tree-style synthesis
+//!     PITCHES
+//!         .iter()
+//!         .cloned()
+//!         .map(|p| {
+//!             HARMONICS
+//!                 .iter()
+//!                 .cloned()
+//!                 .enumerate()
+//!                 .map(|(i, v)| {
+//!                     fc.freq(p * (i + 1) as f64).sine().amp(v * VOLUME)
+//!                 })
+//!                 .mix()
+//!         })
+//!         .mix()
+//! });
 //! ```
 
 #![doc(
