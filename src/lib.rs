@@ -31,10 +31,10 @@
 //! ```rust,no_run
 //! use fon::{mono::Mono64, Audio};
 //! use twang::{Synth, Mix};
-//! 
+//!
 //! // Target sample rate set to 48 KHz
 //! const S_RATE: u32 = 48_000;
-//! 
+//!
 //! /// First ten harmonic volumes of a piano sample.
 //! const HARMONICS: [f64; 10] = [
 //!     0.700,
@@ -54,10 +54,10 @@
 //!     220.0 * 32.0 / 27.0,
 //!     220.0 * 3.0 / 2.0
 //! ];
-//! 
+//!
 //! /// Volume of the piano
 //! const VOLUME: f64 = 0.1;
-//! 
+//!
 //! // Initialize audio with five seconds of silence.
 //! let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
 //! // Create the synthesizer.

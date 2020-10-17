@@ -1,5 +1,5 @@
 use fon::{mono::Mono64, Audio};
-use twang::{Synth};
+use twang::Synth;
 
 mod wav;
 
@@ -12,9 +12,7 @@ fn main() {
     // Create the synthesizer.
     let mut synth = Synth::new();
     // Generate audio samples.
-    synth.gen(audio.sink(..), |fc| {
-        fc.freq(220.0).pulse(1.0).gain(0.7)
-    });
+    synth.gen(audio.sink(..), |fc| fc.freq(220.0).pulse(1.0).gain(0.7));
 
     // Write synthesized audio to WAV file.
     wav::write(audio, "square.wav").expect("Failed to write WAV file");

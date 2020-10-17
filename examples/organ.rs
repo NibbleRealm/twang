@@ -1,5 +1,5 @@
 use fon::{mono::Mono64, Audio};
-use twang::{Synth, Mix};
+use twang::{Mix, Synth};
 
 mod wav;
 
