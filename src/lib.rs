@@ -20,7 +20,7 @@
 //! ([`Synth`](struct.Synth.html)).  Then you need a type that implements the
 //! `Sink` trait.  `Audio` buffers have a `sink` method you can use to get a
 //! `Sink`.  Once you have those, you can synthesize audio with a closure that
-//! has one paramter representing the **frequency counter**.  You can use the
+//! has one parameter representing the **frequency counter**.  You can use the
 //! **frequency counter** to generate continuous pitched waveforms.
 //!
 //! # A3 (220 Hz) Minor Piano Example

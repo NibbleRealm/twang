@@ -26,7 +26,7 @@ Links to examples for each will be provided as they are implemented.
 - Phase Offset Modulation Synthesis (two instances of a periodic waveform kept
   slightly out of sync with each other, then are either multiplied or
   subtracted)
-- Arbitrary waveform synthesis (Defined samples occuring at differnt times in
+- Arbitrary waveform synthesis (Defined samples occuring at different times in
   a waveform, called waypoints - either jump or interpolate {video game music})
 
 ### Waveforms
