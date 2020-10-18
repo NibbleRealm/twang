@@ -55,12 +55,7 @@ Envelope (example: ADSR):
 ### Gated Reverb
 Reverb without reflections.
 
- 1. Generate Percussive Sound
- 2. Add Reverb
- 3. Compress (optional)
- 4. Apply Noise Gate To Resulting Sound (Side chaining the original sound)
- 5. About 1/2 second hold, few millisecond release time envelope on Noise Gate
- 6. Mix with original sound
+[Gated Reverb](https://github.com/AldaronLau/twang/blob/master/examples/gate.rs)
 
 ### Reverb And Echo
 Reverb is just echo that takes place in less than 50 milliseconds, so you can

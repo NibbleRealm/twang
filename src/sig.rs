@@ -83,6 +83,14 @@ impl Signal {
         Self(self.0.min(limit.into().0))
     }
 
+    /// Apply noise gate by side-chaining a the cutoff signal level
+    #[inline(always)]
+    pub fn gate<S: Into<Self>>(self, limit: S) -> Self {
+        let pass: u8 = (self.abs().0 > limit.into().0).into();
+        let pass: f64 = pass.into();
+        Self(self.0 * pass)
+    }
+
     /// Raise a signal to a power.  This can be used to get the `x` root of a
     /// signal as well with `1 / x`.
     #[inline(always)]
