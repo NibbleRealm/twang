@@ -27,11 +27,9 @@ fn main() {
         // Tree-style synthesis
         PITCHES
             .iter()
-            .cloned()
             .map(|p| {
                 HARMONICS
                     .iter()
-                    .cloned()
                     .enumerate()
                     .map(|(i, v)| {
                         fc.freq(p * (i + 1) as f64).sine().gain(v * VOLUME)

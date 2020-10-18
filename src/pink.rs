@@ -69,6 +69,7 @@ impl std::fmt::Debug for Pink {
 }
 
 impl Default for Pink {
+    #[inline(always)]
     fn default() -> Self {
         Self::new()
     }

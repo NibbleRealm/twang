@@ -23,20 +23,20 @@ pub struct Signal(f64);
 
 impl Signal {
     /// Sine wave generator component - takes a sawtooth (`Fc`) wave.
-    #[inline]
+    #[inline(always)]
     pub fn sine(self) -> Self {
         Self((self.0 * PI).cos())
     }
 
     /// Triangle wave generator component - takes a sawtooth (`Fc`) wave.
-    #[inline]
+    #[inline(always)]
     pub fn triangle(self) -> Self {
         Self(self.0.abs() * 2.0 - 1.0)
     }
 
     /// Pulse wave generator component - takes a sawtooth (`Fc`) wave.
     /// - `half_duty`: ½ Duty cycle - range: 0~1 (1.0 for square wave)
-    #[inline]
+    #[inline(always)]
     pub fn pulse<S: Into<Self>>(self, half_duty: S) -> Self {
         let phase_shifted = self.shift(half_duty.into().0);
         Self((self.0 - phase_shifted.0).signum())
@@ -44,7 +44,7 @@ impl Signal {
 
     /// Shift signal.  Takes a signal and adds an amount to it, wrapping to -1
     /// if it goes over 1, and to 1 if it goes under -1.
-    #[inline]
+    #[inline(always)]
     pub fn shift<S: Into<Self>>(self, amount: S) -> Self {
         match (self.0 + amount.into().0) % 2.0 {
             x if x < -1.0 => Self(x + 2.0),
@@ -54,44 +54,44 @@ impl Signal {
     }
 
     /// Increase (amplify) or decrease the gain of the signal.
-    #[inline]
+    #[inline(always)]
     pub fn gain<S: Into<Self>>(self, volume: S) -> Self {
         Self(self.0 * volume.into().0)
     }
 
     /// Invert (negate) signal.
-    #[inline]
+    #[inline(always)]
     pub fn invert(self) -> Self {
         Self(-self.0)
     }
 
     /// Absolute value of signal.
-    #[inline]
+    #[inline(always)]
     pub fn abs(self) -> Self {
         Self(self.0.abs())
     }
 
     /// The minimum of two signals.
-    #[inline]
+    #[inline(always)]
     pub fn min<S: Into<Self>>(self, limit: S) -> Self {
         Self(self.0.min(limit.into().0))
     }
 
     /// The maximum of two signals.
-    #[inline]
+    #[inline(always)]
     pub fn max<S: Into<Self>>(self, limit: S) -> Self {
         Self(self.0.min(limit.into().0))
     }
 
     /// Raise a signal to a power.  This can be used to get the `x` root of a
     /// signal as well with `1 / x`.
-    #[inline]
+    #[inline(always)]
     pub fn pow<S: Into<Self>>(self, exp: S) -> Self {
         Self(self.0.powf(exp.into().0))
     }
 
     /// Amplify a signal with soft clipping.
-    #[inline]
+    #[inline(always)]
     pub fn clip_soft<S: Into<Self>>(self, volume: S) -> Self {
         let volume = volume.into().0;
         Self(
@@ -101,13 +101,13 @@ impl Signal {
     }
 
     /// Clamp a signal -1 to 1 (hard clipping)
-    #[inline]
+    #[inline(always)]
     pub fn clamp(self) -> Self {
         self.min(1.0).max(-1.0)
     }
 
     /// Convert signal into Mono channel.
-    #[inline]
+    #[inline(always)]
     pub fn to_mono<Ch: From<Ch64> + Channel>(self) -> Sample1<Ch> {
         let ch: Ch = Ch64::new(self.0.min(1.0).max(-1.0)).into();
         Sample1::new(ch)

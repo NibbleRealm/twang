@@ -66,19 +66,17 @@
 //! synth.gen(audio.sink(..), |fc| {
 //!     // Tree-style synthesis
 //!     PITCHES
-//!         .iter()
-//!         .cloned()
-//!         .map(|p| {
-//!             HARMONICS
-//!                 .iter()
-//!                 .cloned()
-//!                 .enumerate()
-//!                 .map(|(i, v)| {
-//!                     fc.freq(p * (i + 1) as f64).sine().gain(v * VOLUME)
-//!                 })
-//!                 .mix()
-//!         })
-//!         .mix()
+//!        .iter()
+//!        .map(|p| {
+//!            HARMONICS
+//!                .iter()
+//!                .enumerate()
+//!                .map(|(i, v)| {
+//!                    fc.freq(p * (i + 1) as f64).sine().gain(v * VOLUME)
+//!                })
+//!                .mix()
+//!        })
+//!        .mix()
 //! });
 //! ```
 
@@ -105,11 +103,13 @@
 )]
 
 mod pink;
+mod room;
 mod sig;
 mod synth;
 mod white;
 
 pub use pink::Pink;
+pub use room::Room;
 pub use sig::Signal;
 pub use synth::{Fc, Mix, Synth};
 pub use white::White;

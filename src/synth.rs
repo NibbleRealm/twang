@@ -17,7 +17,7 @@ pub struct Fc(Duration);
 
 impl Fc {
     /// Sample frequency counter with a frequency.
-    #[inline]
+    #[inline(always)]
     pub fn freq(&self, freq: f64) -> Signal {
         let modu = Duration::new(1, 0).div_f64(freq).as_nanos();
         let nano = self.0.as_nanos();
@@ -38,6 +38,7 @@ pub struct Synth<S: Sample + From<Mono64>> {
 impl<S: Sample + From<Mono64>> Synth<S> {
     /// Create a new synthesizer that feeds into an audio `Sink` (the opposite
     /// end of a stream).
+    #[inline(always)]
     pub fn new() -> Self {
         Self::default()
     }
@@ -45,6 +46,7 @@ impl<S: Sample + From<Mono64>> Synth<S> {
     /// Generate audio samples.
     /// - `count`: How many samples to stream into the audio `Sink`.
     /// - `synth`: Synthesis function to generate the audio signal.
+    #[inline(always)]
     pub fn gen<F: FnMut(Fc) -> Signal, K: Sink<S>>(
         &mut self,
         mut sink: K,
@@ -68,6 +70,7 @@ pub trait Mix {
 }
 
 impl<B: Borrow<Signal>, I: IntoIterator<Item = B>> Mix for I {
+    #[inline(always)]
     fn mix(self) -> Signal {
         self.into_iter()
             .map(|a| f64::from(*a.borrow()))

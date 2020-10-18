@@ -22,11 +22,13 @@ pub struct White {
 
 impl White {
     /// Create a new White Noise Sampler.
+    #[inline(always)]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Get next sample of white noise.
+    #[inline(always)]
     pub fn noise(&mut self) -> Signal {
         // msws (Middle Square Weyl Sequence) algorithm
         self.x *= self.x;
