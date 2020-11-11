@@ -1,8 +1,5 @@
-use fon::{
-    mono::Mono64,
-    Audio,
-};
-use twang::{Synth, Pink, Mix};
+use fon::{mono::Mono64, Audio};
+use twang::{Mix, Pink, Synth};
 
 mod wav;
 
@@ -19,15 +16,15 @@ fn main() {
     // Generate audio samples.
     synth.gen(audio.sink(..), |fc| {
         let pink = pink.noise();
-        let tone = fc.freq(220.0).amp(12.0).clamp().amp(0.75);
-        let airy = tone.abs().amp(pink.abs().into());
-        
-        let pone = fc.freq(220.0).amp(12.0).clamp().abs();
-        let ptwo = fc.freq(220.0).triangle();
-        let main = pone.amp(ptwo.into());
+        let tone = fc.freq(220.0).gain(12.0).clamp().gain(0.75);
+        let airy = tone.abs().gain(pink.abs());
 
-        [airy, main].iter().cloned().mix()
-    }); 
+        let pone = fc.freq(220.0).gain(12.0).clamp().abs();
+        let ptwo = fc.freq(220.0).triangle();
+        let main = pone.gain(ptwo);
+
+        [airy, main].mix()
+    });
 
     // Write synthesized audio to WAV file.
     wav::write(audio, "brass.wav").expect("Failed to write WAV file");

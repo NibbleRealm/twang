@@ -34,7 +34,7 @@ fn main() {
     synth.gen(audio.sink(..), |fc| {
         let freq_modulator: f64 = fc.freq(880.0).sine().into();
         let norm_modulator = (freq_modulator + 1.0) * 0.5;
-        fc.freq(220.0 * norm_modulator).sine().amp(0.7)
+        fc.freq(220.0 * norm_modulator).sine().gain(0.7)
     });
 
     // Write synthesized audio to WAV file.
