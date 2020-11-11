@@ -2,8 +2,8 @@
 Library for pure Rust advanced audio synthesis.
 
 ## Goals
-- Auto-vectorized audio synthesis.
-- Pure Rust
+- Fast: Auto-vectorized audio synthesis.
+- Pure Rust: No system dependencies outside std.
 
 Links to examples for each will be provided as they are implemented.
 - [Additive synthesis](https://github.com/AldaronLau/twang/blob/master/examples/piano.rs)

@@ -19,8 +19,10 @@ mod wav;
 const S_RATE: u32 = 48_000;
 const MILLIS: u32 = S_RATE / 1_000;
 
-const HOLD_TIME: u32 = 250 * MILLIS;
-const DECAY_TIME: u32 = 10 * MILLIS;
+const HOLD_TIME: u32 = 150 * MILLIS;
+const DECAY_TIME: u32 = 150 * MILLIS;
+const REVERB: f64 = 0.75;
+const ECHO_TIME: u32 = 10 * MILLIS;
 
 fn main() {
     // Initialize audio with five seconds of silence.
@@ -40,7 +42,7 @@ fn main() {
     });
 
     // Set up room for max 20 milliseconds reverb.
-    let mut room = Room::new((20 * MILLIS).try_into().unwrap());
+    let mut room = Room::new((ECHO_TIME).try_into().unwrap());
     // Set counter to zero.
     let mut counter = 0;
 
@@ -51,9 +53,9 @@ fn main() {
         // 1. Percussive Sound
         let orig: Signal = input.next().unwrap_or(0.0).into();
         // 2. Add Reverb
-        room.add(orig, (20 * MILLIS).try_into().unwrap(), 0.5);
+        room.add(orig, (ECHO_TIME).try_into().unwrap(), REVERB);
         let reverb = room.gen();
-        room.add(reverb, (20 * MILLIS - 1).try_into().unwrap(), 0.5);
+        room.add(reverb, (ECHO_TIME - 1).try_into().unwrap(), REVERB);
         // 3. Compress (FIXME)
         let compressed = reverb;
         // 4. Apply Noise Gate (Side Chain Original Sound)
