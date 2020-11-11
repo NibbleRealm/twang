@@ -31,12 +31,12 @@ Links to examples for each will be provided as they are implemented.
 
 ### Waveforms
 Oscillators:
-- [Frequency Counter (Fc / Sawtooth)](https://docs.rs/twang/0.3.0/twang/struct.Fc.html) -
+- [Frequency Counter (Fc / Sawtooth)](https://docs.rs/twang/latest/twang/struct.Fc.html) -
   odd and even harmonics that decrease at -6 dB/octave
-- [Pulse Wave](https://docs.rs/twang/0.3.0/twang/sig/struct.Signal.html#method.pulse)
+- [Pulse Wave](https://docs.rs/twang/latest/twang/sig/struct.Signal.html#method.pulse)
   (When ½ duty cycle set to 1.0 is a Square Wave - odd harmonics that decrease
   at -6 dB/octave)
-- [Sine Wave](https://docs.rs/twang/0.3.0/twang/sig/struct.Signal.html#method.sine) -
+- [Sine Wave](https://docs.rs/twang/latest/twang/sig/struct.Signal.html#method.sine) -
   no harmonics
 - Triangle Wave - odd harmonics that decrease at -12 dB/octave
 
