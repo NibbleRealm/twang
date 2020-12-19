@@ -4,6 +4,10 @@ All notable changes to `twang` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
+## [0.5.0] - 2020-12-19
+### Changed
+ - Update `fon` to version 0.3
+
 ## [0.4.0] - 2020-11-11
 ### Added
  - Add `Room` struct for creating various types of reverb and echoes. 
