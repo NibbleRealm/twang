@@ -43,7 +43,7 @@ impl Synth {
         Self::default()
     }
 
-    /// Generate audio samples.
+    /// Generate audio samples, and mix into the audio sink.
     /// - `count`: How many samples to stream into the audio `Sink`.
     /// - `synth`: Synthesis function to generate the audio signal.
     #[inline(always)]
@@ -54,7 +54,7 @@ impl Synth {
     ) {
         let stepper = Duration::new(1, 0) / sink.sample_rate();
         for _ in 0..sink.capacity() {
-            sink.sink_sample(synth(Fc(self.counter)).to_mono());
+            sink.sink_sample(synth(Fc(self.counter)).to_mono(), fon::ops::Mix);
             self.counter += stepper;
         }
     }
