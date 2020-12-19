@@ -23,7 +23,7 @@ categories = ["multimedia::audio", "multimedia"]
 edition = "2018"
 
 [dependencies]
-fon = "0.3"
+fon = { path = "../fon" } # "0.3"
 
 # [replace]
 # "fon:0.2.0" = { path = "../fon" }

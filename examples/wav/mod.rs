@@ -2,7 +2,7 @@
 //!
 //! http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
 
-use fon::{chan::Ch16, Sample, stereo::Stereo16, Audio};
+use fon::{chan::Ch16, stereo::Stereo16, Audio, Sample};
 use std::convert::TryInto;
 use std::{fs, io, mem::size_of};
 

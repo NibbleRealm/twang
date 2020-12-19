@@ -9,8 +9,8 @@
 // according to those terms.
 
 use crate::sig::Signal;
-use fon::{mono::Mono64, Sample, Sink};
-use std::{borrow::Borrow, marker::PhantomData, time::Duration};
+use fon::Sink;
+use std::{borrow::Borrow, time::Duration};
 
 /// Frequency counter.
 #[derive(Copy, Clone, Debug)]
@@ -31,12 +31,11 @@ impl Fc {
 /// `Stream`, which has it's own associated sample rate, `Synth` generates the
 /// audio directly at the destination sample rate.
 #[derive(Debug, Copy, Clone, Default)]
-pub struct Synth<S: Sample + From<Mono64>> {
+pub struct Synth {
     counter: Duration,
-    _phantom: PhantomData<S>,
 }
 
-impl<S: Sample + From<Mono64>> Synth<S> {
+impl Synth {
     /// Create a new synthesizer that feeds into an audio `Sink` (the opposite
     /// end of a stream).
     #[inline(always)]
@@ -48,14 +47,14 @@ impl<S: Sample + From<Mono64>> Synth<S> {
     /// - `count`: How many samples to stream into the audio `Sink`.
     /// - `synth`: Synthesis function to generate the audio signal.
     #[inline(always)]
-    pub fn gen<F: FnMut(Fc) -> Signal, K: Sink<S>>(
+    pub fn gen<F: FnMut(Fc) -> Signal, K: Sink>(
         &mut self,
         mut sink: K,
         mut synth: F,
     ) {
         let stepper = Duration::new(1, 0) / sink.sample_rate();
         for _ in 0..sink.capacity() {
-            sink.sink_sample(synth(Fc(self.counter)).to_mono().into());
+            sink.sink_sample(synth(Fc(self.counter)).to_mono());
             self.counter += stepper;
         }
     }
