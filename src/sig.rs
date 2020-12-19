@@ -1,17 +1,18 @@
-// Copyright (c) 2018-2020 Jeron Aldaron Lau
-//
-// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
-// http://www.apache.org/licenses/LICENSE-2.0>, the MIT license
-// <LICENSE-MIT or http://opensource.org/licenses/MIT>, or the ZLib
-// license <LICENSE-ZLIB or https://www.zlib.net/zlib_license.html> at
-// your option. This file may not be copied, modified, or distributed
-// except according to those terms.
+// Copyright Jeron Aldaron Lau 2018 - 2020.
+// Distributed under either the Apache License, Version 2.0
+//    (See accompanying file LICENSE_APACHE_2_0.txt or copy at
+//          https://apache.org/licenses/LICENSE-2.0),
+// or the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_BOOST_1_0.txt or copy at
+//          https://www.boost.org/LICENSE_1_0.txt)
+// at your option. This file may not be copied, modified, or distributed except
+// according to those terms.
 
 //! Digital audio signal.
 
 use fon::{
     chan::{Ch64, Channel},
-    sample::Sample1,
+    mono::Mono,
 };
 use std::f64::consts::PI;
 
@@ -116,9 +117,9 @@ impl Signal {
 
     /// Convert signal into Mono channel.
     #[inline(always)]
-    pub fn to_mono<Ch: From<Ch64> + Channel>(self) -> Sample1<Ch> {
+    pub fn to_mono<Ch: From<Ch64> + Channel>(self) -> Mono<Ch> {
         let ch: Ch = Ch64::new(self.0.min(1.0).max(-1.0)).into();
-        Sample1::new(ch)
+        Mono::new(ch)
     }
 }
 
