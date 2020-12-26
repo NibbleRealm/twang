@@ -9,8 +9,8 @@
 // according to those terms.
 
 use crate::sig::Signal;
-use fon::Sink;
-use std::{borrow::Borrow, time::Duration};
+use fon::{mono::Mono64, Stream};
+use std::{borrow::Borrow, time::Duration, fmt::Debug};
 
 /// Frequency counter.
 #[derive(Copy, Clone, Debug)]
@@ -27,36 +27,58 @@ impl Fc {
     }
 }
 
-/// A streaming synthesizer into an audio `Sink`.  Rather than implementing
-/// `Stream`, which has it's own associated sample rate, `Synth` generates the
-/// audio directly at the destination sample rate.
-#[derive(Debug, Copy, Clone, Default)]
-pub struct Synth {
+/// A streaming synthesizer.  Implements [`Stream`](fon::Stream).
+#[derive(Debug)]
+pub struct Synth<T: Debug + Clone> {
+    params: T,
+    synthfn: fn(T, Fc) -> Signal,
     counter: Duration,
+    sample_rate: Option<f64>,
+    stepper: Duration,
 }
 
-impl Synth {
-    /// Create a new synthesizer that feeds into an audio `Sink` (the opposite
-    /// end of a stream).
+impl<T: Debug + Clone> Synth<T> {
+    /// Create a new streaming synthesizer.
     #[inline(always)]
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(params: T, synth: fn(T, Fc) -> Signal) -> Self {
+        Self {
+            params,
+            sample_rate: None,
+            synthfn: synth,
+            counter: Duration::default(),
+            stepper: Duration::default(),
+        }
     }
 
-    /// Generate audio samples, and mix into the audio sink.
-    /// - `count`: How many samples to stream into the audio `Sink`.
-    /// - `synth`: Synthesis function to generate the audio signal.
-    #[inline(always)]
-    pub fn gen<F: FnMut(Fc) -> Signal, K: Sink>(
-        &mut self,
-        mut sink: K,
-        mut synth: F,
-    ) {
-        let stepper = Duration::new(1, 0) / sink.sample_rate();
-        for _ in 0..sink.capacity() {
-            sink.sink_sample(synth(Fc(self.counter)).to_mono(), fon::ops::Mix);
-            self.counter += stepper;
-        }
+    /// Get the parameters of the synthesizer.
+    pub fn params(&mut self) -> &mut T {
+        &mut self.params
+    }
+}
+
+impl<T: Debug + Clone> Iterator for &mut Synth<T> {
+    type Item = Mono64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let frame = (self.synthfn)(self.params.clone(), Fc(self.counter)).to_mono();
+        self.counter += self.stepper;
+        Some(frame)
+    }
+}
+
+impl<T: Debug + Clone> Stream<Mono64> for &mut Synth<T> {
+    fn sample_rate(&self) -> Option<f64> {
+        self.sample_rate
+    }
+
+    fn set_sample_rate<R: Into<f64>>(&mut self, sr: R) {
+        let sample_rate = sr.into();
+        self.sample_rate = Some(sample_rate);
+        self.stepper = Duration::new(1, 0).div_f64(sample_rate);
+    }
+
+    fn len(&self) -> Option<usize> {
+        None
     }
 }
 

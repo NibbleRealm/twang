@@ -17,7 +17,7 @@
 //! let carrier = fc.freq(440.0).shift(message).sine()
 //! ```
 
-use fon::{mono::Mono64, Audio};
+use fon::{mono::Mono64, Audio, Sink};
 use twang::Synth;
 
 mod wav;
@@ -29,13 +29,14 @@ fn main() {
     // Initialize audio with five seconds of silence.
     let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
     // Create the synthesizer.
-    let mut synth = Synth::new();
-    // Generate audio samples.
-    synth.gen(audio.sink(..), |fc| {
+    let mut synth = Synth::new(|fc| {
         let freq_modulator: f64 = fc.freq(880.0).sine().into();
         let norm_modulator = (freq_modulator + 1.0) * 0.5;
         fc.freq(220.0 * norm_modulator).sine().gain(0.7)
     });
+
+    // Generate audio samples.
+    audio.sink(..).stream(&mut synth);
 
     // Write synthesized audio to WAV file.
     wav::write(audio, "synth.wav").expect("Failed to write WAV file");

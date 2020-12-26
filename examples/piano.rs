@@ -1,6 +1,6 @@
 //! A Minor on an Electric Piano
 
-use fon::{mono::Mono64, Audio};
+use fon::{mono::Mono64, Audio, Sink};
 use twang::{Mix, Synth};
 
 mod wav;
@@ -21,9 +21,7 @@ fn main() {
     // Initialize audio with five seconds of silence.
     let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
     // Create the synthesizer.
-    let mut synth = Synth::new();
-    // Generate audio samples.
-    synth.gen(audio.sink(..), |fc| {
+    let mut synth = Synth::new(|fc| {
         // Tree-style synthesis
         PITCHES
             .iter()
@@ -38,6 +36,8 @@ fn main() {
             })
             .mix()
     });
+    // Generate audio samples.
+    audio.sink(..).stream(&mut synth);
 
     // Write synthesized audio to WAV file.
     wav::write(audio, "piano.wav").expect("Failed to write WAV file");

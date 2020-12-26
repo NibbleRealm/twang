@@ -1,4 +1,4 @@
-use fon::{mono::Mono64, Audio};
+use fon::{mono::Mono64, Audio, Sink};
 use twang::Synth;
 
 mod wav;
@@ -10,9 +10,10 @@ fn main() {
     // Initialize audio with five seconds of silence.
     let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
     // Create the synthesizer.
-    let mut synth = Synth::new();
+    let mut synth = Synth::new(|fc| fc.freq(440.0).sine());
+
     // Generate audio samples.
-    synth.gen(audio.sink(..), |fc| fc.freq(440.0).sine());
+    audio.sink(..).stream(&mut synth);
 
     // Write synthesized audio to WAV file.
     wav::write(audio, "sine.wav").expect("Failed to write WAV file");

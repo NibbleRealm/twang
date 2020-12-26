@@ -9,7 +9,7 @@
 //! 5. About 1/2 second hold, few ms release time envelope on Noise Gate
 //! 6. Mix with original sound
 
-use fon::{mono::Mono64, Audio};
+use fon::{mono::Mono64, Audio, Sink};
 use std::convert::TryInto;
 use twang::{Mix, Room, Signal, Synth};
 
@@ -47,9 +47,7 @@ fn main() {
     let mut counter = 0;
 
     // Create the synthesizer.
-    let mut synth = Synth::new();
-    // Synthesize Original With Gated Reverb
-    synth.gen(audio.sink(..), |_fc| {
+    let mut synth = Synth::new(|_fc| {
         // 1. Percussive Sound
         let orig: Signal = input.next().unwrap_or(0.0).into();
         // 2. Add Reverb
@@ -75,6 +73,9 @@ fn main() {
         //fina1
         fina1
     });
+
+    // Synthesize Original With Gated Reverb
+    audio.sink(..).stream(&mut synth);
 
     // Write synthesized audio to WAV file.
     wav::write(audio, "gated.wav").expect("Failed to write WAV file");
