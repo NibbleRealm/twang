@@ -4,6 +4,20 @@ All notable changes to `twang` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
+## [0.6.0] - 2020-12-30
+### Added
+ - `Synth` now implements `fon::Stream`
+ - `Synth::params()`
+
+### Changed
+ - `Synth::new` now takes an additional parameter for parameterizing synthesis,
+   and rather than taking a closure takes a function.
+ - Update `fon` to version 0.4
+ - `Signal::to_mono()` now always return `Ch64` rather than being generic.
+
+### Removed
+ - `Synth::gen()`
+
 ## [0.5.0] - 2020-12-19
 ### Changed
  - Update `fon` to version 0.3

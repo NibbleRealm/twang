@@ -2,19 +2,17 @@
 //!
 //! http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
 
-use fon::{chan::Ch16, Sample, stereo::Stereo16, Audio};
+use fon::{chan::Ch16, stereo::Stereo16, Audio, Frame};
 use std::convert::TryInto;
 use std::{fs, io, mem::size_of};
 
 /// Write a 16-bit PCM WAV file
-pub(super) fn write<S: Sample>(
-    audio: Audio<S>,
-    filename: &str,
-) -> io::Result<()>
+pub(super) fn write<F: Frame>(audio: Audio<F>, filename: &str) -> io::Result<()>
 where
-    Ch16: From<S::Chan>,
+    Ch16: From<F::Chan>,
 {
-    let audio = Audio::<Stereo16>::with_audio(audio.sample_rate(), &audio);
+    let audio =
+        Audio::<Stereo16>::with_stream(audio.sample_rate().floor(), &audio);
     let mut buf = vec![];
     write_header(&mut buf, &audio);
     write_fmt_header(&mut buf, &audio);
@@ -45,7 +43,7 @@ fn write_fmt_header(buf: &mut Vec<u8>, audio: &Audio<Stereo16>) {
     // 4: Sampling Rate
     buf.extend(&(audio.sample_rate() as u32).to_le_bytes());
     // 8: Bytes per second (i16 * 2 * sample rate)
-    buf.extend(&((4 * audio.sample_rate()) as u32).to_le_bytes());
+    buf.extend(&(4 * audio.sample_rate() as u32).to_le_bytes());
     // 12. Data block size (bytes: i16 * 2)
     buf.extend(&(size_of::<u16>() as u16 * 2u16).to_le_bytes());
     // 14. Bits per sample
@@ -58,7 +56,7 @@ fn write_audio_data(buf: &mut Vec<u8>, audio: &Audio<Stereo16>) {
     // cksize (Bytes): Stereo (2) * i16 (2) * Frame Length
     buf.extend(&(4 * audio.len() as u32).to_le_bytes());
     // Sampled data
-    for sample in audio.samples() {
+    for sample in audio {
         for channel in sample.channels().iter().cloned() {
             let channel: i16 = channel.into();
             buf.extend(&channel.to_le_bytes());
