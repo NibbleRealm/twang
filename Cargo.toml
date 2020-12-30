@@ -10,7 +10,7 @@
 
 [package]
 name = "twang"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
 license = "Apache-2.0 OR BSL-1.0"
 documentation = "https://docs.rs/twang"
@@ -23,7 +23,4 @@ categories = ["multimedia::audio", "multimedia"]
 edition = "2018"
 
 [dependencies]
-fon = { path = "../fon" } # "0.3"
-
-# [replace]
-# "fon:0.2.0" = { path = "../fon" }
+fon = "0.4"
