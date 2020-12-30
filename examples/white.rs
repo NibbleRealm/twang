@@ -1,5 +1,5 @@
 use fon::{mono::Mono64, Audio, Sink};
-use twang::{Synth, White};
+use twang::{Synth, White, Fc, Signal};
 
 mod wav;
 
@@ -7,12 +7,14 @@ mod wav;
 const S_RATE: u32 = 48_000;
 
 fn main() {
+    fn gen_white(white: &mut White, _fc: Fc) -> Signal {
+        white.noise()
+    }
+
     // Initialize audio with five seconds of silence.
     let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
-    // Create the white noise generator.
-    let mut white = White::new();
     // Create the synthesizer.
-    let mut synth = Synth::new(|_fc| white.noise());
+    let mut synth = Synth::new(White::new(), gen_white);
 
     // Generate audio samples.
     audio.sink(..).stream(&mut synth);

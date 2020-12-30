@@ -1,5 +1,5 @@
 use fon::{mono::Mono64, Audio, Sink};
-use twang::Synth;
+use twang::{Synth, Fc, Signal};
 
 mod wav;
 
@@ -7,10 +7,14 @@ mod wav;
 const S_RATE: u32 = 48_000;
 
 fn main() {
+    fn saw(_: &mut (), fc: Fc) -> Signal {
+        fc.freq(220.0)
+    }
+
     // Initialize audio with five seconds of silence.
     let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
     // Create the synthesizer.
-    let mut synth = Synth::new(|fc| fc.freq(220.0));
+    let mut synth = Synth::new((), saw);
 
     // Generate audio samples.
     audio.sink(..).stream(&mut synth);

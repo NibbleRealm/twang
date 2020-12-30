@@ -10,7 +10,7 @@
 
 use crate::sig::Signal;
 use fon::{mono::Mono64, Stream};
-use std::{borrow::Borrow, time::Duration, fmt::Debug};
+use std::{borrow::Borrow, fmt::Debug, time::Duration};
 
 /// Frequency counter.
 #[derive(Copy, Clone, Debug)]
@@ -28,19 +28,24 @@ impl Fc {
 }
 
 /// A streaming synthesizer.  Implements [`Stream`](fon::Stream).
-#[derive(Debug)]
-pub struct Synth<T: Debug + Clone> {
+pub struct Synth<T: Debug> {
     params: T,
-    synthfn: fn(T, Fc) -> Signal,
+    synthfn: fn(&mut T, Fc) -> Signal,
     counter: Duration,
     sample_rate: Option<f64>,
     stepper: Duration,
 }
 
-impl<T: Debug + Clone> Synth<T> {
+impl<T: Debug> Debug for Synth<T> {
+    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
+impl<T: Debug> Synth<T> {
     /// Create a new streaming synthesizer.
     #[inline(always)]
-    pub fn new(params: T, synth: fn(T, Fc) -> Signal) -> Self {
+    pub fn new(params: T, synth: fn(&mut T, Fc) -> Signal) -> Self {
         Self {
             params,
             sample_rate: None,
@@ -56,17 +61,18 @@ impl<T: Debug + Clone> Synth<T> {
     }
 }
 
-impl<T: Debug + Clone> Iterator for &mut Synth<T> {
+impl<T: Debug> Iterator for &mut Synth<T> {
     type Item = Mono64;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let frame = (self.synthfn)(self.params.clone(), Fc(self.counter)).to_mono();
+        let frame =
+            (self.synthfn)(&mut self.params, Fc(self.counter)).to_mono();
         self.counter += self.stepper;
         Some(frame)
     }
 }
 
-impl<T: Debug + Clone> Stream<Mono64> for &mut Synth<T> {
+impl<T: Debug> Stream<Mono64> for &mut Synth<T> {
     fn sample_rate(&self) -> Option<f64> {
         self.sample_rate
     }

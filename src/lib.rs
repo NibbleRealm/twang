@@ -31,11 +31,11 @@
 //!
 //! ```rust,no_run
 //! use fon::{mono::Mono64, Audio, Sink};
-//! use twang::{Mix, Synth};
-//!
+//! use twang::{Mix, Synth, Fc, Signal};
+//! 
 //! // Target sample rate set to 48 KHz
 //! const S_RATE: u32 = 48_000;
-//!
+//! 
 //! /// First ten harmonic volumes of a piano sample (sounds like electric piano).
 //! const HARMONICS: [f64; 10] = [
 //!     0.700, 0.243, 0.229, 0.095, 0.139, 0.087, 0.288, 0.199, 0.124, 0.090,
@@ -44,13 +44,9 @@
 //! const PITCHES: [f64; 3] = [220.0, 220.0 * 32.0 / 27.0, 220.0 * 3.0 / 2.0];
 //! /// Volume of the piano
 //! const VOLUME: f64 = 0.1;
-//!
+//! 
 //! fn main() {
-//!     // Initialize audio with five seconds of silence.
-//!     let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
-//!     // Create the synthesizer.
-//!     let mut synth = Synth::new(|fc| {
-//!         // Tree-style synthesis
+//!     fn piano(_: &mut (), fc: Fc) -> Signal {
 //!         PITCHES
 //!             .iter()
 //!             .map(|p| {
@@ -63,7 +59,12 @@
 //!                     .mix()
 //!             })
 //!             .mix()
-//!     });
+//!     }
+//! 
+//!     // Initialize audio with five seconds of silence.
+//!     let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
+//!     // Create the synthesizer.
+//!     let mut synth = Synth::new((), piano);
 //!     // Generate audio samples.
 //!     audio.sink(..).stream(&mut synth);
 //! }
