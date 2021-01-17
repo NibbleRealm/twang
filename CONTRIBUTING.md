@@ -1,27 +1,22 @@
 # Contributing
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
-dual licensed under the Apache License, Version 2.0 and the Boost License,
-Version 1.0, without any additional terms or conditions.
+Anyone is welcome to contribute!  You can [open an issue],
+[Post to GitHub Discussions] or [send me an email] about anything related to
+this project.  You may also [open a PR].  I don't require PRs to be formatted in
+a specific manner, since I'll run it through rustfmt after the merge anyway.  If
+you're going to work on a PR, it would be preferred to let me know ahead of time
+(unless it's a quick fix), and open a draft PR if it's a large one.  Then I'll
+assign the issue to you.  Otherwise, I can't guarantee I won't duplicate your
+work.  If I can't contact you within a week, I may unassign you and finish your
+work (opening a Draft PR on this repository puts your code under this crate's
+license).
 
-Anyone is more than welcome to contribute!  Don't be shy about getting involved,
-whether with a question, idea, bug report, bug fix, feature request, feature
-implementation, or other enhancement.  Other projects have strict contributing
-guidelines, but this project accepts any and all formats for pull requests and
-issues.  For ongoing code contributions, if you wish to ensure your code is
-used, open a draft PR so that I know not to write the same code.  If a feature
-needs to be bumped in importance, I may merge an unfinished draft PR into it's
-own branch and finish it (after a week's deadline for the person who openned
-it).  Contributors will always be notified in this situation, and given a choice
-to merge early.
+If you open a bug report, you can usually expect it to be fixed within a week.
+If you open a feature request it may stay open indefinitely, until I need it
+too.  I mark feature requests as "enhancements" on GitHub issues.
 
-All pull request contributors will have their username added in the contributors
-section of the release notes of the next version after the merge, with a message
-thanking them.  I always make time to fix bugs, so usually a patched version of
-the library will be out a few days after a report.  Features requests will not
-complete as fast.  If you have any questions, design critques, or want me to
-find you something to work on based on your skill level, you can email me at
-[jeronlau@plopgrizzly.com](mailto:jeronlau@plopgrizzly.com).  Otherwise,
-[here's a link to the issues on GitHub](https://github.com/AldaronLau/twang/issues),
-and, as always, make sure to read and follow the
-[Code of Conduct](https://github.com/AldaronLau/twang/blob/main/CODE_OF_CONDUCT.md).
+Happy coding!
+
+[open an issue]: https://github.com/AldaronLau/fon/issues
+[send me an email]: mailto:aldaronlau@gmail.com
+[open a PR]: https://github.com/AldaronLau/fon/pulls
+[Post to GitHub Discussions]: https://github.com/AldaronLau/fon/discussions
