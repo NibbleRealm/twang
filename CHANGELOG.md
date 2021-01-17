@@ -4,6 +4,10 @@ All notable changes to `twang` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
+## [0.7.0] - 2021-01-17
+### Changed
+ - Update to fon version 0.5
+
 ## [0.6.0] - 2020-12-30
 ### Added
  - `Synth` now implements `fon::Stream`
