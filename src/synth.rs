@@ -9,7 +9,8 @@
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
 use crate::sig::Signal;
-use fon::{mono::Mono64, Stream};
+use fon::{Stream, Audio};
+use fon::chan::{Channel, Ch64, Ch32};
 use std::{borrow::Borrow, fmt::Debug, time::Duration};
 
 /// Frequency counter.
@@ -25,6 +26,23 @@ impl Fc {
         // Return signal between -1 and 1
         (((nano % modu) << 1) as f64 / modu as f64 - 1.0).into()
     }
+
+    /// Create an oscillator based on this frequency counter.  Frequency should
+    /// always be more than 0.000_000_001 hertz (panic in debug mode).
+    #[inline(always)]
+    pub fn osc(&self, freq: f32) -> Ch32 {
+        debug_assert!(freq > 0.000_000_001);
+
+        let period: u64 = (1_000_000_000.0 / freq) as u64;
+
+        // Modulo duration by period.
+        let secs = self.0.as_secs() % period;
+        let nanos = self.0.subsec_nanos();
+        let dur = secs * 1_000_000_000 + u64::from(nanos);
+        let time = (dur % period) as f32 * 0.000_000_001;
+
+        Ch32::from(time)
+    }
 }
 
 /// A streaming synthesizer.  Implements [`Stream`](fon::Stream).
@@ -32,8 +50,6 @@ pub struct Synth<T: Debug> {
     params: T,
     synthfn: fn(&mut T, Fc) -> Signal,
     counter: Duration,
-    sample_rate: Option<f64>,
-    stepper: Duration,
 }
 
 impl<T: Debug> Debug for Synth<T> {
@@ -48,10 +64,8 @@ impl<T: Debug> Synth<T> {
     pub fn new(params: T, synth: fn(&mut T, Fc) -> Signal) -> Self {
         Self {
             params,
-            sample_rate: None,
             synthfn: synth,
             counter: Duration::default(),
-            stepper: Duration::default(),
         }
     }
 
@@ -61,30 +75,27 @@ impl<T: Debug> Synth<T> {
     }
 }
 
-impl<T: Debug> Iterator for &mut Synth<T> {
-    type Item = Mono64;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let frame =
-            (self.synthfn)(&mut self.params, Fc(self.counter)).to_mono();
-        self.counter += self.stepper;
-        Some(frame)
-    }
-}
-
-impl<T: Debug> Stream<Mono64> for &mut Synth<T> {
-    fn sample_rate(&self) -> Option<f64> {
-        self.sample_rate
-    }
-
-    fn set_sample_rate<R: Into<f64>>(&mut self, sr: R) {
-        let sample_rate = sr.into();
-        self.sample_rate = Some(sample_rate);
-        self.stepper = Duration::new(1, 0).div_f64(sample_rate);
-    }
-
-    fn len(&self) -> Option<usize> {
+impl<T: Debug> Stream<Ch64, 1> for Synth<T> {
+    fn sample_rate(&self) -> Option<u32> {
+        // Synthesizer has no fixed sample rate.
         None
+    }
+
+    fn extend<C: Channel, const N: usize>(
+        &mut self,
+        buffer: &mut Audio<C, N>,
+        len: usize
+    ) where
+        C: From<Ch64>,
+    {
+        let step = Duration::new(1, 0) / Audio::sample_rate(buffer);
+        let synth = (0..len).map(|_| {
+            let frame =
+                (self.synthfn)(&mut self.params, Fc(self.counter)).to_mono();
+            self.counter += step;
+            frame.to()
+        });
+        buffer.sink(synth);
     }
 }
 

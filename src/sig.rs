@@ -10,7 +10,8 @@
 
 //! Digital audio signal.
 
-use fon::{chan::Ch64, mono::Mono};
+use fon::Frame;
+use fon::{chan::Ch64};
 use std::f64::consts::PI;
 
 /// A signed digital audio signal that can be routed through processing
@@ -114,8 +115,8 @@ impl Signal {
 
     /// Convert signal into Mono channel.
     #[inline(always)]
-    pub fn to_mono(self) -> Mono<Ch64> {
-        Mono::new(Ch64::new(self.0.min(1.0).max(-1.0)))
+    pub fn to_mono(self) -> Frame<Ch64, 1> {
+        Frame::<Ch64, 1>::new(Ch64::new(self.0.min(1.0).max(-1.0)))
     }
 }
 

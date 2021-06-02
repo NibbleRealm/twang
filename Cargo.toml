@@ -25,3 +25,6 @@ include = ["Cargo.toml", "src/*"]
 
 [dependencies]
 fon = "0.5"
+
+[patch.crates-io]
+fon = { path = "../fon" }

@@ -2,17 +2,18 @@
 //!
 //! http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
 
-use fon::{chan::Ch16, stereo::Stereo16, Audio, Frame};
+use fon::chan::{Channel, Ch16};
+use fon::Audio;
+use fon::pos::{Left, Right};
 use std::convert::TryInto;
 use std::{fs, io, mem::size_of};
 
 /// Write a 16-bit PCM WAV file
-pub(super) fn write<F: Frame>(audio: Audio<F>, filename: &str) -> io::Result<()>
-where
-    Ch16: From<F::Chan>,
+pub(super) fn write<Chan: Channel, const CH: usize>(audio: Audio<Chan, CH>, filename: &str) -> io::Result<()>
+    where Ch16: From<Chan>
 {
     let audio =
-        Audio::<Stereo16>::with_stream(audio.sample_rate().floor(), &audio);
+        Audio::<Ch16, 2>::with_stream(&audio, audio.len());
     let mut buf = vec![];
     write_header(&mut buf, &audio);
     write_fmt_header(&mut buf, &audio);
@@ -20,7 +21,7 @@ where
     fs::write(filename, buf)
 }
 
-fn write_header(buf: &mut Vec<u8>, audio: &Audio<Stereo16>) {
+fn write_header(buf: &mut Vec<u8>, audio: &Audio<Ch16, 2>) {
     // Predict size of WAV subchunks.
     let n: u32 = audio.len().try_into().unwrap();
     // RIFF Chunk: ckID
@@ -31,7 +32,7 @@ fn write_header(buf: &mut Vec<u8>, audio: &Audio<Stereo16>) {
     buf.extend(b"WAVE");
 }
 
-fn write_fmt_header(buf: &mut Vec<u8>, audio: &Audio<Stereo16>) {
+fn write_fmt_header(buf: &mut Vec<u8>, audio: &Audio<Ch16, 2>) {
     // RIFF Subchunk: "fmt "
     buf.extend(b"fmt ");
     // Chunk size: 16, 18 or 40
@@ -50,16 +51,16 @@ fn write_fmt_header(buf: &mut Vec<u8>, audio: &Audio<Stereo16>) {
     buf.extend(&(16u16).to_le_bytes());
 }
 
-fn write_audio_data(buf: &mut Vec<u8>, audio: &Audio<Stereo16>) {
+fn write_audio_data(buf: &mut Vec<u8>, audio: &Audio<Ch16, 2>) {
     // RIFF Subchunk: "data"
     buf.extend(b"data");
     // cksize (Bytes): Stereo (2) * i16 (2) * Frame Length
     buf.extend(&(4 * audio.len() as u32).to_le_bytes());
     // Sampled data
-    for sample in audio {
-        for channel in sample.channels().iter().cloned() {
-            let channel: i16 = channel.into();
-            buf.extend(&channel.to_le_bytes());
-        }
+    for frame in audio.iter() {
+        // Add left channel
+        buf.extend(&i16::from(frame[Left]).to_le_bytes());
+        // Add right channel
+        buf.extend(&i16::from(frame[Right]).to_le_bytes());
     }
 }

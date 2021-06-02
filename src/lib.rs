@@ -30,7 +30,7 @@
 //! since it uses the `Mix` trait.
 //!
 //! ```rust,no_run
-//! use fon::{mono::Mono64, Audio, Sink};
+//! use fon::{chan::Ch64, Audio, Stream};
 //! use twang::{Mix, Synth, Fc, Signal};
 //! 
 //! // Target sample rate set to 48 KHz
@@ -62,11 +62,11 @@
 //!     }
 //! 
 //!     // Initialize audio with five seconds of silence.
-//!     let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
+//!     let mut audio = Audio::<Ch64, 1>::new(S_RATE);
 //!     // Create the synthesizer.
 //!     let mut synth = Synth::new((), piano);
-//!     // Generate audio samples.
-//!     audio.sink(..).stream(&mut synth);
+//!     // Stream 5 seconds of synth into audio buffer.
+//!     synth.extend(&mut audio, S_RATE as usize * 5);
 //! }
 //! ```
 

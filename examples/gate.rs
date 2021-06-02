@@ -9,7 +9,7 @@
 //! 5. About 1/2 second hold, few ms release time envelope on Noise Gate
 //! 6. Mix with original sound
 
-use fon::{mono::Mono64, Audio, Sink};
+use fon::{chan::Ch64, Audio, Stream};
 use std::{convert::TryInto};
 use twang::{Mix, Room, Signal, Synth, Fc};
 
@@ -72,9 +72,8 @@ fn gate(cx: &mut GateCx, _fc: Fc) -> Signal {
 
 fn main() {
     // Initialize audio with five seconds of silence.
-    let mut audio = Audio::<Mono64>::with_silence(
+    let mut audio = Audio::<Ch64, 1>::new(
         S_RATE,
-        (HOLD_TIME + DECAY_TIME).try_into().unwrap(),
     );
     let input = std::fs::read(
         std::env::args().skip(1).next().expect("Need a PCM file"),
@@ -99,7 +98,7 @@ fn main() {
     let mut synth = Synth::new(gatecx, gate);
 
     // Synthesize Original With Gated Reverb
-    audio.sink(..).stream(&mut synth);
+    synth.extend(&mut audio, (HOLD_TIME + DECAY_TIME).try_into().unwrap());
 
     // Write synthesized audio to WAV file.
     wav::write(audio, "gated.wav").expect("Failed to write WAV file");

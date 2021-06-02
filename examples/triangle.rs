@@ -1,4 +1,4 @@
-use fon::{mono::Mono64, Audio, Sink};
+use fon::{chan::Ch64, Audio, Stream};
 use twang::{Synth, Fc, Signal};
 
 mod wav;
@@ -11,14 +11,12 @@ fn main() {
         fc.freq(220.0).triangle().gain(0.7)
     }
 
-    // Initialize audio with five seconds of silence.
-    let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
+    // Initialize audio.
+    let mut audio = Audio::<Ch64, 1>::new(S_RATE);
     // Create the synthesizer.
     let mut synth = Synth::new((), triangle);
-
-    // Generate audio samples.
-    audio.sink(..).stream(&mut synth);
-
+    // Stream 5 seconds of synth into audio buffer.
+    synth.extend(&mut audio, S_RATE as usize * 5);
     // Write synthesized audio to WAV file.
     wav::write(audio, "triangle.wav").expect("Failed to write WAV file");
 }
