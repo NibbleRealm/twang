@@ -2,18 +2,14 @@
 //!
 //! http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
 
-use fon::chan::{Channel, Ch16};
-use fon::Audio;
+use fon::chan::Ch16;
 use fon::pos::{Left, Right};
+use fon::Audio;
 use std::convert::TryInto;
 use std::{fs, io, mem::size_of};
 
 /// Write a 16-bit PCM WAV file
-pub(super) fn write<Chan: Channel, const CH: usize>(audio: Audio<Chan, CH>, filename: &str) -> io::Result<()>
-    where Ch16: From<Chan>
-{
-    let audio =
-        Audio::<Ch16, 2>::with_stream(&audio, audio.len());
+pub(super) fn write(audio: Audio<Ch16, 2>, filename: &str) -> io::Result<()> {
     let mut buf = vec![];
     write_header(&mut buf, &audio);
     write_fmt_header(&mut buf, &audio);

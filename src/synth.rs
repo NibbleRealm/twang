@@ -8,112 +8,43 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use crate::sig::Signal;
-use fon::{Stream, Audio};
-use fon::chan::{Channel, Ch64, Ch32};
-use std::{borrow::Borrow, fmt::Debug, time::Duration};
+use fon::chan::Ch32;
+use fon::{Audio, Frame, Stream};
+use std::fmt::{Debug, Error, Formatter};
 
-/// Frequency counter.
-#[derive(Copy, Clone, Debug)]
-pub struct Fc(Duration);
+/// A synthesizer stream.
+pub struct Synth<S, const CH: usize>(
+    S,
+    Box<dyn FnMut(&mut S, Frame<Ch32, CH>) -> Frame<Ch32, CH>>,
+);
 
-impl Fc {
-    /// Sample frequency counter with a frequency.
-    #[inline(always)]
-    pub fn freq(&self, freq: f64) -> Signal {
-        let modu = Duration::new(1, 0).div_f64(freq).as_nanos();
-        let nano = self.0.as_nanos();
-        // Return signal between -1 and 1
-        (((nano % modu) << 1) as f64 / modu as f64 - 1.0).into()
-    }
-
-    /// Create an oscillator based on this frequency counter.  Frequency should
-    /// always be more than 0.000_000_001 hertz (panic in debug mode).
-    #[inline(always)]
-    pub fn osc(&self, freq: f32) -> Ch32 {
-        debug_assert!(freq > 0.000_000_001);
-
-        let period: u64 = (1_000_000_000.0 / freq) as u64;
-
-        // Modulo duration by period.
-        let secs = self.0.as_secs() % period;
-        let nanos = self.0.subsec_nanos();
-        let dur = secs * 1_000_000_000 + u64::from(nanos);
-        let time = (dur % period) as f32 * 0.000_000_001;
-
-        Ch32::from(time)
+impl<S, const CH: usize> Debug for Synth<S, CH> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "Synth")
     }
 }
 
-/// A streaming synthesizer.  Implements [`Stream`](fon::Stream).
-pub struct Synth<T: Debug> {
-    params: T,
-    synthfn: fn(&mut T, Fc) -> Signal,
-    counter: Duration,
-}
-
-impl<T: Debug> Debug for Synth<T> {
-    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-
-impl<T: Debug> Synth<T> {
-    /// Create a new streaming synthesizer.
-    #[inline(always)]
-    pub fn new(params: T, synth: fn(&mut T, Fc) -> Signal) -> Self {
-        Self {
-            params,
-            synthfn: synth,
-            counter: Duration::default(),
-        }
-    }
-
-    /// Get the parameters of the synthesizer.
-    pub fn params(&mut self) -> &mut T {
-        &mut self.params
-    }
-}
-
-impl<T: Debug> Stream<Ch64, 1> for Synth<T> {
-    fn sample_rate(&self) -> Option<u32> {
-        // Synthesizer has no fixed sample rate.
-        None
-    }
-
-    fn extend<C: Channel, const N: usize>(
-        &mut self,
-        buffer: &mut Audio<C, N>,
-        len: usize
-    ) where
-        C: From<Ch64>,
+impl<S, const CH: usize> Synth<S, CH> {
+    /// Create a new synthesizer function.
+    pub fn new<F>(s: S, f: F) -> Self
+    where
+        F: 'static + FnMut(&mut S, Frame<Ch32, CH>) -> Frame<Ch32, CH>,
     {
-        let step = Duration::new(1, 0) / Audio::sample_rate(buffer);
-        let synth = (0..len).map(|_| {
-            let frame =
-                (self.synthfn)(&mut self.params, Fc(self.counter)).to_mono();
-            self.counter += step;
-            frame.to()
-        });
-        buffer.sink(synth);
+        Self(s, Box::new(f))
     }
 }
 
-/// Trait for synthesizing multiple sounds together.
-///
-/// This works on arrays, slices, and iterators over either `Signal` or
-/// `&Signal`.
-pub trait Mix {
-    /// Add multiple signals together.
-    fn mix(self) -> Signal;
-}
+impl<S, const CH: usize> Stream<Ch32, CH> for Synth<S, CH> {
+    fn sample_rate(&self) -> u32 {
+        48_000
+    }
 
-impl<B: Borrow<Signal>, I: IntoIterator<Item = B>> Mix for I {
-    #[inline(always)]
-    fn mix(self) -> Signal {
-        self.into_iter()
-            .map(|a| f64::from(*a.borrow()))
-            .sum::<f64>()
-            .into()
+    fn extend<C, const N: usize>(&mut self, audio: &mut Audio<C, N>, len: usize)
+    where
+        C: fon::chan::Channel,
+    {
+        audio.sink(
+            (0..len).map(|_| self.1(&mut self.0, Default::default()).to()),
+        )
     }
 }

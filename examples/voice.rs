@@ -1,23 +1,37 @@
-use fon::{chan::Ch64, Audio, Stream};
-use twang::{Synth, Fc, Signal};
+use fon::chan::{Ch16, Ch32};
+use fon::{Audio, Frame, Stream};
+use twang::ops::Gain;
+use twang::osc::{Sawtooth, Sine};
+use twang::Synth;
 
 mod wav;
 
-// Target sample rate set to 48 KHz
-const S_RATE: u32 = 48_000;
+// State of the synthesizer.
+#[derive(Default)]
+struct Processors {
+    saw: Sawtooth,
+    sin: Sine,
+}
 
 fn main() {
-    fn voice(_: &mut (), fc: Fc) -> Signal {
-        fc.freq(440.0).abs().gain(fc.freq(440.0).sine())
-    }
-
-    // Initialize audio with five seconds of silence.
-    let mut audio = Audio::<Ch64, 1>::new(S_RATE);
-    // Create the synthesizer.
-    let mut synth = Synth::new((), voice);
-    // Stream 5 seconds of synth into audio buffer.
-    synth.extend(&mut audio, S_RATE as usize * 5);
-
-    // Write chord to file
+    // Initialize audio
+    let mut audio = Audio::<Ch16, 2>::new(48_000);
+    // Create audio processors
+    let mut proc = Processors::default();
+    // Shift sawtooth wave
+    proc.saw.shift(Ch32::new(0.25));
+    // Build synthesis algorithm
+    let mut synth = Synth::new(proc, |proc, frame: Frame<_, 2>| {
+        // Calculate the next sample for each processor
+        let saw = proc.saw.next(440.0);
+        let sin = proc.sin.next(440.0);
+        // Control the gain of the sine wave with the sawtooth wave.
+        let voice = Gain.next(sin, saw);
+        // Pan the generated audio center
+        frame.pan(voice, 0.0)
+    });
+    // Synthesize 5 seconds of audio
+    synth.extend(&mut audio, 48_000 * 5);
+    // Write synthesized audio to WAV file
     wav::write(audio, "voice.wav").expect("Failed to write WAV file");
 }

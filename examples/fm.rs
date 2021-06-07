@@ -1,33 +1,35 @@
 //! # Frequency modulation (FM) synthesis
 //! Implemented with "Phase Modulation" algorithm.
 
-use fon::{chan::Ch64, Audio, Stream};
-use twang::{Synth, Fc, Signal};
-
-use core::f64::consts::TAU;
+use fon::chan::Ch16;
+use fon::{Audio, Frame, Stream};
+use twang::osc::Sine;
+use twang::Synth;
 
 mod wav;
 
-// Target sample rate set to 48 KHz
-const S_RATE: u32 = 48_000;
+// State of the synthesizer.
+#[derive(Default)]
+struct Processors {
+    modulator: Sine,
+    carrier: Sine,
+}
 
 fn main() {
-    fn gen_synth(t: &mut f64, _fc: Fc) -> Signal {
-        // Makes 220 hz signal
-        let hz = 220.0;
-        let modulating = (hz * 1.5 * TAU * *t).sin();
-        let carrier = (hz * TAU * *t + modulating).sin();
-        *t = *t + 1.0 / S_RATE as f64;
-        Signal::from(carrier)
-    }
-
-    // Initialize audio.
-    let mut audio = Audio::<Ch64, 1>::new(S_RATE);
-    // Create the synthesizer.
-    let mut synth = Synth::new(0.0, gen_synth);
-    // Stream 5 seconds of synth into audio buffer.
-    synth.extend(&mut audio, S_RATE as usize * 5);
-
-    // Write synthesized audio to WAV file.
+    // Initialize audio
+    let mut audio = Audio::<Ch16, 2>::new(48_000);
+    // Create audio processors
+    let proc = Processors::default();
+    // Build synthesis algorithm
+    let mut synth = Synth::new(proc, |proc, frame: Frame<_, 2>| {
+        // Calculate the next sample for each processor
+        let modulator = proc.modulator.next(1.5 * 440.0);
+        let carrier = proc.carrier.phase(440.0, modulator);
+        // Pan the generated audio center
+        frame.pan(carrier, 0.0)
+    });
+    // Synthesize 5 seconds of audio
+    synth.extend(&mut audio, 48_000 * 5);
+    // Write synthesized audio to WAV file
     wav::write(audio, "fm.wav").expect("Failed to write WAV file");
 }
