@@ -1,4 +1,4 @@
-use fon::{chan::Ch16, Audio, Frame, Stream};
+use fon::{chan::Ch16, Audio, Frame};
 use twang::osc::Pulse;
 use twang::Synth;
 
@@ -11,7 +11,7 @@ struct Processors {
 
 fn main() {
     // Initialize audio
-    let mut audio = Audio::<Ch16, 2>::new(48_000);
+    let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
     // Create audio processors
     let proc = Processors {
         pulse: Pulse::new(),
@@ -24,7 +24,7 @@ fn main() {
         frame.pan(square, 0.0)
     });
     // Synthesize 5 seconds of audio
-    synth.extend(&mut audio, 48_000 * 5);
+    audio.stream(&mut synth);
     // Write synthesized audio to WAV file
     wav::write(audio, "square.wav").expect("Failed to write WAV file");
 }

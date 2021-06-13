@@ -14,7 +14,7 @@
 
 use fon::pos::{Left, Right};
 use fon::chan::{Ch16, Ch32};
-use fon::{Audio, Frame, Stream};
+use fon::{Audio, Frame};
 use twang::ops::{Gate, Room, GateParams, Gain};
 use twang::Synth;
 use std::convert::TryInto;
@@ -40,8 +40,8 @@ fn main() {
     }
     let input = Audio::<Ch32, 2>::with_f32_buffer(48_000, buffer);
 
-    // Initialize output audio
-    let mut audio = Audio::<Ch16, 2>::new(48_000);
+    // Initialize output audio (input audio length plus hold time)
+    let mut audio = Audio::<Ch16, 2>::with_silence(48_000, input.len() + 24_000);
 
     // Create audio processors
     let proc = Processors {
@@ -86,7 +86,7 @@ fn main() {
             .pan(right, 0.25)
     });
     // Synthesize input audio length plus hold time.
-    synth.extend(&mut audio, input.len() + 24_000);
+    audio.stream(&mut synth);
     // Write synthesized audio to WAV file
     wav::write(audio, "gate.wav").expect("Failed to write WAV file");
 }

@@ -8,7 +8,7 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use fon::chan::Ch32;
+use fon::chan::{Channel, Ch32};
 use fon::{Audio, Frame, Stream};
 use std::fmt::{Debug, Error, Formatter};
 
@@ -39,12 +39,15 @@ impl<S, const CH: usize> Stream<Ch32, CH> for Synth<S, CH> {
         48_000
     }
 
-    fn extend<C, const N: usize>(&mut self, audio: &mut Audio<C, N>, len: usize)
+    #[inline(always)]
+    fn sink<C: Channel, const N: usize>(&mut self, buf: &mut Audio<C, N>)
     where
-        C: fon::chan::Channel,
+        C: From<Ch32>,
     {
-        audio.sink(
-            (0..len).map(|_| self.1(&mut self.0, Default::default()).to()),
-        )
+        assert_eq!(48_000, buf.sample_rate());
+
+        for out in buf.iter_mut() {
+            *out = self.1(&mut self.0, Default::default()).to();
+        }
     }
 }

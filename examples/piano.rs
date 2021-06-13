@@ -1,7 +1,7 @@
 //! A Minor on an Electric Piano
 
 use fon::chan::Ch16;
-use fon::{Audio, Frame, Stream};
+use fon::{Audio, Frame};
 use twang::noise::White;
 use twang::ops::Gain;
 use twang::osc::Sine;
@@ -29,7 +29,7 @@ struct Processors {
 
 fn main() {
     // Initialize audio
-    let mut audio = Audio::<Ch16, 2>::new(48_000);
+    let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
     // Create audio processors
     let mut proc = Processors::default();
     // Adjust phases of harmonics.
@@ -51,7 +51,7 @@ fn main() {
         frame
     });
     // Synthesize 5 seconds of audio
-    synth.extend(&mut audio, 48_000 * 5);
+    audio.stream(&mut synth);
     // Write synthesized audio to WAV file
     wav::write(audio, "piano.wav").expect("Failed to write WAV file");
 }
