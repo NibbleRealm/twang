@@ -9,7 +9,7 @@
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
 use fon::chan::{Channel, Ch32};
-use fon::{Audio, Frame, Stream};
+use fon::{Frame, Sink};
 use std::fmt::{Debug, Error, Formatter};
 
 /// A synthesizer stream.
@@ -32,22 +32,24 @@ impl<S, const CH: usize> Synth<S, CH> {
     {
         Self(s, Box::new(f))
     }
+
+    /// Stream synthesized samples into a [`Sink`](fon::Sink).
+    pub fn stream<Chan: Channel, K>(&mut self, mut sink: K)
+        where K: Sink<Chan, CH>, Chan: From<Ch32>,
+    {
+        let sample_rate: u32 = sink.sample_rate().into();
+        let synth_iter = SynthIter(self, sample_rate);
+        sink.sink_with(synth_iter.map(|x| x.to()));
+    }
 }
 
-impl<S, const CH: usize> Stream<Ch32, CH> for Synth<S, CH> {
-    fn sample_rate(&self) -> u32 {
-        48_000
-    }
+struct SynthIter<'a, S, const CH: usize>(&'a mut Synth<S, CH>, u32);
 
-    #[inline(always)]
-    fn sink<C: Channel, const N: usize>(&mut self, buf: &mut Audio<C, N>)
-    where
-        C: From<Ch32>,
-    {
-        assert_eq!(48_000, buf.sample_rate());
+impl<S, const CH: usize> Iterator for SynthIter<'_, S, CH> {
+    type Item = Frame<Ch32, CH>;
 
-        for out in buf.iter_mut() {
-            *out = self.1(&mut self.0, Default::default()).to();
-        }
+    fn next(&mut self) -> Option<Self::Item> {
+        assert_eq!(self.1, 48_000);
+        Some(self.0.1(&mut self.0.0, Default::default()))
     }
 }

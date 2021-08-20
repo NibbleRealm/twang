@@ -38,9 +38,9 @@ fn write_fmt_header(buf: &mut Vec<u8>, audio: &Audio<Ch16, 2>) {
     // 2: Stereo
     buf.extend(&(2u16).to_le_bytes());
     // 4: Sampling Rate
-    buf.extend(&(audio.sample_rate() as u32).to_le_bytes());
+    buf.extend(&u32::from(audio.sample_rate()).to_le_bytes());
     // 8: Bytes per second (i16 * 2 * sample rate)
-    buf.extend(&(4 * audio.sample_rate() as u32).to_le_bytes());
+    buf.extend(&(4 * u32::from(audio.sample_rate())).to_le_bytes());
     // 12. Data block size (bytes: i16 * 2)
     buf.extend(&(size_of::<u16>() as u16 * 2u16).to_le_bytes());
     // 14. Bits per sample

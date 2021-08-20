@@ -22,7 +22,7 @@ fn main() {
         frame.pan(sine, 0.0)
     });
     // Synthesize 5 seconds of audio
-    audio.stream(&mut synth);
+    synth.stream(audio.sink());
     // Write synthesized audio to WAV file
     wav::write(audio, "sine.wav").expect("Failed to write WAV file");
 }
