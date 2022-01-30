@@ -10,9 +10,10 @@
 
 [package]
 name = "twang"
-version = "0.7.0"
-authors = ["Jeron Aldaron Lau <jeronlau@plopgrizzly.com>"]
+version = "0.8.0"
 license = "Apache-2.0 OR MIT OR BSL-1.0"
+edition = "2021"
+rust-version = "1.56.1"
 documentation = "https://docs.rs/twang"
 homepage = "https://github.com/AldaronLau/twang/blob/main/CHANGELOG.md"
 repository = "https://github.com/AldaronLau/twang"
@@ -20,11 +21,7 @@ readme = "README.md"
 description = "Library for pure Rust advanced audio synthesis."
 keywords = ["audio", "synth", "synthesizer", "wave", "sound"]
 categories = ["multimedia::audio", "multimedia", "algorithms", "mathematics"]
-edition = "2018"
 include = ["Cargo.toml", "src/*"]
 
 [dependencies]
 fon = "0.6"
-
-[patch.crates-io]
-# fon = { path = "../fon" }
