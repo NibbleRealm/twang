@@ -39,7 +39,7 @@ impl<S, const CH: usize> Synth<S, CH> {
     {
         let sample_rate: u32 = sink.sample_rate().into();
         let synth_iter = SynthIter(self, sample_rate);
-        sink.sink_with(synth_iter.map(|x| x.to()));
+        sink.sink_with(&mut synth_iter.map(|x| x.to()));
     }
 }
 

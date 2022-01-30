@@ -24,7 +24,7 @@ edition = "2018"
 include = ["Cargo.toml", "src/*"]
 
 [dependencies]
-fon = { path = "../fon" } # "0.6"
+fon = "0.6"
 
 [patch.crates-io]
 # fon = { path = "../fon" }

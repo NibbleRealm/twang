@@ -24,7 +24,7 @@ fn main() {
         frame.pan(saw, 0.0)
     });
     // Synthesize 5 seconds of audio
-    audio.stream(&mut synth);
+    synth.stream(audio.sink());
     // Write synthesized audio to WAV file
     wav::write(audio, "sawtooth.wav").expect("Failed to write WAV file");
 }

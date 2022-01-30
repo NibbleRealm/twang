@@ -85,8 +85,8 @@ fn main() {
         frame.pan(left, -0.25)
             .pan(right, 0.25)
     });
-    // Synthesize input audio length plus hold time.
-    audio.stream(&mut synth);
+    // Synthesize 5 seconds of audio
+    synth.stream(audio.sink());
     // Write synthesized audio to WAV file
     wav::write(audio, "gate.wav").expect("Failed to write WAV file");
 }

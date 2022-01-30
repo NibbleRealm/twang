@@ -36,7 +36,7 @@ fn main() {
             .pan(main, 0.0)
     });
     // Synthesize 5 seconds of audio
-    audio.stream(&mut synth);
+    synth.stream(audio.sink());
     // Write synthesized audio to WAV file
     wav::write(audio, "brass.wav").expect("Failed to write WAV file");
 }
