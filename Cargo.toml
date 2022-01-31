@@ -24,4 +24,4 @@ edition = "2018"
 include = ["Cargo.toml", "src/*"]
 
 [dependencies]
-fon = "0.5"
+fon = "0.6"
