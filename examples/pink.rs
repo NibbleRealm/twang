@@ -1,24 +1,29 @@
-use fon::{mono::Mono64, Audio, Sink};
-use twang::{Pink, Synth, Fc, Signal};
+use fon::{chan::Ch16, Audio, Frame};
+use twang::noise::Pink;
+use twang::Synth;
 
 mod wav;
 
-// Target sample rate set to 48 KHz
-const S_RATE: u32 = 48_000;
+// State of the synthesizer.
+#[derive(Default)]
+struct Processors {
+    pink: Pink,
+}
 
 fn main() {
-    fn gen_pink(pink: &mut Pink, _fc: Fc) -> Signal {
-        pink.noise()
-    }
-
-    // Initialize audio with five seconds of silence.
-    let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
-    // Create the synthesizer.
-    let mut synth = Synth::new(Pink::new(), gen_pink);
-
-    // Generate audio samples.
-    audio.sink(..).stream(&mut synth);
-
-    // Write synthesized audio to WAV file.
+    // Initialize audio
+    let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
+    // Create audio processors
+    let proc = Processors::default();
+    // Build synthesis algorithm
+    let mut synth = Synth::new(proc, |proc, frame: Frame<_, 2>| {
+        // Calculate the next sample for each processor
+        let noise = proc.pink.step();
+        // Pan the generated audio center
+        frame.pan(noise, 0.0)
+    });
+    // Synthesize 5 seconds of audio
+    synth.stream(audio.sink());
+    // Write synthesized audio to WAV file
     wav::write(audio, "pink.wav").expect("Failed to write WAV file");
 }

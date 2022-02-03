@@ -1,15 +1,18 @@
-// Twang
-// Copyright © 2018-2021 Jeron Aldaron Lau.
+// Copyright © 2018-2022 The Twang Contributors.
 //
 // Licensed under any of:
 // - Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
-// - MIT License (https://mit-license.org/)
 // - Boost Software License, Version 1.0 (https://www.boost.org/LICENSE_1_0.txt)
+// - MIT License (https://mit-license.org/)
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use crate::sig::Signal;
+use fon::chan::Ch16;
 
+// Constants PFIRA and PFIRB
+include!(concat!(env!("OUT_DIR"), "/pink.rs"));
+
+#[inline(always)]
 fn pnmask(pncnt: u8) -> u8 {
     match pncnt % 16 {
         _x if _x % 2 != 0 => 0x80,
@@ -27,33 +30,10 @@ fn pnmask(pncnt: u8) -> u8 {
     }
 }
 
-fn pfir(pfirm: [f64; 6]) -> [i32; 64] {
-    let mut pfir = [0; 64];
-    for (i, v) in pfir.iter_mut().enumerate() {
-        let i = i as i32;
-        let a = i / 8;
-        let a = a * 8;
-        let b = match i % 8 {
-            0 => [0, 1, 2, 3, 4, 5],
-            b => [b; 6],
-        };
-        *v = (pfirm[0] * (2 * (a >> b[0] & 1) - 1) as f64
-            + pfirm[1] * (2 * (a >> b[1] & 1) - 1) as f64
-            + pfirm[2] * (2 * (a >> b[2] & 1) - 1) as f64
-            + pfirm[3] * (2 * (a >> b[3] & 1) - 1) as f64
-            + pfirm[4] * (2 * (a >> b[4] & 1) - 1) as f64
-            + pfirm[5] * (2 * (a >> b[5] & 1) - 1) as f64) as i32
-    }
-    pfir
-}
-
 /// Pink Noise Generator using algorithm described in research paper
 /// [A New Shade of Pink](https://github.com/Stenzel/newshadeofpink/blob/master/newshadeofpink.pdf).
-#[derive(Clone)]
-#[allow(missing_copy_implementations)]
+#[derive(Debug, Copy, Clone)]
 pub struct Pink {
-    pfira: [i32; 64],
-    pfirb: [i32; 64],
     lfsr: i32,
     inc: i32,
     dec: i32,
@@ -61,12 +41,6 @@ pub struct Pink {
     pncnt: u8,
     which: u8,
     bit: i32,
-}
-
-impl std::fmt::Debug for Pink {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Pink")
-    }
 }
 
 impl Default for Pink {
@@ -81,22 +55,6 @@ impl Pink {
     #[inline(always)]
     pub fn new() -> Self {
         Self {
-            pfira: pfir([
-                2048.0 * 1.190566,
-                2048.0 * 0.162580,
-                2048.0 * 0.002208,
-                2048.0 * 0.025475,
-                2048.0 * -0.001522,
-                2048.0 * 0.007322,
-            ]),
-            pfirb: pfir([
-                2048.0 * 0.001774,
-                2048.0 * 0.004529,
-                2048.0 * -0.001561,
-                2048.0 * 0.000776,
-                2048.0 * -0.000486,
-                2048.0 * 0.002017,
-            ]),
             lfsr: 0x5eed41f5i32,
             inc: 0xccc,
             dec: 0xccc,
@@ -110,7 +68,7 @@ impl Pink {
     fn a(&mut self) -> i16 {
         self.bit = self.lfsr >> 31i32;
         self.dec &= !0x800i32;
-        self.lfsr <<= 1i32;
+        self.lfsr <<= 1;
         self.dec |= self.inc & 0x800i32;
         self.inc ^= self.bit & 0x800i32;
         self.b()
@@ -120,14 +78,14 @@ impl Pink {
         self.accu += self.inc - self.dec;
         self.lfsr ^= self.bit & 0x46000001i32;
         (self.accu
-            + self.pfira[(self.lfsr & 0x3fi32) as usize]
-            + self.pfirb[(self.lfsr >> 6i32 & 0x3fi32) as usize]) as i16
+            + PFIRA[(self.lfsr & 0x3fi32) as usize]
+            + PFIRB[(self.lfsr >> 6i32 & 0x3fi32) as usize]) as i16
     }
 
     fn c(&mut self) -> i16 {
         self.bit = self.lfsr >> 31i32;
         self.dec &= !0x400i32;
-        self.lfsr <<= 1i32;
+        self.lfsr <<= 1;
         self.dec |= self.inc & 0x400i32;
         self.inc ^= self.bit & 0x400i32;
         self.b()
@@ -136,7 +94,7 @@ impl Pink {
     fn d(&mut self) -> i16 {
         self.bit = self.lfsr >> 31i32;
         self.dec &= !0x200i32;
-        self.lfsr <<= 1i32;
+        self.lfsr <<= 1;
         self.dec |= self.inc & 0x200i32;
         self.inc ^= self.bit & 0x200i32;
         self.b()
@@ -145,7 +103,7 @@ impl Pink {
     fn e(&mut self) -> i16 {
         self.bit = self.lfsr >> 31i32;
         self.dec &= !0x100i32;
-        self.lfsr <<= 1i32;
+        self.lfsr <<= 1;
         self.dec |= self.inc & 0x100i32;
         self.inc ^= self.bit & 0x100i32;
         self.b()
@@ -154,16 +112,17 @@ impl Pink {
     fn f(&mut self, mask: i32) -> i16 {
         self.bit = self.lfsr >> 31i32;
         self.dec &= !mask;
-        self.lfsr <<= 1i32;
+        self.lfsr <<= 1;
         self.dec |= self.inc & mask;
         self.inc ^= self.bit & mask;
         self.b()
     }
 
-    /// Get next sample of pink noise.
-    pub fn noise(&mut self) -> Signal {
+    /// Get next sample from the noise generator.
+    #[inline(always)]
+    pub fn step(&mut self) -> fon::chan::Ch32 {
         // Different functions for each sample.
-        let r = match self.which {
+        let pink = match self.which {
             _x if _x % 2 != 0 => self.a(), // odd #s
             _x if _x % 4 != 0 => self.c(),
             _x if _x % 8 != 0 => self.d(),
@@ -174,10 +133,10 @@ impl Pink {
             }
             8 => self.e(),
             _ => unreachable!(),
-        } as f64
-            / (std::i16::MAX as f64);
+        };
         self.which += 1;
         self.which %= 16;
-        Signal::from(r)
+
+        Ch16::new(pink).into()
     }
 }

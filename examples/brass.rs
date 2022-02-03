@@ -1,31 +1,41 @@
-use fon::{mono::Mono64, Audio, Sink};
-use twang::{Mix, Pink, Synth, Signal, Fc};
+use fon::chan::{Ch16, Ch32};
+use fon::{Audio, Frame};
+use twang::noise::Pink;
+use twang::ops::{Clip, Gain};
+use twang::osc::{Sawtooth, Triangle};
+use twang::Synth;
 
 mod wav;
 
-// Target sample rate set to 48 KHz
-const S_RATE: u32 = 48_000;
+// State of the synthesizer.
+#[derive(Default)]
+struct Processors {
+    pink: Pink,
+    tone: Sawtooth,
+    ptri: Triangle,
+}
 
 fn main() {
-    fn brass(pink: &mut Pink, fc: Fc) -> Signal {
-        let pink = pink.noise();
-        let tone = fc.freq(220.0).gain(12.0).clamp().gain(0.1);
-        let airy = tone.abs().gain(pink.abs());
+    // Initialize audio
+    let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
+    // Create audio processors
+    let proc = Processors::default();
+    // Build synthesis algorithm
+    let mut synth = Synth::new(proc, |proc, frame: Frame<_, 2>| {
+        // Calculate the next sample for each processor
+        let pink = proc.pink.step();
+        let tone = proc.tone.step(440.0);
+        let ptri = proc.ptri.step(440.0);
 
-        let pone = fc.freq(220.0).gain(12.0).clamp().abs();
-        let ptwo = fc.freq(220.0).triangle();
-        let main = pone.gain(ptwo);
+        //
+        let tone = Clip.step(tone, Ch32::new(1.0 / 12.0));
+        let airy = Gain.step(Gain.step(tone, Ch32::new(12.0 / 10.0)), pink);
+        let main = Gain.step(ptri, Gain.step(tone, Ch32::new(12.0)));
 
-        [airy, main].mix()
-    }
-
-    // Initialize audio with five seconds of silence.
-    let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
-    // Create the synthesizer.
-    let mut synth = Synth::new(Pink::new(), brass);
-    // Generate audio samples.
-    audio.sink(..).stream(&mut synth);
-
-    // Write synthesized audio to WAV file.
+        frame.pan(airy, 0.0).pan(main, 0.0)
+    });
+    // Synthesize 5 seconds of audio
+    synth.stream(audio.sink());
+    // Write synthesized audio to WAV file
     wav::write(audio, "brass.wav").expect("Failed to write WAV file");
 }

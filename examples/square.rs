@@ -1,24 +1,30 @@
-use fon::{mono::Mono64, Audio, Sink};
-use twang::{Synth, Fc, Signal};
+use fon::{chan::Ch16, Audio, Frame};
+use twang::osc::Pulse;
+use twang::Synth;
 
 mod wav;
 
-// Target sample rate set to 48 KHz
-const S_RATE: u32 = 48_000;
+// State of the synthesizer.
+struct Processors {
+    pulse: Pulse,
+}
 
 fn main() {
-    fn square(_: &mut (), fc: Fc) -> Signal {
-        fc.freq(220.0).pulse(1.0).gain(0.7)
-    }
-
-    // Initialize audio with five seconds of silence.
-    let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
-    // Create the synthesizer.
-    let mut synth = Synth::new((), square);
-
-    // Generate audio samples.
-    audio.sink(..).stream(&mut synth);
-
-    // Write synthesized audio to WAV file.
+    // Initialize audio
+    let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
+    // Create audio processors
+    let proc = Processors {
+        pulse: Pulse::new(),
+    };
+    // Build synthesis algorithm
+    let mut synth = Synth::new(proc, |proc, frame: Frame<_, 2>| {
+        // Calculate the next sample for each processor
+        let square = proc.pulse.step(440.0, Default::default());
+        // Pan the generated audio center
+        frame.pan(square, 0.0)
+    });
+    // Synthesize 5 seconds of audio
+    synth.stream(audio.sink());
+    // Write synthesized audio to WAV file
     wav::write(audio, "square.wav").expect("Failed to write WAV file");
 }

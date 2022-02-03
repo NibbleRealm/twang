@@ -1,108 +1,57 @@
-// Twang
-// Copyright © 2018-2021 Jeron Aldaron Lau.
+// Copyright © 2018-2022 The Twang Contributors.
 //
 // Licensed under any of:
 // - Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
-// - MIT License (https://mit-license.org/)
 // - Boost Software License, Version 1.0 (https://www.boost.org/LICENSE_1_0.txt)
+// - MIT License (https://mit-license.org/)
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use crate::sig::Signal;
-use fon::{mono::Mono64, Stream};
-use std::{borrow::Borrow, fmt::Debug, time::Duration};
+use alloc::boxed::Box;
+use core::fmt::{Debug, Error, Formatter};
+use fon::chan::{Ch32, Channel};
+use fon::{Frame, Sink};
 
-/// Frequency counter.
-#[derive(Copy, Clone, Debug)]
-pub struct Fc(Duration);
+/// A synthesizer stream.
+pub struct Synth<S, const CH: usize>(
+    S,
+    Box<dyn FnMut(&mut S, Frame<Ch32, CH>) -> Frame<Ch32, CH>>,
+);
 
-impl Fc {
-    /// Sample frequency counter with a frequency.
-    #[inline(always)]
-    pub fn freq(&self, freq: f64) -> Signal {
-        let modu = Duration::new(1, 0).div_f64(freq).as_nanos();
-        let nano = self.0.as_nanos();
-        // Return signal between -1 and 1
-        (((nano % modu) << 1) as f64 / modu as f64 - 1.0).into()
+impl<S, const CH: usize> Debug for Synth<S, CH> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "Synth")
     }
 }
 
-/// A streaming synthesizer.  Implements [`Stream`](fon::Stream).
-pub struct Synth<T: Debug> {
-    params: T,
-    synthfn: fn(&mut T, Fc) -> Signal,
-    counter: Duration,
-    sample_rate: Option<f64>,
-    stepper: Duration,
-}
+impl<S, const CH: usize> Synth<S, CH> {
+    /// Create a new synthesizer function.
+    pub fn new<F>(s: S, f: F) -> Self
+    where
+        F: 'static + FnMut(&mut S, Frame<Ch32, CH>) -> Frame<Ch32, CH>,
+    {
+        Self(s, Box::new(f))
+    }
 
-impl<T: Debug> Debug for Synth<T> {
-    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
+    /// Stream synthesized samples into a [`Sink`](fon::Sink).
+    pub fn stream<Chan: Channel, K>(&mut self, mut sink: K)
+    where
+        K: Sink<Chan, CH>,
+        Chan: From<Ch32>,
+    {
+        let sample_rate: u32 = sink.sample_rate().into();
+        let synth_iter = SynthIter(self, sample_rate);
+        sink.sink_with(&mut synth_iter.map(|x| x.to()));
     }
 }
 
-impl<T: Debug> Synth<T> {
-    /// Create a new streaming synthesizer.
-    #[inline(always)]
-    pub fn new(params: T, synth: fn(&mut T, Fc) -> Signal) -> Self {
-        Self {
-            params,
-            sample_rate: None,
-            synthfn: synth,
-            counter: Duration::default(),
-            stepper: Duration::default(),
-        }
-    }
+struct SynthIter<'a, S, const CH: usize>(&'a mut Synth<S, CH>, u32);
 
-    /// Get the parameters of the synthesizer.
-    pub fn params(&mut self) -> &mut T {
-        &mut self.params
-    }
-}
-
-impl<T: Debug> Iterator for &mut Synth<T> {
-    type Item = Mono64;
+impl<S, const CH: usize> Iterator for SynthIter<'_, S, CH> {
+    type Item = Frame<Ch32, CH>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let frame =
-            (self.synthfn)(&mut self.params, Fc(self.counter)).to_mono();
-        self.counter += self.stepper;
-        Some(frame)
-    }
-}
-
-impl<T: Debug> Stream<Mono64> for &mut Synth<T> {
-    fn sample_rate(&self) -> Option<f64> {
-        self.sample_rate
-    }
-
-    fn set_sample_rate<R: Into<f64>>(&mut self, sr: R) {
-        let sample_rate = sr.into();
-        self.sample_rate = Some(sample_rate);
-        self.stepper = Duration::new(1, 0).div_f64(sample_rate);
-    }
-
-    fn len(&self) -> Option<usize> {
-        None
-    }
-}
-
-/// Trait for synthesizing multiple sounds together.
-///
-/// This works on arrays, slices, and iterators over either `Signal` or
-/// `&Signal`.
-pub trait Mix {
-    /// Add multiple signals together.
-    fn mix(self) -> Signal;
-}
-
-impl<B: Borrow<Signal>, I: IntoIterator<Item = B>> Mix for I {
-    #[inline(always)]
-    fn mix(self) -> Signal {
-        self.into_iter()
-            .map(|a| f64::from(*a.borrow()))
-            .sum::<f64>()
-            .into()
+        assert_eq!(self.1, 48_000);
+        Some(self.0 .1(&mut self.0 .0, Default::default()))
     }
 }

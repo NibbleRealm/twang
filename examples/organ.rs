@@ -1,26 +1,35 @@
-use fon::{mono::Mono64, Audio, Sink};
-use twang::{Mix, Synth, Fc, Signal};
+use fon::chan::{Ch16, Ch32};
+use fon::{Audio, Frame};
+use twang::ops::{Max, Min};
+use twang::osc::{Sine, Triangle};
+use twang::Synth;
 
 mod wav;
 
-// Target sample rate set to 48 KHz
-const S_RATE: u32 = 48_000;
+// State of the synthesizer.
+#[derive(Default)]
+struct Processors {
+    tri: Triangle,
+    sin: Sine,
+}
 
 fn main() {
-    fn organ(_: &mut (), fc: Fc) -> Signal {
-        let pt_a = fc.freq(220.0).triangle().max(0.0);
-        let pt_b = fc.freq(220.0).sine().min(0.0);
-        [pt_a, pt_b].mix()
-    }
-
-    // Initialize audio with five seconds of silence.
-    let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
-    // Create the synthesizer.
-    let mut synth = Synth::new((), organ);
-
-    // Generate audio samples.
-    audio.sink(..).stream(&mut synth);
-
-    // Write synthesized audio to WAV file.
+    // Initialize audio
+    let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
+    // Create audio processors
+    let proc = Processors::default();
+    // Build synthesis algorithm
+    let mut synth = Synth::new(proc, |proc, frame: Frame<_, 2>| {
+        // Calculate the next sample for each processor
+        let tri = proc.tri.step(440.0);
+        let sin = proc.sin.step(440.0);
+        // Positive waveform is triangle, negative is sine.
+        let out = Max.step(tri, Ch32::new(0.0)) + Min.step(sin, Ch32::new(0.0));
+        // Pan the generated audio center
+        frame.pan(out, 0.0)
+    });
+    // Synthesize 5 seconds of audio
+    synth.stream(audio.sink());
+    // Write synthesized audio to WAV file
     wav::write(audio, "organ.wav").expect("Failed to write WAV file");
 }

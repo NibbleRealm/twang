@@ -1,10 +1,9 @@
-// Twang
-// Copyright © 2018-2021 Jeron Aldaron Lau.
+// Copyright © 2018-2022 The Twang Contributors.
 //
 // Licensed under any of:
 // - Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
-// - MIT License (https://mit-license.org/)
 // - Boost Software License, Version 1.0 (https://www.boost.org/LICENSE_1_0.txt)
+// - MIT License (https://mit-license.org/)
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
@@ -26,53 +25,66 @@
 //!
 //! # A3 (220 Hz) Minor Piano Example
 //! This example uses the first ten piano harmonics to generate a sound that
-//! sounds like an electric piano.  This is an example of additive synthesis,
-//! since it uses the `Mix` trait.
+//! sounds like an electric piano.  This is an example of additive synthesis.
 //!
 //! ```rust,no_run
-//! use fon::{mono::Mono64, Audio, Sink};
-//! use twang::{Mix, Synth, Fc, Signal};
-//! 
-//! // Target sample rate set to 48 KHz
-//! const S_RATE: u32 = 48_000;
-//! 
+//! use fon::chan::Ch16;
+//! use fon::{Audio, Frame};
+//! use twang::noise::White;
+//! use twang::ops::Gain;
+//! use twang::osc::Sine;
+//! use twang::Synth;
+//!
 //! /// First ten harmonic volumes of a piano sample (sounds like electric piano).
-//! const HARMONICS: [f64; 10] = [
+//! const HARMONICS: [f32; 10] = [
 //!     0.700, 0.243, 0.229, 0.095, 0.139, 0.087, 0.288, 0.199, 0.124, 0.090,
 //! ];
 //! /// The three pitches in a perfectly tuned A3 minor chord
-//! const PITCHES: [f64; 3] = [220.0, 220.0 * 32.0 / 27.0, 220.0 * 3.0 / 2.0];
+//! const PITCHES: [f32; 3] = [220.0, 220.0 * 32.0 / 27.0, 220.0 * 3.0 / 2.0];
 //! /// Volume of the piano
-//! const VOLUME: f64 = 0.1;
-//! 
+//! const VOLUME: f32 = 1.0 / 3.0;
+//!
+//! // State of the synthesizer.
+//! #[derive(Default)]
+//! struct Processors {
+//!     // White noise generator.
+//!     white: White,
+//!     // 10 harmonics for 3 pitches.
+//!     piano: [[Sine; 10]; 3],
+//! }
+//!
 //! fn main() {
-//!     fn piano(_: &mut (), fc: Fc) -> Signal {
-//!         PITCHES
-//!             .iter()
-//!             .map(|p| {
-//!                 HARMONICS
-//!                     .iter()
-//!                     .enumerate()
-//!                     .map(|(i, v)| {
-//!                         fc.freq(p * (i + 1) as f64).sine().gain(v * VOLUME)
-//!                     })
-//!                     .mix()
-//!             })
-//!             .mix()
+//!     // Initialize audio
+//!     let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
+//!     // Create audio processors
+//!     let mut proc = Processors::default();
+//!     // Adjust phases of harmonics.
+//!     for pitch in proc.piano.iter_mut() {
+//!         for harmonic in pitch.iter_mut() {
+//!             harmonic.shift(proc.white.step());
+//!         }
 //!     }
-//! 
-//!     // Initialize audio with five seconds of silence.
-//!     let mut audio = Audio::<Mono64>::with_silence(S_RATE, S_RATE as usize * 5);
-//!     // Create the synthesizer.
-//!     let mut synth = Synth::new((), piano);
-//!     // Generate audio samples.
-//!     audio.sink(..).stream(&mut synth);
+//!     // Build synthesis algorithm
+//!     let mut synth = Synth::new(proc, |proc, mut frame: Frame<_, 2>| {
+//!         for (s, pitch) in proc.piano.iter_mut().zip(PITCHES.iter()) {
+//!             for ((i, o), v) in s.iter_mut().enumerate().zip(HARMONICS.iter()) {
+//!                 // Get next sample from oscillator.
+//!                 let sample = o.step(pitch * (i + 1) as f32);
+//!                 // Pan the generated harmonic center
+//!                 frame = frame.pan(Gain.step(sample, (v * VOLUME).into()), 0.0);
+//!             }
+//!         }
+//!         frame
+//!     });
+//!     // Synthesize 5 seconds of audio
+//!     synth.stream(audio.sink());
 //! }
 //! ```
 
+#![no_std]
 #![doc(
-    html_logo_url = "https://libcala.github.io/logo.svg",
-    html_favicon_url = "https://libcala.github.io/icon.svg",
+    html_logo_url = "https://ardaku.github.io/mm/logo.svg",
+    html_favicon_url = "https://ardaku.github.io/mm/icon.svg",
     html_root_url = "https://docs.rs/twang"
 )]
 #![deny(unsafe_code)]
@@ -92,14 +104,13 @@
     variant_size_differences
 )]
 
-mod pink;
-mod room;
-mod sig;
-mod synth;
-mod white;
+extern crate alloc;
 
-pub use pink::Pink;
-pub use room::Room;
-pub use sig::Signal;
-pub use synth::{Fc, Mix, Synth};
-pub use white::White;
+mod math;
+mod synth;
+
+pub mod noise;
+pub mod ops;
+pub mod osc;
+
+pub use synth::Synth;
