@@ -62,7 +62,7 @@
 //!     // Adjust phases of harmonics.
 //!     for pitch in proc.piano.iter_mut() {
 //!         for harmonic in pitch.iter_mut() {
-//!             harmonic.shift(proc.white.next());
+//!             harmonic.shift(proc.white.step());
 //!         }
 //!     }
 //!     // Build synthesis algorithm
@@ -70,9 +70,9 @@
 //!         for (s, pitch) in proc.piano.iter_mut().zip(PITCHES.iter()) {
 //!             for ((i, o), v) in s.iter_mut().enumerate().zip(HARMONICS.iter()) {
 //!                 // Get next sample from oscillator.
-//!                 let sample = o.next(pitch * (i + 1) as f32);
+//!                 let sample = o.step(pitch * (i + 1) as f32);
 //!                 // Pan the generated harmonic center
-//!                 frame = frame.pan(Gain.next(sample, (v * VOLUME).into()), 0.0);
+//!                 frame = frame.pan(Gain.step(sample, (v * VOLUME).into()), 0.0);
 //!             }
 //!         }
 //!         frame

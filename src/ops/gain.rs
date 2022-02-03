@@ -17,7 +17,7 @@ pub struct Gain;
 impl Gain {
     /// Get next sample.
     #[inline(always)]
-    pub fn next(&mut self, input: Ch32, gain: Ch32) -> Ch32 {
+    pub fn step(&mut self, input: Ch32, gain: Ch32) -> Ch32 {
         Ch32::from(input.to_f32() * gain.to_f32().abs())
     }
 }

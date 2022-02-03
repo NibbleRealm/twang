@@ -17,7 +17,7 @@ pub struct Invert;
 impl Invert {
     /// Get next inverted sample.
     #[inline(always)]
-    pub fn next(&mut self, input: Ch32) -> Ch32 {
+    pub fn step(&mut self, input: Ch32) -> Ch32 {
         -input
     }
 }

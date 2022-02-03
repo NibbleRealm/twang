@@ -19,7 +19,7 @@ pub struct Clip;
 impl Clip {
     /// Get next clipped sample.
     #[inline(always)]
-    pub fn next(&mut self, input: Ch32, limit: Ch32) -> Ch32 {
+    pub fn step(&mut self, input: Ch32, limit: Ch32) -> Ch32 {
         let limit = limit.to_f32().abs();
         Ch32::from(input.to_f32().clamp(-limit, limit))
     }

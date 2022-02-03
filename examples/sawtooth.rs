@@ -19,7 +19,7 @@ fn main() {
     // Build synthesis algorithm
     let mut synth = Synth::new(proc, |proc, frame: Frame<_, 2>| {
         // Calculate the next sample for each processor
-        let saw = proc.saw.next(440.0);
+        let saw = proc.saw.step(440.0);
         // Pan the generated audio center
         frame.pan(saw, 0.0)
     });

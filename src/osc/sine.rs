@@ -29,7 +29,7 @@ impl Sine {
 
     /// Get the next sample from this oscillator.
     #[inline(always)]
-    pub fn next(&mut self, hz: f32) -> Ch32 {
+    pub fn step(&mut self, hz: f32) -> Ch32 {
         let out = self.peek();
         self.0 = (self.0 + super::TAU * super::SAMPLE_PERIOD * hz) % super::TAU;
         out

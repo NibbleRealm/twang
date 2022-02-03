@@ -19,7 +19,7 @@ pub struct Limiter;
 impl Limiter {
     /// Get next limited sample.
     #[inline(always)]
-    pub fn next(&mut self, input: Ch32, limit: Ch32) -> Ch32 {
+    pub fn step(&mut self, input: Ch32, limit: Ch32) -> Ch32 {
         let limit = limit.to_f32();
         let volume = 1.0 / limit;
         if volume.is_nan() {

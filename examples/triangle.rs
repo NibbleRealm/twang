@@ -19,7 +19,7 @@ fn main() {
     // Build synthesis algorithm
     let mut synth = Synth::new(proc, |proc, frame: Frame<_, 2>| {
         // Calculate the next sample for each processor
-        let triangle = proc.triangle.next(440.0);
+        let triangle = proc.triangle.step(440.0);
         // Pan the generated audio center
         frame.pan(triangle, 0.0)
     });

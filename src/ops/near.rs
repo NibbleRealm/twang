@@ -17,7 +17,7 @@ pub struct Near;
 impl Near {
     /// Get next sample.
     #[inline(always)]
-    pub fn next(&mut self, input: Ch32, other: Ch32) -> Ch32 {
+    pub fn step(&mut self, input: Ch32, other: Ch32) -> Ch32 {
         let other = other.to_f32().abs();
         let input = input.to_f32();
         if input < 0.0 {

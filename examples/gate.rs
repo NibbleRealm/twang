@@ -55,10 +55,10 @@ fn main() {
         // Get input sample.
         let dry = proc.input.next().unwrap_or(Default::default());
 
-        let mut wet = [proc.room[0].next(), proc.room[1].next()];
+        let mut wet = [proc.room[0].step(), proc.room[1].step()];
         let dry = [dry[Left], dry[Right]];
         for (i, gate) in proc.gate.iter_mut().enumerate() {
-            wet[i] = gate.next(&GateParams {
+            wet[i] = gate.step(&GateParams {
                 close_threshold: Ch32::new(0.25), // Quarter max amplitude
                 open_threshold: Ch32::new(0.25), // Quarter max amplitude
                 range: Ch32::new(1.0), // Total silence after gate closes.
@@ -79,8 +79,8 @@ fn main() {
         proc.room[0].add(left, 0.002 /* 10 milliseconds */, 0.9);
         proc.room[1].add(right, 0.002 /* 10 milliseconds */, 0.9);
 
-        let left = Gain.next(left, Ch32::new(0.75));        
-        let right = Gain.next(right, Ch32::new(0.75));        
+        let left = Gain.step(left, Ch32::new(0.75));        
+        let right = Gain.step(right, Ch32::new(0.75));        
 
         frame.pan(left, -0.25)
             .pan(right, 0.25)

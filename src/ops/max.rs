@@ -18,7 +18,7 @@ pub struct Max;
 impl Max {
     /// Get next sample.
     #[inline(always)]
-    pub fn next(&mut self, input: Ch32, other: Ch32) -> Ch32 {
+    pub fn step(&mut self, input: Ch32, other: Ch32) -> Ch32 {
         Ch32::from(input.to_f32().max(other.to_f32()))
     }
 }

@@ -21,10 +21,10 @@ fn main() {
     // Build synthesis algorithm
     let mut synth = Synth::new(proc, |proc, frame: Frame<_, 2>| {
         // Calculate the next sample for each processor
-        let tri = proc.tri.next(440.0);
-        let sin = proc.sin.next(440.0);
+        let tri = proc.tri.step(440.0);
+        let sin = proc.sin.step(440.0);
         // Positive waveform is triangle, negative is sine.
-        let out = Max.next(tri, Ch32::new(0.0)) + Min.next(sin, Ch32::new(0.0));
+        let out = Max.step(tri, Ch32::new(0.0)) + Min.step(sin, Ch32::new(0.0));
         // Pan the generated audio center
         frame.pan(out, 0.0)
     });

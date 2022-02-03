@@ -23,14 +23,14 @@ fn main() {
     // Build synthesis algorithm
     let mut synth = Synth::new(proc, |proc, frame: Frame<_, 2>| {
         // Calculate the next sample for each processor
-        let pink = proc.pink.next();
-        let tone = proc.tone.next(440.0);
-        let ptri = proc.ptri.next(440.0);
+        let pink = proc.pink.step();
+        let tone = proc.tone.step(440.0);
+        let ptri = proc.ptri.step(440.0);
 
         // 
-        let tone = Clip.next(tone, Ch32::new(1.0 / 12.0));
-        let airy = Gain.next(Gain.next(tone, Ch32::new(12.0 / 10.0)), pink);
-        let main = Gain.next(ptri, Gain.next(tone, Ch32::new(12.0)));
+        let tone = Clip.step(tone, Ch32::new(1.0 / 12.0));
+        let airy = Gain.step(Gain.step(tone, Ch32::new(12.0 / 10.0)), pink);
+        let main = Gain.step(ptri, Gain.step(tone, Ch32::new(12.0)));
 
         frame.pan(airy, 0.0)
             .pan(main, 0.0)

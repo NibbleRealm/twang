@@ -121,7 +121,7 @@ impl Pink {
 
     /// Get next sample from the noise generator.
     #[inline(always)]
-    pub fn next(&mut self) -> fon::chan::Ch32 {
+    pub fn step(&mut self) -> fon::chan::Ch32 {
         // Different functions for each sample.
         let pink = match self.which {
             _x if _x % 2 != 0 => self.a(), // odd #s

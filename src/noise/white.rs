@@ -30,7 +30,7 @@ impl White {
 
     /// Get next sample from the noise generator.
     #[inline(always)]
-    pub fn next(&mut self) -> fon::chan::Ch32 {
+    pub fn step(&mut self) -> fon::chan::Ch32 {
         // msws (Middle Square Weyl Sequence) algorithm
         self.x *= self.x;
         self.w += Wrapping(SEQUENCE);

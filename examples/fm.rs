@@ -23,7 +23,7 @@ fn main() {
     // Build synthesis algorithm
     let mut synth = Synth::new(proc, |proc, frame: Frame<_, 2>| {
         // Calculate the next sample for each processor
-        let modulator = proc.modulator.next(1.5 * 440.0);
+        let modulator = proc.modulator.step(1.5 * 440.0);
         let carrier = proc.carrier.phase(440.0, modulator);
         // Pan the generated audio center
         frame.pan(carrier, 0.0)

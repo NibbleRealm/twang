@@ -35,12 +35,12 @@ impl Room {
     pub fn add(&mut self, signal: Ch32, seconds: f32, attenuation: f32) {
         let offset = (48_000.0 * seconds) as usize;
         self.buffer.resize(offset + 1, Ch32::default());
-        self.buffer[offset] = self.buffer[offset] + Ch32::new(signal.to_f32() * attenuation);
+        self.buffer[offset] += Ch32::new(signal.to_f32() * attenuation);
     }
 
     /// Generate the next sample of all reflections in the room.
     #[inline(always)]
-    pub fn next(&mut self) -> Ch32 {
-        self.buffer.pop_front().unwrap_or(Default::default())
+    pub fn step(&mut self) -> Ch32 {
+        self.buffer.pop_front().unwrap_or_default()
     }
 }

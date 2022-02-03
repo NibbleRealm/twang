@@ -33,7 +33,7 @@ impl Pulse {
 
     /// Get the next sample from this oscillator.
     #[inline(always)]
-    pub fn next(&mut self, hz: f32, duty: Ch32) -> Ch32 {
+    pub fn step(&mut self, hz: f32, duty: Ch32) -> Ch32 {
         let out = self.peek(duty);
         self.0 = (self.0 + 2.0 * super::SAMPLE_PERIOD * hz) % 2.0;
         out

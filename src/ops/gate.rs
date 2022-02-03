@@ -38,7 +38,7 @@ impl Gate {
 
     /// Get next sample processed through the noise gate.
     #[inline(always)]
-    pub fn next(&mut self, gate: &GateParams) -> Ch32 {
+    pub fn step(&mut self, gate: &GateParams) -> Ch32 {
         // If gate should open.
         if gate.key.to_f32() >= gate.open_threshold.to_f32() {
             // Adjust level based on attack parameter.
