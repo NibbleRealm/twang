@@ -5,8 +5,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
 ## [0.8.0] - UNRELEASED (Planned 2022-01-29)
+### Added
+ - `ops` module for auditory effects previously provided by `Signal`
+ - `osc` module for basic oscillators previously provided by `Signal`
+ - `Synth::stream()` (needed now that the `Stream` trait is gone)
+
 ### Changed
  - Update to fon version 0.6
+ - Move `Pink` to `noise::Pink`
+ - Move `White` to `noise::White`
+ - Rename `Pink::noise()` to `Pink::step()`
+ - Rename `White::noise()` to `Pink::step()`
+ - Move `Room` to `ops::Room`
+ - Rename `Room::gen()` to `Room::step()`
+ - `Room::add()` now takes seconds instead of samples for time parameter
+
+### Removed
+ - `Signal` - `fon::Ch32` is now used instead
+ - `Mix` trait, you can now use `fon::Frame::pan()` to mix instead
+ - `Synth::params()`
+ - `Fc` - no longer any global synthesis state
 
 ## [0.7.0] - 2021-01-17
 ### Changed
