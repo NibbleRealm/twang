@@ -1,16 +1,16 @@
-// Twang
-// Copyright © 2018-2021 Jeron Aldaron Lau.
+// Copyright © 2018-2022 The Twang Contributors.
 //
 // Licensed under any of:
 // - Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
-// - MIT License (https://mit-license.org/)
 // - Boost Software License, Version 1.0 (https://www.boost.org/LICENSE_1_0.txt)
+// - MIT License (https://mit-license.org/)
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use fon::chan::{Channel, Ch32};
+use alloc::boxed::Box;
+use core::fmt::{Debug, Error, Formatter};
+use fon::chan::{Ch32, Channel};
 use fon::{Frame, Sink};
-use std::fmt::{Debug, Error, Formatter};
 
 /// A synthesizer stream.
 pub struct Synth<S, const CH: usize>(
@@ -35,7 +35,9 @@ impl<S, const CH: usize> Synth<S, CH> {
 
     /// Stream synthesized samples into a [`Sink`](fon::Sink).
     pub fn stream<Chan: Channel, K>(&mut self, mut sink: K)
-        where K: Sink<Chan, CH>, Chan: From<Ch32>,
+    where
+        K: Sink<Chan, CH>,
+        Chan: From<Ch32>,
     {
         let sample_rate: u32 = sink.sample_rate().into();
         let synth_iter = SynthIter(self, sample_rate);
@@ -50,6 +52,6 @@ impl<S, const CH: usize> Iterator for SynthIter<'_, S, CH> {
 
     fn next(&mut self) -> Option<Self::Item> {
         assert_eq!(self.1, 48_000);
-        Some(self.0.1(&mut self.0.0, Default::default()))
+        Some(self.0 .1(&mut self.0 .0, Default::default()))
     }
 }

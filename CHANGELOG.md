@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/
 
 ## [0.8.0] - UNRELEASED (Planned 2022-01-29)
 ### Added
+ - no-std support
  - `ops` module for auditory effects previously provided by `Signal`
  - `osc` module for basic oscillators previously provided by `Signal`
  - `Synth::stream()` (needed now that the `Stream` trait is gone)

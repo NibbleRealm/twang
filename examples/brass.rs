@@ -1,8 +1,8 @@
 use fon::chan::{Ch16, Ch32};
 use fon::{Audio, Frame};
+use twang::noise::Pink;
 use twang::ops::{Clip, Gain};
-use twang::osc::{Triangle, Sawtooth};
-use twang::noise::{Pink};
+use twang::osc::{Sawtooth, Triangle};
 use twang::Synth;
 
 mod wav;
@@ -27,13 +27,12 @@ fn main() {
         let tone = proc.tone.step(440.0);
         let ptri = proc.ptri.step(440.0);
 
-        // 
+        //
         let tone = Clip.step(tone, Ch32::new(1.0 / 12.0));
         let airy = Gain.step(Gain.step(tone, Ch32::new(12.0 / 10.0)), pink);
         let main = Gain.step(ptri, Gain.step(tone, Ch32::new(12.0)));
 
-        frame.pan(airy, 0.0)
-            .pan(main, 0.0)
+        frame.pan(airy, 0.0).pan(main, 0.0)
     });
     // Synthesize 5 seconds of audio
     synth.stream(audio.sink());
