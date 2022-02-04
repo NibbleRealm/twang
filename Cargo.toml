@@ -32,7 +32,7 @@ categories = [
     "mathematics",
     "no-std",
 ]
-include = ["README.md", "Cargo.toml", "src/*"]
+include = ["README.md", "Cargo.toml", "src/*", "build.rs"]
 
 [dependencies]
 libm = "0.2"
