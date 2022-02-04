@@ -6,7 +6,7 @@ Library for pure Rust advanced audio synthesis.
 - Pure Rust: No system dependencies outside std.
 
 Links to examples for each will be provided as they are implemented.
-- [Additive synthesis](https://github.com/AldaronLau/twang/blob/master/examples/piano.rs)
+- [Additive synthesis](https://github.com/AldaronLau/twang/blob/stable/examples/piano.rs)
   (Compositing sounds, usually sine waves - used in analysis / resynthesis along
   with FFT)
 - Subtractive synthesis (Shaping sawtooth wave, which contains both odd and even
@@ -55,7 +55,7 @@ Envelope (example: ADSR):
 ### Gated Reverb
 Reverb without reflections.
 
-[Gated Reverb](https://github.com/AldaronLau/twang/blob/master/examples/gate.rs)
+[Gated Reverb](https://github.com/AldaronLau/twang/blob/stable/examples/gate.rs)
 
 ### Reverb And Echo
 Reverb is just echo that takes place in less than 50 milliseconds, so you can
@@ -106,10 +106,10 @@ examples folder.
 ## License
 Licensed under either of
  - Apache License, Version 2.0
-   ([LICENSE_APACHE_2_0.txt](https://github.com/AldaronLau/twang/blob/main/LICENSE_APACHE_2_0.txt) or
+   ([LICENSE_APACHE_2_0.txt](https://github.com/AldaronLau/twang/blob/stable/LICENSE_APACHE_2_0.txt) or
    [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0))
  - Boost License, Version 1.0
-   ([LICENSE_BOOST_1_0.txt](https://github.com/AldaronLau/twang/blob/main/LICENSE_BOOST_1_0.txt) or
+   ([LICENSE_BOOST_1_0.txt](https://github.com/AldaronLau/twang/blob/stable/LICENSE_BOOST_1_0.txt) or
    [https://www.boost.org/LICENSE_1_0.txt](https://www.boost.org/LICENSE_1_0.txt))
 
 at your option.
@@ -139,4 +139,4 @@ find you something to work on based on your skill level, you can email me at
 [jeronlau@plopgrizzly.com](mailto:jeronlau@plopgrizzly.com).  Otherwise,
 [here's a link to the issues on GitHub](https://github.com/AldaronLau/twang/issues),
 and, as always, make sure to read and follow the
-[Code of Conduct](https://github.com/AldaronLau/twang/blob/main/CODE_OF_CONDUCT.md).
+[Code of Conduct](https://github.com/AldaronLau/twang/blob/stable/CODE_OF_CONDUCT.md).
