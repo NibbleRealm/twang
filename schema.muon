@@ -1,0 +1,98 @@
+:::
+# Create samplers by name
+let: list dictionary
+  # A sampler (function with args)
+  text: record Sampler
+    # Input samplers
+    args: list string
+    # Sampler function
+    func: choice Function
+      # Sample from a constant
+      #
+      # Constant samples are always heard as silence
+      Const: number
+      # Sample from a pitched oscillator
+      #
+      # This is the only way to make higher or lower notes
+      Pitch: record
+        # The frequency of the note.  Higher values make higher notes
+        hz: text
+        # The duty cycle of the waveform.  Default value is 0 (equal).
+        duty: optional text
+        # The phase shift of the oscillator.
+        phase: optional text
+        # Kind of waveform
+        kind: choice
+          # A pulse wave, set duty cycle to:
+          #  - -1 for a constant -1
+          #  - ±0 for a square wave
+          #  - +1 for a constant +1
+          Pulse
+          # A sinusoidal wave, set duty cycle to:
+          #  - -1 for a FIXME
+          #  - ±0 for an equal sinusoidal wave
+          #  - +1 for a FIXME
+          Sine
+          # A zigzag wave, set duty cycle to:
+          #  - -1 for a down-moving sawtooth wave
+          #  - ±0 for a triangle wave
+          #  - +1 for a up-moving sawtooth wave
+          Zigzag
+      # Noise generators
+      Noise: record
+        # How many seconds of noise to drop before sampling begins
+        shift: optional number
+        # Type of noise generator
+        kind: choice
+          # Pink noise generator (all frequencies at equal perception)
+          Pink
+          # White noise generator (all frequencies at equal amplitude)
+          White
+      # Audio mixing
+      Mix: record
+        # Mixing from which samples
+        samples: list text
+        # Kind of mixing to do, from last to first sample listed
+        kind: choice
+          # Standard Mixing (add to base signal)
+          Add
+          # Amplification (Multiply by amplitude of next signal)
+          Gain
+          # Hard limiting/clipping (limit amplitude with next signal)
+          Clip
+          # Soft limiting (limit amplitude with next signal)
+          Limit
+          # Minimum sample
+          Min
+          # Maximum sample
+          Max
+          # Nearest to 0 sample
+          Near
+          # Furthest from 0 sample
+          Far
+
+# Which sampler to stream audio from
+synth: text
+
+# Twang functional audio programming language
+# ===========================================
+# This is an optional way to use twang to build a synthesis tree.  Synthesis
+# trees have a root node which does something to "mix" the child synthesis
+# nodes' outputs.  Synthesis trees can be parameterized and controlled by an
+# external input.
+#
+# The programming language is built on top of MuON (Micro Object Notation):
+# https://github.com/muon-data/muon
+#
+# Naming conventions:
+#  - GlobalSamplerFunction
+#  - local_sampler_function
+#
+# Postfix Calling convention
+#  - (sampler1 sampler2).SamplerA.SamplerB
+#  - ((a b).c (d e).f).g
+#
+# Notable Quirks
+#  - Time is abstracted out of each function (hidden parameter)
+#  - Constants are just timeless functions without parameters
+:::
