@@ -7,69 +7,96 @@ let: list dictionary
     args: list string
     # Sampler function
     func: choice Function
-      # Sample from a constant
-      #
-      # Constant samples are always heard as silence
-      Const: number
-      # Sample from a pitched oscillator
-      #
-      # This is the only way to make higher or lower notes
-      Pitch: record
+      # Trapezoidal waveform - Each component must be larger than the previous
+      #  (-1, -1, -1) => Downward Sawtooth
+      #  (-1, 1, 1) => Upward Sawtooth
+      #  (-1, -1, 1) => Constant 1
+      #  (-1, 0, 0) => Triangle Wave
+      #  (0, 0, 1) => Square Wave
+      #  (1, 1, 1) => Constant -1
+      Zoid: record
         # The frequency of the note.  Higher values make higher notes
         hz: text
-        # The duty cycle of the waveform.  Default value is 0 (equal).
+        # Phase location to start rise (-1:1) from -1 to 1
+        rise: text
+        # Phase location to start hold (-1:1) at -1
+        hold: text
+        # Phase location to start fall (-1:1) from +1 to -1
+        fall: text
+      # Sinusoidal waveform - Implemented as cosine
+      Sine: record
+        # The frequency of the note.  Higher values make higher notes
+        hz: text
+        # Location of zero crossing - 0 (equal) is default
         duty: optional text
-        # The phase shift of the oscillator.
-        phase: optional text
-        # Kind of waveform
-        kind: choice
-          # A pulse wave, set duty cycle to:
-          #  - -1 for a constant -1
-          #  - ±0 for a square wave
-          #  - +1 for a constant +1
-          Pulse
-          # A sinusoidal wave, set duty cycle to:
-          #  - -1 for a FIXME
-          #  - ±0 for an equal sinusoidal wave
-          #  - +1 for a FIXME
-          Sine
-          # A zigzag wave, set duty cycle to:
-          #  - -1 for a down-moving sawtooth wave
-          #  - ±0 for a triangle wave
-          #  - +1 for a up-moving sawtooth wave
-          Zigzag
-      # Noise generators
-      Noise: record
-        # How many seconds of noise to drop before sampling begins
-        shift: optional number
-        # Type of noise generator
-        kind: choice
-          # Pink noise generator (all frequencies at equal perception)
-          Pink
-          # White noise generator (all frequencies at equal amplitude)
-          White
-      # Audio mixing
+        # Speed of zero crossing - 0 (linear) is default
+        zero: optional text
+        # Speed of peak - 0 (linear) is default
+        peak: optional text
+      # White noise generator (all frequencies at equal amplitude)
+      White: record
+        # Random seed
+        seed: optional int
+      # Pink noise generator (all frequencies at equal perception)
+      Pink: record
+        # Random seed
+        seed: optional int
+      # Phase offset
+      Phase: record
+        # Function to apply phase offset to
+        func: text
+        # Offset -1:1
+        offset: text
+      # A constant value (default 0)
+      Line: optional number
+      # A mixer
       Mix: record
-        # Mixing from which samples
-        samples: list text
-        # Kind of mixing to do, from last to first sample listed
-        kind: choice
-          # Standard Mixing (add to base signal)
-          Add
-          # Amplification (Multiply by amplitude of next signal)
-          Gain
-          # Hard limiting/clipping (limit amplitude with next signal)
-          Clip
-          # Soft limiting (limit amplitude with next signal)
-          Limit
-          # Minimum sample
-          Min
-          # Maximum sample
-          Max
-          # Nearest to 0 sample
-          Near
-          # Furthest from 0 sample
-          Far
+        # Which samples
+        funcs: list text
+      # An amplifier
+      Gain: record
+        # Which sampler
+        func: text
+        # Amount to gain (0 is silent)
+        amt: text
+      # Hard and Soft limiting/clipping and compression
+      Limit: record
+        # Which sampler
+        func: text
+        # Ceiling / threshold - optional amplitude of clamping from 0:1 (default
+        # 1)
+        ceil: optional text
+        # Ratio - How much gain is applied over ceiling from 0:1 (default 0)
+        ratio: optional text
+        # Knee - Fraction of amplitude above the ceiling for full ratio effect
+        # from 0:1 (default 0)
+        knee: optional text
+      # Clamping
+      Clamp: record
+        # Which sampler
+        func: text
+        # Minimum value
+        min: optional text
+        # Maximum value
+        max: optional text
+        # Value shift
+        shift: optional text
+      # Amplitude envelope (can be ADSR or other)
+      Envelope: record
+        # Which sampler
+        func: text
+        # Components of the envelope
+        with: list record
+          # Number of seconds to rise/fall or hold
+          time: text
+          # Range 0:1
+          gain: text
+      # TODO Reverberation effect
+      Reverb: record
+      # TODO Shaping / Equalization effect
+      Shape: record
+      # TODO Wavetable / Waypoint / Lookup oscillator
+      Table: record
 
 # Which sampler to stream audio from
 synth: text
