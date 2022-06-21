@@ -1,6 +1,6 @@
 :::
 # Create samplers by name
-let: list dictionary
+def: list dictionary
   # A sampler (function with args)
   text: record Sampler
     # Input samplers

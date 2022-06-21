@@ -112,5 +112,6 @@ mod synth;
 pub mod noise;
 pub mod ops;
 pub mod osc;
+pub mod file;
 
 pub use synth::Synth;
