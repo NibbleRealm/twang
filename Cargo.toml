@@ -36,5 +36,4 @@ include = ["README.md", "Cargo.toml", "src/*", "build.rs"]
 
 [dependencies]
 libm = "0.2"
-hashbrown = "0.12"
 fon = "0.6"
