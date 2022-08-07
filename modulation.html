@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Page not found - Twang Tutorial</title>
-        <base href="/">
+        <title>Angular Modulation Synthesis - Twang Tutorial</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -76,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html" class="active"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -135,19 +134,43 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="document-not-found-404"><a class="header" href="#document-not-found-404">Document not found (404)</a></h1>
-<p>This URL is invalid, sorry. Please use the navigation bar or search to continue.</p>
+                        <h1 id="angular-modulation-synthesis"><a class="header" href="#angular-modulation-synthesis">Angular Modulation Synthesis</a></h1>
+<p>Angular modulation includes both frequency modulation and phase modulation
+synthesis.  The two are very similar methods, and essentially do the same thing.
+The only difference is in the implementation; frequency modulation modulates the
+velocity of the waveform, while phase modulation modulates the offset position.</p>
+<p>Frequency modulation synthesis is when the frequency variable of an oscillator
+is set to another waveform.</p>
+<p>Phase modulation synthesis is when the phase variable of an oscillator is set to
+another waveform.  Phase modulation synthesis was popular in 1980s synthesizers.</p>
+<h2 id="phase-distortion"><a class="header" href="#phase-distortion">Phase Distortion</a></h2>
+<p>Phase distortion builds upon angular modulation synthesis.</p>
+<ol>
+<li>Do angular modulation of a waveform</li>
+<li>After each cycle of the lower frequency, reset the high frequency oscillator</li>
+<li>Multiply by decreasing sawtooth wave at the lower frequency to hide the
+&quot;jump&quot;</li>
+</ol>
+<h2 id="waveshaping-direct-phase-modulation"><a class="header" href="#waveshaping-direct-phase-modulation">Waveshaping (Direct Phase Modulation)</a></h2>
+<p>Waveshaping builds upon phase modulation synthesis.  In this type of modulation,
+the two oscillators used must have the same frequency.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="subtractive.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
                         <div style="clear: both"></div>
                     </nav>
                 </div>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="subtractive.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
             </nav>
 
         </div>

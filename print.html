@@ -76,7 +76,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">1.</strong> Chapter 1</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -135,7 +135,84 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="chapter-1"><a class="header" href="#chapter-1">Chapter 1</a></h1>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p>Twang is a Rust library for doing audio synthesis.  Unlike most audio synthesis
+libraries, Twang uses an audio tree rather than an audio graph.  In practice,
+they function the same way, since twang allows reuse of nodes.  The tree is used
+to make it easier to visualize what's happening during synthesis.  The root node
+of the tree is the final operation that produces the synthesized sound.</p>
+<p>This book will teach not only how to use Twang, but also about how all the
+different methods of audio synthesis work.  Each chapter will cover a synthesis
+method and provide an example of how to use it with Twang.  You will find that
+the reason there are so many methods of synthesis is because they each make
+their own unique type of sound from each other.  So if you want to synthesize
+a specific type of sound, you choose a specific type of synthesis.  Here's a
+little guide to help (you might find a way to synthesize a type of sound with a
+different method than listed here, and that's ok - it's not an exact science):</p>
+<ul>
+<li><a href="additive.html">Additive Synthesis</a>: Electronic reproduction of a sound with
+reduced quality, such as an &quot;electric piano&quot; sound</li>
+<li><a href="subtractive.html">Subtractive Synthesis</a>: Electronic immitation of brass,
+saxaphone, or any other sound with rich harmonic content</li>
+<li>Frequency Modulation Synthesis: Electronic immitation of bells</li>
+</ul>
+<h2 id="digital-audio"><a class="header" href="#digital-audio">Digital Audio</a></h2>
+<p>There's a great introduction to digital audio concepts on
+<a href="https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Audio_concepts">MDN</a>
+that's worth checking out before reading this book.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="oscillators"><a class="header" href="#oscillators">Oscillators</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="noise"><a class="header" href="#noise">Noise</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="additive-synthesis"><a class="header" href="#additive-synthesis">Additive Synthesis</a></h1>
+<p>Additive synthesis is probably the simplest synthesis algorithm to understand.
+The fundamental idea is that all sounds are made up of an infinite number of
+sine waves at different volumes mixed together.  Of course, when synthesizing
+you can only mix a finite amount of sine waves, otherwise you would be able to
+synthesize any sound with additive synthesis!  That said, you can approximate
+any sound with additive synthesis, even to the point where it's
+indistiguishable!</p>
+<p>But, additive synthesis isn't limited to just sine waves; You can use other
+kinds of waveforms as well.  Interestingly, additive synthesis is actually the
+exact same thing as mixing!  This means when you mix the two waveforms together,
+you are able to hear both of them playing together.  Of course, the more
+waveforms you add together, the more difficult it becomes to pick them out, and
+the less it sounds like multiple &quot;instruments&quot; or &quot;voices&quot;.</p>
+<h2 id="fast-fourier-tranform"><a class="header" href="#fast-fourier-tranform">Fast Fourier Tranform</a></h2>
+<p>TODO</p>
+<h1 id="electric-piano-example"><a class="header" href="#electric-piano-example">(Electric) Piano Example</a></h1>
+<p>TODO</p>
+<p><a href="https://github.com/AldaronLau/twang/blob/stable/examples/piano.rs">Example Code</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="subtractive-synthesis"><a class="header" href="#subtractive-synthesis">Subtractive Synthesis</a></h1>
+<p>Subtractive synthesis is (you guessed it!) the opposite of additive synthesis.
+The fundamental idea is that you take a sound that naturally has an infinite
+number of sine waves added together (lots of harmonics), and start reducing
+ranges of frequencies with band-pass filters.  A bandpass filter is made of two
+parts; a high-pass and a low-pass filter.  High-pass filters reduce the lower
+frequencies, and let the higher frequencies pass through them unchanged.
+Low-pass filters are just the opposite; the higher frequencies are reduced and
+the low frequencies are left unchanged.  The means a band-pass filter reduces
+any frequencies outside a band/range of frequencies.</p>
+<h1 id="trumpet-example"><a class="header" href="#trumpet-example">Trumpet Example</a></h1>
+<p>TODO</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="angular-modulation-synthesis"><a class="header" href="#angular-modulation-synthesis">Angular Modulation Synthesis</a></h1>
+<p>Angular modulation includes both frequency modulation and phase modulation
+synthesis.  The two are very similar methods, and essentially do the same thing.
+The only difference is in the implementation; frequency modulation modulates the
+velocity of the waveform, while phase modulation modulates the offset position.</p>
+<p>Frequency modulation synthesis is when the frequency variable of an oscillator
+is set to another waveform.</p>
+<p>Phase modulation synthesis is when the phase variable of an oscillator is set to
+another waveform.  Phase modulation synthesis was popular in 1980s synthesizers.</p>
+<h2 id="phase-distortion"><a class="header" href="#phase-distortion">Phase Distortion</a></h2>
+<p>Phase distortion builds upon angular modulation synthesis.</p>
+<ol>
+<li>Do angular modulation of a waveform</li>
+<li>After each cycle of the lower frequency, reset the high frequency oscillator</li>
+<li>Multiply by decreasing sawtooth wave at the lower frequency to hide the
+&quot;jump&quot;</li>
+</ol>
+<h2 id="waveshaping-direct-phase-modulation"><a class="header" href="#waveshaping-direct-phase-modulation">Waveshaping (Direct Phase Modulation)</a></h2>
+<p>Waveshaping builds upon phase modulation synthesis.  In this type of modulation,
+the two oscillators used must have the same frequency.</p>
 
                     </main>
 
