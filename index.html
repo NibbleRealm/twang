@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html" class="active"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html" class="active"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="sine.html"><strong aria-hidden="true">2.1.</strong> Sinusoidal Oscillators</a></li><li class="chapter-item expanded "><a href="bezier.html"><strong aria-hidden="true">2.2.</strong> Bezier Oscillators</a></li><li class="chapter-item expanded "><a href="pulse.html"><strong aria-hidden="true">2.3.</strong> Pulse Oscillators</a></li></ol></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -135,11 +135,11 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<p>Twang is a Rust library for doing audio synthesis.  Unlike most audio synthesis
-libraries, Twang uses an audio tree rather than an audio graph.  In practice,
-they function the same way, since twang allows reuse of nodes.  The tree is used
-to make it easier to visualize what's happening during synthesis.  The root node
-of the tree is the final operation that produces the synthesized sound.</p>
+<p>Twang is a Rust library for doing audio synthesis.  The API of Twang uses a
+dependency tree (type of DAG or directed acyclic graph) of audio nodes rather
+than supporting arbitrary graphs.  The tree makes it easier to visualize what's
+happening during synthesis.  The root node of the tree is the final operation
+that produces the synthesized sound.</p>
 <p>This book will teach not only how to use Twang, but also about how all the
 different methods of audio synthesis work.  Each chapter will cover a synthesis
 method and provide an example of how to use it with Twang.  You will find that

@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html" class="active"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="sine.html"><strong aria-hidden="true">2.1.</strong> Sinusoidal Oscillators</a></li><li class="chapter-item expanded "><a href="bezier.html"><strong aria-hidden="true">2.2.</strong> Bezier Oscillators</a></li><li class="chapter-item expanded "><a href="pulse.html"><strong aria-hidden="true">2.3.</strong> Pulse Oscillators</a></li></ol></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html" class="active"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -154,6 +154,15 @@ another waveform.  Phase modulation synthesis was popular in 1980s synthesizers.
 <h2 id="waveshaping-direct-phase-modulation"><a class="header" href="#waveshaping-direct-phase-modulation">Waveshaping (Direct Phase Modulation)</a></h2>
 <p>Waveshaping builds upon phase modulation synthesis.  In this type of modulation,
 the two oscillators used must have the same frequency.</p>
+<h2 id="phase-limiting"><a class="header" href="#phase-limiting">Phase Limiting</a></h2>
+<p>Phase limiting is an improvement on the phase distortion synthesis &quot;invented&quot; by
+Casio (which as far as I know, was &quot;invented&quot; by me - Jeron Aldaron Lau).  The
+idea is simple; take the first two steps of phase distortion synthesis as they
+are, then instead of multiplying by a decreasing sawtooth oscillator, multiply
+by a decreasing bezier oscillator.  This reduces the amount of lost amplitude
+during phase distortion synthesis.  Additionally, splice a plateau at the
+beginning of the bezier waveform to only diminish the amplitude after the phase
+has passed a specified point.</p>
 
                     </main>
 

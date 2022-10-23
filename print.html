@@ -76,7 +76,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="sine.html"><strong aria-hidden="true">2.1.</strong> Sinusoidal Oscillators</a></li><li class="chapter-item expanded "><a href="bezier.html"><strong aria-hidden="true">2.2.</strong> Bezier Oscillators</a></li><li class="chapter-item expanded "><a href="pulse.html"><strong aria-hidden="true">2.3.</strong> Pulse Oscillators</a></li></ol></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -136,11 +136,11 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<p>Twang is a Rust library for doing audio synthesis.  Unlike most audio synthesis
-libraries, Twang uses an audio tree rather than an audio graph.  In practice,
-they function the same way, since twang allows reuse of nodes.  The tree is used
-to make it easier to visualize what's happening during synthesis.  The root node
-of the tree is the final operation that produces the synthesized sound.</p>
+<p>Twang is a Rust library for doing audio synthesis.  The API of Twang uses a
+dependency tree (type of DAG or directed acyclic graph) of audio nodes rather
+than supporting arbitrary graphs.  The tree makes it easier to visualize what's
+happening during synthesis.  The root node of the tree is the final operation
+that produces the synthesized sound.</p>
 <p>This book will teach not only how to use Twang, but also about how all the
 different methods of audio synthesis work.  Each chapter will cover a synthesis
 method and provide an example of how to use it with Twang.  You will find that
@@ -161,6 +161,32 @@ saxaphone, or any other sound with rich harmonic content</li>
 <a href="https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Audio_concepts">MDN</a>
 that's worth checking out before reading this book.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="oscillators"><a class="header" href="#oscillators">Oscillators</a></h1>
+<p>Oscillators are at the core of audio synthesis.  The basic concept is that a
+sound is composed of a repeating pattern.  How many times this pattern repeats
+is the frequency of the sound.  The higher the frequency (more times per second)
+the higher the pitch.  The repeating pattern is often called a &quot;waveform&quot;.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="sinusoidal-oscillators"><a class="header" href="#sinusoidal-oscillators">Sinusoidal Oscillators</a></h1>
+<p>A sinusoidal oscillator is a repeating sine/cosine waveform.  There aren't any
+parameters for changing the properties of the waveform.</p>
+<h2 id="sound-theory"><a class="header" href="#sound-theory">Sound Theory</a></h2>
+<p>All sounds are composed of a number of sine waves at different frequencies and
+volumes.  Each of these sine waves are multiples of the original frequency, so
+if the base frequency (the one you hear) is 440 HZ the next frequency is 880 HZ.
+These frequencies are called harmonics.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="bezier-oscillators"><a class="header" href="#bezier-oscillators">Bezier Oscillators</a></h1>
+<p>A bezier oscillator is a wrapping symmetrical quadratic bezier waveform.  But,
+you don't really need to know what that means.  It has one parameter for
+changing the properties of the waveform, called <code>curve</code>.  If you set <code>curve</code> to
+0, it creates a sawtooth wave.</p>
+<p><a href="https://www.desmos.com/calculator/u95z5dg2mq">See how changing the parameter affects the waveform</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="pulse-oscillators"><a class="header" href="#pulse-oscillators">Pulse Oscillators</a></h1>
+<p>A pulse oscillator is the simplest waveform, because it only contains the
+samples -1 (off) and 1 (on).  There are two parameters for changing the shape of
+the waveform; First, there is <code>duty</code> which refers to the duty cycle - when set
+to 0 produces a square wave (50% on/off; -1 is 100% off, 1 is 100% on).  Then,
+there is <code>alias</code> which introduces aliasing.  The aliasing implemented in twang
+is linear interpolation between the samples.  Set to -1 for rectangle, 0 for
+trapazoid, and 1 for triangle wave.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="noise"><a class="header" href="#noise">Noise</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="additive-synthesis"><a class="header" href="#additive-synthesis">Additive Synthesis</a></h1>
 <p>Additive synthesis is probably the simplest synthesis algorithm to understand.
@@ -213,6 +239,15 @@ another waveform.  Phase modulation synthesis was popular in 1980s synthesizers.
 <h2 id="waveshaping-direct-phase-modulation"><a class="header" href="#waveshaping-direct-phase-modulation">Waveshaping (Direct Phase Modulation)</a></h2>
 <p>Waveshaping builds upon phase modulation synthesis.  In this type of modulation,
 the two oscillators used must have the same frequency.</p>
+<h2 id="phase-limiting"><a class="header" href="#phase-limiting">Phase Limiting</a></h2>
+<p>Phase limiting is an improvement on the phase distortion synthesis &quot;invented&quot; by
+Casio (which as far as I know, was &quot;invented&quot; by me - Jeron Aldaron Lau).  The
+idea is simple; take the first two steps of phase distortion synthesis as they
+are, then instead of multiplying by a decreasing sawtooth oscillator, multiply
+by a decreasing bezier oscillator.  This reduces the amount of lost amplitude
+during phase distortion synthesis.  Additionally, splice a plateau at the
+beginning of the bezier waveform to only diminish the amplitude after the phase
+has passed a specified point.</p>
 
                     </main>
 
