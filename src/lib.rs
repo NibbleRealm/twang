@@ -11,10 +11,11 @@
 //!
 //! Most audio DSP (Digital Signal Processing) libraries have a concept of an
 //! audio graph which connects sources to destinations.  Twang uses a simplified
-//! model: a synthesis tree.  Twang doesn't deal with having speakers as a node
-//! on a graph, as it's only focus is synthesis.  A synthesis tree can do all of
-//! the things that an audio graph can do, but it's simpler and much easier to
-//! learn.
+//! model: a synthesis tree (a dependency tree of sorts, a type of DAG -
+//! directed acyclic graph, but limited to a single root node).  Twang doesn't
+//! deal with having speakers as a node on a graph, as it's only focus is
+//! synthesis.  A synthesis tree can do all of the things that an audio graph
+//! can do, but it's simpler and much easier to learn.
 //!
 //! To start, first you need to construct a **synthesizer**
 //! ([`Synth`](struct.Synth.html)).  Then you need a type that implements the

@@ -103,6 +103,10 @@ And actual perceived volume should be calculated with
 Examples can be found in the [Documentation](https://docs.rs/twang) and the
 examples folder.
 
+## MSRV
+The minimum supported Rust version of twang is 1.60.0.  MSRV may only be updated
+when increasing the leftmost version number of twang.
+
 ## License
 Licensed under either of
  - Apache License, Version 2.0
@@ -111,6 +115,8 @@ Licensed under either of
  - Boost License, Version 1.0
    ([LICENSE_BOOST_1_0.txt](https://github.com/AldaronLau/twang/blob/stable/LICENSE_BOOST_1_0.txt) or
    [https://www.boost.org/LICENSE_1_0.txt](https://www.boost.org/LICENSE_1_0.txt))
+ - MIT License, ([LICENSE_MIT.txt](https://github.com/AldaronLau/twang/blob/stable/LICENSE_MIT.txt) or
+   [https://mit-license.org/](https://mit-license.org/))
 
 at your option.
 
@@ -129,14 +135,3 @@ needs to be bumped in importance, I may merge an unfinished draft PR into it's
 own branch and finish it (after a week's deadline for the person who openned
 it).  Contributors will always be notified in this situation, and given a choice
 to merge early.
-
-All pull request contributors will have their username added in the contributors
-section of the release notes of the next version after the merge, with a message
-thanking them.  I always make time to fix bugs, so usually a patched version of
-the library will be out a few days after a report.  Features requests will not
-complete as fast.  If you have any questions, design critques, or want me to
-find you something to work on based on your skill level, you can email me at
-[jeronlau@plopgrizzly.com](mailto:jeronlau@plopgrizzly.com).  Otherwise,
-[here's a link to the issues on GitHub](https://github.com/AldaronLau/twang/issues),
-and, as always, make sure to read and follow the
-[Code of Conduct](https://github.com/AldaronLau/twang/blob/stable/CODE_OF_CONDUCT.md).

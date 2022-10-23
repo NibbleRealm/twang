@@ -33,7 +33,7 @@ impl<S, const CH: usize> Synth<S, CH> {
         Self(s, Box::new(f))
     }
 
-    /// Stream synthesized samples into a [`Sink`](fon::Sink).
+    /// Stream synthesized samples into a [`Sink`].
     pub fn stream<Chan: Channel, K>(&mut self, mut sink: K)
     where
         K: Sink<Chan, CH>,
