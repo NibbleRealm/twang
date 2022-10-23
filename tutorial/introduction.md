@@ -1,9 +1,9 @@
 # Introduction
-Twang is a Rust library for doing audio synthesis.  Unlike most audio synthesis
-libraries, Twang uses an audio tree rather than an audio graph.  In practice,
-they function the same way, since twang allows reuse of nodes.  The tree is used
-to make it easier to visualize what's happening during synthesis.  The root node
-of the tree is the final operation that produces the synthesized sound.
+Twang is a Rust library for doing audio synthesis.  The API of Twang uses a
+dependency tree (type of DAG or directed acyclic graph) of audio nodes rather
+than supporting arbitrary graphs.  The tree makes it easier to visualize what's
+happening during synthesis.  The root node of the tree is the final operation
+that produces the synthesized sound.
 
 This book will teach not only how to use Twang, but also about how all the
 different methods of audio synthesis work.  Each chapter will cover a synthesis

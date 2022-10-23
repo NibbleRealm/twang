@@ -37,3 +37,6 @@ include = ["README.md", "Cargo.toml", "src/*", "build.rs"]
 [dependencies]
 libm = "0.2"
 fon = "0.6"
+
+[dev-dependencies]
+splotch = "0.0.1"

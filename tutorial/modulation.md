@@ -20,3 +20,13 @@ Phase distortion builds upon angular modulation synthesis.
 ## Waveshaping (Direct Phase Modulation)
 Waveshaping builds upon phase modulation synthesis.  In this type of modulation,
 the two oscillators used must have the same frequency.
+
+## Phase Limiting
+Phase limiting is an improvement on the phase distortion synthesis "invented" by
+Casio (which as far as I know, was "invented" by me - Jeron Aldaron Lau).  The
+idea is simple; take the first two steps of phase distortion synthesis as they
+are, then instead of multiplying by a decreasing sawtooth oscillator, multiply
+by a decreasing bezier oscillator.  This reduces the amount of lost amplitude
+during phase distortion synthesis.  Additionally, splice a plateau at the
+beginning of the bezier waveform to only diminish the amplitude after the phase
+has passed a specified point.

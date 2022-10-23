@@ -23,6 +23,8 @@ fn main() {
     });
     // Synthesize 5 seconds of audio
     synth.stream(audio.sink());
+    // Plot synthesized audio
+    // plot::write(&audio);
     // Write synthesized audio to WAV file
     wav::write(audio, "sine.wav").expect("Failed to write WAV file");
 }
