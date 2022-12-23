@@ -114,6 +114,8 @@ pub mod noise;
 pub mod ops;
 pub mod osc;
 // FIXME
-// pub mod file;
+pub mod file;
+// FIXME
+pub mod next;
 
 pub use synth::Synth;

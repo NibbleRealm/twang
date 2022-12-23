@@ -1,30 +1,19 @@
 use fon::{chan::Ch16, Audio, Frame};
-use twang::osc::Sawtooth;
-use twang::Synth;
+use twang::next::{Synth, Wave};
 
 mod wav;
 
-// State of the synthesizer.
-struct Processors {
-    saw: Sawtooth,
-}
-
 fn main() {
-    // Initialize audio
+    // Define waveform
+    const SAW: Wave = Wave::sig(440.0).saw();
+
+    // Initialize audio, and create synthesizer
     let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
-    // Create audio processors
-    let proc = Processors {
-        saw: Sawtooth::new(),
-    };
-    // Build synthesis algorithm
-    let mut synth = Synth::new(proc, |proc, frame: Frame<_, 2>| {
-        // Calculate the next sample for each processor
-        let saw = proc.saw.step(440.0);
-        // Pan the generated audio center
-        frame.pan(saw, 0.0)
-    });
+    let mut synth = Synth::new(SAW);
+
     // Synthesize 5 seconds of audio
-    synth.stream(audio.sink());
+    synth.stream(audio.sink(), &[]);
+
     // Write synthesized audio to WAV file
     wav::write(audio, "sawtooth.wav").expect("Failed to write WAV file");
 }

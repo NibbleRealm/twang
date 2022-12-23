@@ -10,8 +10,8 @@
 //! Twang synthesis file format
 
 use alloc::vec::Vec;
+use fon::chan::{Ch32, Channel};
 use fon::{Audio, Sink};
-use fon::chan::{Channel, Ch32};
 
 /*
 /// A twang synthesis operation
@@ -20,7 +20,7 @@ enum Op {
     Pop,
     /// Push value onto audio stack
     Psh(Ch32),
-    /// Swap by index 
+    /// Swap by index
     Swp(u32),
     /// Swap and pop by index
     Sap(u32),
@@ -92,7 +92,7 @@ enum Node {
     WaveT(Table, Const),
     WaveC(Table, Chunk),
     WaveV(Table, Value),
-    
+
     WaypointT(Table, Const),
     WaypointC(Table, Chunk),
     WaypointV(Table, Value),
@@ -106,7 +106,6 @@ enum Node {
     BezierVT(Value, Const),
     BezierVC(Value, Chunk),
     BezierVV(Value, Value),
-
 
     /// Frequency Counter
     ///
@@ -175,7 +174,6 @@ mod seal {
 
 use self::seal::{Any, Sampler};
 
-
 /// Builder for a synth
 ///
 /// Inputs -> Program -> Output
@@ -190,7 +188,8 @@ pub struct SynthBuilder {
 impl SynthBuilder {
     /// Add chunked audio from an external source
     pub fn mix_source(mut self, chunk: Chunk) -> Self {
-        self.input_buffers.resize((chunk.0 + 1).try_into().unwrap(), [Ch32::default(); 32]);
+        self.input_buffers
+            .resize((chunk.0 + 1).try_into().unwrap(), [Ch32::default(); 32]);
         self.nodes.push(Node::Source(chunk));
         self
     }
@@ -199,17 +198,19 @@ impl SynthBuilder {
     ///
     /// A line wave is a horizontal line, silence to human ears.
     pub fn mix_line(mut self, value: Value) -> Self {
-        self.input_samples.resize((value.0 + 1).try_into().unwrap(), 0.0);
+        self.input_samples
+            .resize((value.0 + 1).try_into().unwrap(), 0.0);
         self.nodes.push(Node::Line(value));
         self
     }
-    
+
     /// Add wavetable
     ///
     /// A wave table is a collection of samples that are slowed down or sped up
     /// to make the pitch higher or lower.
     pub fn mix_wave(mut self, table: Table, freq: impl Sampler) -> Self {
-        self.input_wtables.resize((table.0 + 1).try_into().unwrap(), Vec::new());
+        self.input_wtables
+            .resize((table.0 + 1).try_into().unwrap(), Vec::new());
         self.nodes.push(match freq.to_any() {
             Any::Value(x) => Node::WaveV(table, x),
             Any::Chunk(x) => Node::WaveC(table, x),
@@ -223,7 +224,8 @@ impl SynthBuilder {
     /// A ways table is almost the same thing as a wavetable, except allows
     /// aliasing.
     pub fn mix_ways(mut self, table: Table, freq: impl Sampler) -> Self {
-        self.input_wtables.resize((table.0 + 1).try_into().unwrap(), Vec::new());
+        self.input_wtables
+            .resize((table.0 + 1).try_into().unwrap(), Vec::new());
         self.nodes.push(match freq.to_any() {
             Any::Value(x) => Node::WaypointV(table, x),
             Any::Chunk(x) => Node::WaypointC(table, x),
@@ -256,9 +258,6 @@ impl SynthBuilder {
         self
     }
 }
-
-
-
 
 /*
 #[derive(Debug)]
