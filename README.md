@@ -1,5 +1,6 @@
 # Twang
-Library for pure Rust advanced audio synthesis.
+
+**Library for advanced audio synthesis and mixing**
 
 ## Goals
 - Fast: Auto-vectorized audio synthesis.
