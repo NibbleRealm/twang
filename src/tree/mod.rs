@@ -52,6 +52,19 @@
 
 macro_rules! const_postfix_waveform {
     () => {
+        /// Postfix helper for wrapping synth instruction with [`osc::Bezier`].
+        ///
+        /// [`osc::Bezier`]: crate::tree::osc::Bezier
+        pub const fn bezier<J>(
+            self,
+            curve: J,
+        ) -> crate::tree::osc::Bezier<Self, J>
+        where
+            J: crate::tree::Wave
+        {
+            crate::tree::osc::Bezier(self, curve)
+        }
+
         /// Postfix helper for wrapping synth instruction with [`osc::Osc`].
         ///
         /// [`osc::Osc`]: crate::tree::osc::Osc
@@ -91,6 +104,7 @@ pub use self::synth::Synth;
     line::Line,
     line::Param,
     for<T: Wave> &T,
+    for<T: Wave, U: Wave> osc::Bezier<T, U>,
     for<T: Wave> osc::Osc<T>,
     for<T: Wave> osc::Sine<T>,
 )]
