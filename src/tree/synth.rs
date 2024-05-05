@@ -1,4 +1,7 @@
-use fon::{Sink, chan::{Channel, Ch32}};
+use fon::{
+    chan::{Ch32, Channel},
+    Sink,
+};
 
 use crate::tree::{Chunk, Wave};
 
@@ -33,18 +36,18 @@ where
         K: Sink<Ch, N>,
     {
         let sample_rate: u32 = sink.sample_rate().into();
-        let synth_iter = SynthIter(self, sample_rate);
+        let synth_iter = SynthIter(self, sample_rate, params);
 
         sink.sink_with(&mut synth_iter.map(|x| x.to()));
     }
 
-    fn synthesize(&mut self, sample_rate: u32) -> f32 {
+    fn synthesize(&mut self, sample_rate: u32, params: &[f32]) -> f32 {
         if self.cursor == 32 {
             self.cursor = 0;
 
             let interval = 32_000_000_000 / u64::from(sample_rate);
 
-            self.chunk = self.wave.synthesize(self.elapsed, interval);
+            self.chunk = self.wave.synthesize(self.elapsed, interval, params);
             self.elapsed += interval;
         }
 
@@ -55,17 +58,17 @@ where
     }
 }
 
-struct SynthIter<'a, W>(&'a mut Synth<W>, u32);
+struct SynthIter<'a, 'b, W>(&'a mut Synth<W>, u32, &'b [f32]);
 
-impl<W> Iterator for SynthIter<'_, W>
+impl<W> Iterator for SynthIter<'_, '_, W>
 where
     W: Wave,
 {
     type Item = fon::Frame<Ch32, 1>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Self(synth, sample_rate) = self;
+        let Self(synth, sample_rate, params) = self;
 
-        Some(synth.synthesize(*sample_rate).into())
+        Some(synth.synthesize(*sample_rate, params).into())
     }
 }

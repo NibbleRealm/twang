@@ -1,12 +1,12 @@
-use fon::{chan::Ch16, Audio, Frame};
-use twang::tree::{osc::{Osc, Sine}, Synth, Wave};
+use fon::{chan::Ch16, Audio};
+use twang::tree::{line::Line, Synth};
 
 mod wav;
 //mod plot;
 
 fn main() {
     // Define waveform
-    let waveform = const { Osc(440.0).sine() };
+    let waveform = const { Line(440.0).osc().sine() };
     // Initialize audio, and create synthesizer
     let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
     let mut synth = Synth::new(waveform);

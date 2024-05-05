@@ -1,9 +1,11 @@
 //! Basic oscillators (wave generators)
 
-const_postfix_waveform!(Osc);
+#![allow(clippy::module_inception)]
+
+const_postfix_waveform!(Osc<T>, T);
 const_postfix_waveform!(Sine<T>, T);
 
-mod sine;
 mod osc;
+mod sine;
 
-pub use self::{sine::Sine, osc::Osc};
+pub use self::{osc::Osc, sine::Sine};

@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Chunk(pub(super) [f32; 32]);
 
 impl Chunk {

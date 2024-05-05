@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+
 use alloc::boxed::Box;
 use core::fmt::{Debug, Error, Formatter};
 use fon::chan::{Ch32, Channel};
