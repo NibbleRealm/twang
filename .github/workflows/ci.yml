@@ -27,7 +27,6 @@ jobs:
         os: [ubuntu-latest]
         tc: [1.70.0]
         cc:
-        - aarch64-fuchsia
         - aarch64-linux-android
         - i686-pc-windows-gnu
         - i686-unknown-freebsd
