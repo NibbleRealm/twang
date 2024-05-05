@@ -1,11 +1,7 @@
 //! A Minor on an Electric Piano
 
-use fon::chan::Ch16;
-use fon::{Audio, Frame};
-use twang::noise::White;
-use twang::ops::Gain;
-use twang::osc::Sine;
-use twang::Synth;
+use fon::{chan::Ch16, Audio, Frame};
+use twang::next::{Synth, Wave};
 
 mod wav;
 
@@ -18,6 +14,7 @@ const PITCHES: [f32; 3] = [220.0, 220.0 * 32.0 / 27.0, 220.0 * 3.0 / 2.0];
 /// Volume of the piano
 const VOLUME: f32 = 1.0 / 3.0;
 
+/*
 // State of the synthesizer.
 #[derive(Default)]
 struct Processors {
@@ -25,9 +22,56 @@ struct Processors {
     white: White,
     // 10 harmonics for 3 pitches.
     piano: [[Sine; 10]; 3],
+} */
+const GAINS: &[Wave; 10] = &[
+    Wave::sig(HARMONICS[0]),
+    Wave::sig(HARMONICS[1]),
+    Wave::sig(HARMONICS[2]),
+    Wave::sig(HARMONICS[3]),
+    Wave::sig(HARMONICS[4]),
+    Wave::sig(HARMONICS[5]),
+    Wave::sig(HARMONICS[6]),
+    Wave::sig(HARMONICS[7]),
+    Wave::sig(HARMONICS[8]),
+    Wave::sig(HARMONICS[9]),
+];
+
+/// Play a note on the piano from a sine wave
+const fn piano(sine: &'static Wave) -> [Wave<'static>; 10] {
+    [
+        sine.amp(&GAINS[0]),
+        sine.amp(&GAINS[1]),
+        sine.amp(&GAINS[2]),
+        sine.amp(&GAINS[3]),
+        sine.amp(&GAINS[4]),
+        sine.amp(&GAINS[5]),
+        sine.amp(&GAINS[6]),
+        sine.amp(&GAINS[7]),
+        sine.amp(&GAINS[8]),
+        sine.amp(&GAINS[9]),
+    ]
 }
 
 fn main() {
+    // Define waveform
+    const FIRST: Wave = Wave::mix(&piano(&Wave::sig(PITCHES[0]).sine()));
+    const THIRD: Wave = Wave::mix(&piano(&Wave::sig(PITCHES[1]).sine()));
+    const FIFTH: Wave = Wave::mix(&piano(&Wave::sig(PITCHES[2]).sine()));
+    const PIANO: Wave =
+        Wave::mix(&[FIRST, THIRD, FIFTH]).amp(&Wave::sig(VOLUME));
+
+    // Initialize audio, and create synthesizer
+    let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
+    let mut synth = Synth::new(PIANO);
+
+    // Synthesize 5 seconds of audio
+    synth.stream(audio.sink(), &[]);
+
+    // Plot synthesized audio, and write to a WAV file
+    // plot::write(&audio);
+    wav::write(audio, "piano.wav").expect("Failed to write WAV file");
+
+    /*
     // Initialize audio
     let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
     // Create audio processors
@@ -53,5 +97,5 @@ fn main() {
     // Synthesize 5 seconds of audio
     synth.stream(audio.sink());
     // Write synthesized audio to WAV file
-    wav::write(audio, "piano.wav").expect("Failed to write WAV file");
+    wav::write(audio, "piano.wav").expect("Failed to write WAV file"); */
 }

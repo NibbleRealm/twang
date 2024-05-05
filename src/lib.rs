@@ -105,6 +105,7 @@
     variant_size_differences
 )]
 
+extern crate std; // FIXME: for debugging
 extern crate alloc;
 
 mod math;
@@ -117,5 +118,7 @@ pub mod osc;
 pub mod file;
 // FIXME
 pub mod next;
+// FIXME
+pub mod tree;
 
 pub use synth::Synth;

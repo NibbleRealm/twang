@@ -233,6 +233,37 @@ enum Node<'a> {
     File(&'a [u8]),
 }
 
+impl Node<'_> {
+    /// Recursively count the number of oscillators
+    fn count_osc(&self) -> usize {
+        use Node::*;
+        match *self {
+            Sig(_) => 0,
+            Mix(nodes) => {
+                let mut count = 0;
+                for node in nodes {
+                    count += node.count_osc();
+                }
+                count
+            }
+            Sine { hz } => 1 + hz.count_osc(),
+            Ramp { hz, curve } => 1 + hz.count_osc() + curve.count_osc(),
+            Pulse { hz, duty, alias } => {
+                1 + hz.count_osc() + duty.count_osc() + alias.count_osc()
+            }
+            Mul(nodes) => {
+                let mut count = 0;
+                for node in nodes {
+                    count += node.count_osc();
+                }
+                count
+            }
+            Amp(a, b) => a.count_osc() + b.count_osc(),
+            File(_) => todo!(),
+        }
+    }
+}
+
 /// A parameterized waveform.
 ///
 /// For all oscillators, there is a built-in phase offset so that the first
@@ -388,6 +419,7 @@ impl<'a> Wave<'a> {
         Self(Node::Mix(Self::as_nodes(nodes)))
     }
 
+    /// Get node slice from wave slice
     // Safe transmute because of `repr(transparent)`
     #[allow(unsafe_code)]
     const fn as_nodes(nodes: &'a [Self]) -> &'a [Node<'a>] {
@@ -413,10 +445,16 @@ pub struct Synth<'a> {
 impl<'a> Synth<'a> {
     /// Create a new synthesizer for a parameterized waveform.
     pub fn new(wave: Wave<'a>) -> Self {
-        let phase = Vec::from([0.0]); //FIXME: Calculate size based on osc count
+        let phase = {
+            let mut phase = Vec::new();
+            phase.resize(wave.0.count_osc(), 0.0);
+            phase
+        };
         let stack = Vec::from([[0.0; 32]]);
         let index = 32;
         let wave = Some(wave);
+
+        // panic!("{}", phase.len());
 
         Synth {
             wave,
@@ -573,7 +611,19 @@ impl<'a> Synth<'a> {
                 }
             }
             Node::Mul(nodes) => todo!("{nodes:?}"),
-            Node::Amp(main, amp) => todo!("{main:?} {amp:?}"),
+            Node::Amp(main, amp) => {
+                self.stack.push([0.0; 32]);
+                self.node(amp, delta, osc);
+                let amp = self.stack.pop().unwrap();
+
+                *osc += 1;
+                self.node(main, delta, osc);
+                for (main, amp) in
+                    self.stack.last_mut().unwrap().iter_mut().zip(amp.iter())
+                {
+                    *main *= amp;
+                }
+            }
             Node::File(bytes) => todo!("{:?}", bytes),
         }
     }
