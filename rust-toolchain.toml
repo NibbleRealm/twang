@@ -1,0 +1,3 @@
+[toolchain]
+# Currently using beta for tests, MSRV of examples is 1.79
+channel = "beta"

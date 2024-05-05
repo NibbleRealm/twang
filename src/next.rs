@@ -1,12 +1,3 @@
-// Copyright © 2018-2022 The Twang Contributors.
-//
-// Licensed under any of:
-// - Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
-// - Boost Software License, Version 1.0 (https://www.boost.org/LICENSE_1_0.txt)
-// - MIT License (https://mit-license.org/)
-// At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
-// LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
-
 //! # Twang File Format (Alpha)
 //! The twang file format is a simple list of 32-bit instructions and data.  The
 //! file must begin with magic bytes: `\xFF\xFETwAnG\0`.  Suggested file
@@ -116,6 +107,8 @@
 //!
 //! ### 17 - MAX
 //!  - `index` points to input node.
+
+#![allow(warnings)]
 
 use fon::Sink;
 

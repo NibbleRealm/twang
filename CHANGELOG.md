@@ -4,6 +4,10 @@ All notable changes to `twang` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/semver).
 
+## [0.10.0] - Unreleased
+### Changed
+ - Bump MSRV to 1.70.0
+
 ## [0.9.0] - 2022-10-23
 ### Changed
  - Bump MSRV to 1.60.0

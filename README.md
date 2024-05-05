@@ -104,10 +104,12 @@ Examples can be found in the [Documentation](https://docs.rs/twang) and the
 examples folder.
 
 ## MSRV
-The minimum supported Rust version of twang is 1.60.0.  MSRV may only be updated
+The minimum supported Rust version of twang is 1.70.0.  MSRV may only be updated
 when increasing the leftmost version number of twang.
 
 ## License
+Copyright © 2018-2024 The Twang Contributors.
+
 Licensed under either of
  - Apache License, Version 2.0
    ([LICENSE_APACHE_2_0.txt](https://github.com/AldaronLau/twang/blob/stable/LICENSE_APACHE_2_0.txt) or

@@ -9,10 +9,10 @@
 
 [package]
 name = "twang"
-version = "0.9.0"
+version = "0.10.0"
 license = "Apache-2.0 OR BSL-1.0 OR MIT"
 edition = "2021"
-rust-version = "1.60.0"
+rust-version = "1.70.0"
 documentation = "https://docs.rs/twang"
 homepage = "https://aldaronlau.github.io/twang"
 repository = "https://github.com/AldaronLau/twang"
@@ -37,6 +37,7 @@ include = ["README.md", "Cargo.toml", "src/*", "build.rs"]
 [dependencies]
 libm = "0.2"
 fon = "0.6"
+traitful = "0.3"
 
 [dev-dependencies]
 splotch = "0.0.1"

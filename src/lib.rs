@@ -1,12 +1,3 @@
-// Copyright © 2018-2022 The Twang Contributors.
-//
-// Licensed under any of:
-// - Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
-// - Boost Software License, Version 1.0 (https://www.boost.org/LICENSE_1_0.txt)
-// - MIT License (https://mit-license.org/)
-// At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
-// LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
-
 //! Library for pure Rust advanced audio synthesis.
 //!
 //! Most audio DSP (Digital Signal Processing) libraries have a concept of an
@@ -105,8 +96,8 @@
     variant_size_differences
 )]
 
-extern crate std; // FIXME: for debugging
 extern crate alloc;
+extern crate std; // FIXME: for debugging
 
 mod math;
 mod synth;
