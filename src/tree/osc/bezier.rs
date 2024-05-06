@@ -17,10 +17,10 @@ where
 
         for (src, curve) in chunk.0.iter_mut().zip(curve.0.iter()) {
             let sign = src.signum();
-            let mut output = -src.abs();
+            let old = -src.abs();
+            let output = old + 1.0;
+            let output = output * curve * old + old;
 
-            output += 1.0;
-            output = output + output * curve * (output - 1.0) - 1.0;
             *src = output.copysign(sign);
         }
 
