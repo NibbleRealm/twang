@@ -6,7 +6,7 @@ mod wav;
 
 fn main() {
     // Define waveform
-    let waveform = const { Line(440.0).osc().pulse(Line(0.0), Line(0.5)) };
+    let waveform = const { Line(440.0).osc().pulse(Line(0.0), Line(1.0)) };
     // Initialize audio, and create synthesizer
     let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
     let mut synth = Synth::new(waveform);

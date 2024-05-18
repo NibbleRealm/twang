@@ -14,10 +14,20 @@ where
 {
     fn synthesize(&self, elapsed: u64, interval: u64, vars: &[f32]) -> Chunk {
         let chunk = self.0.synthesize(elapsed, interval, vars);
-        let _cycle = self.1.synthesize(elapsed, interval, vars);
+        let cycle = self.1.synthesize(elapsed, interval, vars);
         let alias = self.2.synthesize(elapsed, interval, vars);
         let clip = alias.recip();
+        let offset = cycle;
+        let pulse = chunk
+            .abs()
+            .gain(2.0)
+            .offset(-1.0)
+            .mix(offset)
+            .clip()
+            .amplify(clip)
+            .clip();
+        let scale = offset.gain(0.5).neg_abs().offset(1.0).recip();
 
-        chunk.abs().gain(2.0).offset(-1.0).amplify(clip).clip()
+        offset.gain(-0.5).mix(pulse).amplify(scale)
     }
 }
