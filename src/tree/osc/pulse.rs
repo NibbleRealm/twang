@@ -17,17 +17,17 @@ where
         let cycle = self.1.synthesize(elapsed, interval, vars);
         let alias = self.2.synthesize(elapsed, interval, vars);
         let clip = alias.recip();
-        let offset = cycle;
         let pulse = chunk
             .abs()
             .gain(2.0)
             .offset(-1.0)
-            .mix(offset)
+            .mix(cycle)
             .clip()
             .amplify(clip)
             .clip();
-        let scale = offset.gain(0.5).neg_abs().offset(1.0).recip();
+        let offset = cycle.gain(-0.5);
+        let scale = offset.abs().offset(1.0).recip();
 
-        offset.gain(-0.5).mix(pulse).amplify(scale)
+        offset.mix(pulse).amplify(scale)
     }
 }
