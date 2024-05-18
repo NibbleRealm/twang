@@ -2,8 +2,10 @@ use crate::tree::{Chunk, Wave};
 
 /// Phase oscillator (sawtooth wave)
 ///
-/// This is the most basic oscillator, which all other oscillators depend on for
-/// their phase.
+/// Takes frequency (non-zero) as input
+///
+/// This is the most basic oscillator, which all other oscillators must depend
+/// on for their phase.
 #[derive(Debug)]
 pub struct Osc<I>(pub I);
 

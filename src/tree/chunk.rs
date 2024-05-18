@@ -54,6 +54,12 @@ impl Chunk {
 
     #[inline(always)]
     #[must_use]
+    pub(super) fn recip(self) -> Self {
+        self.for_each_sample(|sample| *sample = sample.recip())
+    }
+
+    #[inline(always)]
+    #[must_use]
     pub(super) fn cosine(self) -> Self {
         self.for_each_sample(|sample| *sample = libm::cosf(*sample))
     }
@@ -62,6 +68,12 @@ impl Chunk {
     #[must_use]
     pub(super) fn invert(self) -> Self {
         self.for_each_sample(|sample| *sample = -*sample)
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub(super) fn abs(self) -> Self {
+        self.for_each_sample(|sample| *sample = sample.abs())
     }
 
     #[inline(always)]
@@ -75,6 +87,14 @@ impl Chunk {
     pub(super) fn copysign(self, sign: impl Borrow<Self>) -> Self {
         (self, sign.borrow()).for_each_sample(|(sample, sign)| {
             *sample = libm::copysignf(*sample, sign)
+        })
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub(super) fn clip(self) -> Self {
+        self.for_each_sample(|sample| {
+            *sample = libm::fminf(libm::fmaxf(*sample, -1.0), 1.0)
         })
     }
 }

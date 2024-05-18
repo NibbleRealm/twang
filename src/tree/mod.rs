@@ -72,6 +72,20 @@ macro_rules! const_postfix_waveform {
             crate::tree::osc::Osc(self)
         }
 
+        /// Postfix helper for wrapping synth instruction with [`osc::Pulse`].
+        ///
+        /// [`osc::Pulse`]: crate::tree::osc::Pulse
+        pub const fn pulse<J, K>(
+            self,
+            duty: J,
+            alias: K,
+        ) -> crate::tree::osc::Pulse<Self, J, K>
+        where
+            J: crate::tree::Wave
+        {
+            crate::tree::osc::Pulse(self, duty, alias)
+        }
+
         /// Postfix helper for wrapping synth instruction with [`osc::Sine`].
         ///
         /// [`osc::Sine`]: crate::tree::osc::Sine
@@ -106,6 +120,7 @@ pub use self::synth::Synth;
     for<T: Wave> &T,
     for<T: Wave, U: Wave> osc::Bezier<T, U>,
     for<T: Wave> osc::Osc<T>,
+    for<T: Wave, U: Wave, V: Wave> osc::Pulse<T, U, V>,
     for<T: Wave> osc::Sine<T>,
 )]
 pub trait Wave {
