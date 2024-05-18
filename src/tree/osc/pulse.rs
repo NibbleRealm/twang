@@ -26,7 +26,7 @@ where
             .amplify(clip)
             .clip();
         let offset = cycle.gain(-0.5);
-        let scale = offset.abs().offset(1.0).recip();
+        let scale = offset.neg_abs().offset(1.0).recip();
 
         offset.mix(pulse).amplify(scale)
     }
