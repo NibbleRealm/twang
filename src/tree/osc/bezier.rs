@@ -12,18 +12,14 @@ where
     J: Wave,
 {
     fn synthesize(&self, elapsed: u64, interval: u64, vars: &[f32]) -> Chunk {
-        let mut chunk = self.0.synthesize(elapsed, interval, vars);
+        let chunk = self.0.synthesize(elapsed, interval, vars);
         let curve = self.1.synthesize(elapsed, interval, vars);
+        let old = chunk.neg_abs();
 
-        for (src, curve) in chunk.0.iter_mut().zip(curve.0.iter()) {
-            let sign = src.signum();
-            let old = -src.abs();
-            let output = old + 1.0;
-            let output = output * curve * old + old;
-
-            *src = output.copysign(sign);
-        }
-
-        chunk
+        old.offset(1.0)
+            .amplify(curve)
+            .amplify(old)
+            .mix(old)
+            .copysign(chunk)
     }
 }

@@ -13,11 +13,10 @@ where
     I: Wave,
 {
     fn synthesize(&self, elapsed: u64, interval: u64, vars: &[f32]) -> Chunk {
-        let mut chunk = self.0.synthesize(elapsed, interval, vars);
-
-        chunk.amplify(consts::PI);
-        chunk.cosine();
-        chunk.invert();
-        chunk
+        self.0
+            .synthesize(elapsed, interval, vars)
+            .gain(consts::PI)
+            .cosine()
+            .invert()
     }
 }
