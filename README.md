@@ -7,7 +7,7 @@
 - Pure Rust: No system dependencies outside std.
 
 Links to examples for each will be provided as they are implemented.
-- [Additive synthesis](https://github.com/AldaronLau/twang/blob/stable/examples/piano.rs)
+- [Additive synthesis](https://github.com/NibbleRealm/twang/blob/stable/examples/piano.rs)
   (Compositing sounds, usually sine waves - used in analysis / resynthesis along
   with FFT)
 - Subtractive synthesis (Shaping sawtooth wave, which contains both odd and even
@@ -56,7 +56,7 @@ Envelope (example: ADSR):
 ### Gated Reverb
 Reverb without reflections.
 
-[Gated Reverb](https://github.com/AldaronLau/twang/blob/stable/examples/gate.rs)
+[Gated Reverb](https://github.com/NibbleRealm/twang/blob/stable/examples/gate.rs)
 
 ### Reverb And Echo
 Reverb is just echo that takes place in less than 50 milliseconds, so you can
@@ -113,12 +113,12 @@ Copyright © 2018-2024 The Twang Contributors.
 
 Licensed under either of
  - Apache License, Version 2.0
-   ([LICENSE_APACHE_2_0.txt](https://github.com/AldaronLau/twang/blob/stable/LICENSE_APACHE_2_0.txt) or
+   ([LICENSE_APACHE_2_0.txt](https://github.com/NibbleRealm/twang/blob/stable/LICENSE_APACHE_2_0.txt) or
    [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0))
  - Boost License, Version 1.0
-   ([LICENSE_BOOST_1_0.txt](https://github.com/AldaronLau/twang/blob/stable/LICENSE_BOOST_1_0.txt) or
+   ([LICENSE_BOOST_1_0.txt](https://github.com/NibbleRealm/twang/blob/stable/LICENSE_BOOST_1_0.txt) or
    [https://www.boost.org/LICENSE_1_0.txt](https://www.boost.org/LICENSE_1_0.txt))
- - MIT License, ([LICENSE_MIT.txt](https://github.com/AldaronLau/twang/blob/stable/LICENSE_MIT.txt) or
+ - MIT License, ([LICENSE_MIT.txt](https://github.com/NibbleRealm/twang/blob/stable/LICENSE_MIT.txt) or
    [https://mit-license.org/](https://mit-license.org/))
 
 at your option.
