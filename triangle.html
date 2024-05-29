@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Introduction - Twang Tutorial</title>
+        <title>Triangle Oscillators - Twang Tutorial</title>
 
 
         <!-- Custom HTML head -->
@@ -88,7 +88,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html" class="active"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="sine.html"><strong aria-hidden="true">2.1.</strong> Sinusoidal Oscillators</a></li><li class="chapter-item expanded "><a href="triangle.html"><strong aria-hidden="true">2.2.</strong> Triangle Oscillators</a></li><li class="chapter-item expanded "><a href="pulse.html"><strong aria-hidden="true">2.3.</strong> Pulse Oscillators</a></li><li class="chapter-item expanded "><a href="bezier.html"><strong aria-hidden="true">2.4.</strong> Bezier Oscillators</a></li></ol></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="sine.html"><strong aria-hidden="true">2.1.</strong> Sinusoidal Oscillators</a></li><li class="chapter-item expanded "><a href="triangle.html" class="active"><strong aria-hidden="true">2.2.</strong> Triangle Oscillators</a></li><li class="chapter-item expanded "><a href="pulse.html"><strong aria-hidden="true">2.3.</strong> Pulse Oscillators</a></li><li class="chapter-item expanded "><a href="bezier.html"><strong aria-hidden="true">2.4.</strong> Bezier Oscillators</a></li></ol></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -173,38 +173,31 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<p>Twang is a Rust library for doing audio synthesis.  The API of Twang uses a
-dependency tree (type of DAG or directed acyclic graph) of audio nodes rather
-than supporting arbitrary graphs.  The tree makes it easier to visualize what's
-happening during synthesis.  The root node of the tree is the final operation
-that produces the synthesized sound.</p>
-<p>This book will teach not only how to use Twang, but also about how all the
-different methods of audio synthesis work.  Each chapter will cover a synthesis
-method and provide an example of how to use it with Twang.  You will find that
-the reason there are so many methods of synthesis is because they each make
-their own unique type of sound from each other.  So if you want to synthesize
-a specific type of sound, you choose a specific type of synthesis.  Here's a
-little guide to help (you might find a way to synthesize a type of sound with a
-different method than listed here, and that's ok - it's not an exact science):</p>
+                        <h1 id="triangle-oscillators"><a class="header" href="#triangle-oscillators">Triangle Oscillators</a></h1>
+<p>A triangle oscillator is a repeating waveform that oscillates between -1 and 1
+using straight line segments.</p>
+<h2 id="property-parameters"><a class="header" href="#property-parameters">Property Parameters</a></h2>
+<h3 id="angle"><a class="header" href="#angle"><code>angle</code></a></h3>
+<p>Angle moves the peak amplitude between the phase of -1 and 1.</p>
 <ul>
-<li><a href="additive.html">Additive Synthesis</a>: Electronic reproduction of a sound with
-reduced quality, such as an "electric piano" sound</li>
-<li><a href="subtractive.html">Subtractive Synthesis</a>: Electronic immitation of brass,
-saxaphone, or any other sound with rich harmonic content</li>
-<li>Frequency Modulation Synthesis: Electronic immitation of bells</li>
+<li>-1: downwards sloping sawtooth wave</li>
+<li>0: symmetrical triangle wave</li>
+<li>1: upwards sloping sawtooth wave</li>
 </ul>
-<h2 id="digital-audio"><a class="header" href="#digital-audio">Digital Audio</a></h2>
-<p>There's a great introduction to digital audio concepts on
-<a href="https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Audio_concepts">MDN</a>
-that's worth checking out before reading this book.</p>
+<h2 id="sound-theory"><a class="header" href="#sound-theory">Sound Theory</a></h2>
+<p>A symmetrical triangle wave only contains odd harmonics and can be approximated
+with sine waves with additive synthesis using amplitude <code>-1 / (n * n)</code>, where
+<code>n</code> is the odd harmonic number, inverting every other.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="sine.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
 
-                            <a rel="next prefetch" href="oscillators.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="pulse.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -214,8 +207,11 @@ that's worth checking out before reading this book.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="sine.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
 
-                    <a rel="next prefetch" href="oscillators.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="pulse.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

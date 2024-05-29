@@ -88,7 +88,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html" class="active"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="sine.html"><strong aria-hidden="true">2.1.</strong> Sinusoidal Oscillators</a></li><li class="chapter-item expanded "><a href="bezier.html"><strong aria-hidden="true">2.2.</strong> Bezier Oscillators</a></li><li class="chapter-item expanded "><a href="pulse.html"><strong aria-hidden="true">2.3.</strong> Pulse Oscillators</a></li></ol></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html" class="active"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="sine.html"><strong aria-hidden="true">2.1.</strong> Sinusoidal Oscillators</a></li><li class="chapter-item expanded "><a href="triangle.html"><strong aria-hidden="true">2.2.</strong> Triangle Oscillators</a></li><li class="chapter-item expanded "><a href="pulse.html"><strong aria-hidden="true">2.3.</strong> Pulse Oscillators</a></li><li class="chapter-item expanded "><a href="bezier.html"><strong aria-hidden="true">2.4.</strong> Bezier Oscillators</a></li></ol></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -178,6 +178,11 @@
 sound is composed of a repeating pattern.  How many times this pattern repeats
 is the frequency of the sound.  The higher the frequency (more times per second)
 the higher the pitch.  The repeating pattern is often called a "waveform".</p>
+<h2 id="sawtooth-wave"><a class="header" href="#sawtooth-wave">Sawtooth Wave</a></h2>
+<p>The sawtooth wave is the simplest waveform to generate, as it's just the
+identity function; so as the phase goes from -1 to 1, the amplitude goes from -1
+to 1.  It is the waveform that is returned from the <em><strong>phase accumulator</strong></em> (a
+variable that determines the phase from a frequency).</p>
 
                     </main>
 
