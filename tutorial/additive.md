@@ -20,4 +20,4 @@ TODO
 # (Electric) Piano Example
 TODO
 
-[Example Code](https://github.com/NibbleRealm/twang/blob/stable/examples/piano.rs)
+[Example Code](https://github.com/NibbleRealm/twang/blob/v0/examples/piano.rs)
