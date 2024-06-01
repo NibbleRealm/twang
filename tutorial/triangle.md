@@ -5,9 +5,9 @@ using straight line segments.
 
 ## Property Parameters
 
-### `angle`
+### `vertex`
 
-Angle moves the peak amplitude between the phase of -1 and 1.
+Moves the peak amplitude between the phase of -1 and 1.
 
  - -1: downwards sloping sawtooth wave
  - 0: symmetrical triangle wave

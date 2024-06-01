@@ -7,7 +7,7 @@ is used to determine how close it should be to a sawtooth wave.
 
 ### `alias`
 
-Alias controls the distortion level by dividing the amplitude.
+Controls the distortion level by dividing the amplitude.
 
  - -1: downwards sloping sawtooth wave
  - 0: symmetrical square wave
