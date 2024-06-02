@@ -1,4 +1,4 @@
-use crate::tree::{Chunk, Wave};
+use crate::tree::{Chunk, Data, Wave};
 
 /// Bezier wave
 ///
@@ -11,9 +11,11 @@ where
     I: Wave,
     J: Wave,
 {
-    fn synthesize(&self, elapsed: u64, interval: u64, vars: &[f32]) -> Chunk {
-        let chunk = self.0.synthesize(elapsed, interval, vars);
-        let curve = self.1.synthesize(elapsed, interval, vars);
+    const STATE_LEN: usize = I::STATE_LEN + J::STATE_LEN;
+
+    fn synthesize(&self, data: &mut Data<'_>) -> Chunk {
+        let chunk = self.0.synthesize(data);
+        let curve = self.1.synthesize(data);
         let old = chunk.neg_abs();
 
         old.offset(1.0)

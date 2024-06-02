@@ -1,6 +1,6 @@
 use core::f32::consts;
 
-use crate::tree::{Chunk, Wave};
+use crate::tree::{Chunk, Data, Wave};
 
 /// Sine wave
 ///
@@ -12,11 +12,9 @@ impl<I> Wave for Sine<I>
 where
     I: Wave,
 {
-    fn synthesize(&self, elapsed: u64, interval: u64, vars: &[f32]) -> Chunk {
-        self.0
-            .synthesize(elapsed, interval, vars)
-            .gain(consts::PI)
-            .cosine()
-            .invert()
+    const STATE_LEN: usize = I::STATE_LEN;
+
+    fn synthesize(&self, data: &mut Data<'_>) -> Chunk {
+        self.0.synthesize(data).gain(consts::PI).cosine().invert()
     }
 }

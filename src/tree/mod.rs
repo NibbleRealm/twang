@@ -26,10 +26,10 @@
 //! let waveform = const { Line(440.0).osc().sine() };
 //! // Initialize audio, and create synthesizer
 //! let mut audio = Audio::<Ch16, 2>::with_silence(48_000, 48_000 * 5);
-//! let mut synth = Synth::new(waveform);
+//! let mut synth = Synth::new(waveform, []);
 //!
 //! // Synthesize 5 seconds of audio
-//! synth.stream(audio.sink(), &[]);
+//! synth.stream(audio.sink());
 //! ```
 //!
 //! ## Walking Through It
@@ -106,12 +106,18 @@ macro_rules! const_postfix_waveform {
 }
 
 mod chunk;
+mod consts;
 pub mod line;
 pub mod osc;
+mod params;
 mod synth;
 
-use self::chunk::Chunk;
 pub use self::synth::Synth;
+use self::{
+    chunk::Chunk,
+    params::{Parameters, Params},
+    synth::Data,
+};
 
 /// Trait implemented by all waveforms
 #[traitful::seal(
@@ -124,21 +130,22 @@ pub use self::synth::Synth;
     for<T: Wave> osc::Sine<T>,
 )]
 pub trait Wave {
+    /// Number of 32-bit states required for this waveform
+    const STATE_LEN: usize;
+
     /// Synthesize a chunk of audio.
-    ///
-    /// - `elapsed` is nanoseconds since the start of synthesis (up to about
-    ///   1169 years)
-    /// - `interval` is nanoseconds in the chunk's interval
     #[must_use]
     #[doc(hidden)]
-    fn synthesize(&self, elapsed: u64, interval: u64, vars: &[f32]) -> Chunk;
+    fn synthesize(&self, data: &mut Data<'_>) -> Chunk;
 }
 
 impl<T> Wave for &T
 where
     T: Wave,
 {
-    fn synthesize(&self, elapsed: u64, interval: u64, vars: &[f32]) -> Chunk {
-        (**self).synthesize(elapsed, interval, vars)
+    const STATE_LEN: usize = T::STATE_LEN;
+
+    fn synthesize(&self, data: &mut Data<'_>) -> Chunk {
+        (**self).synthesize(data)
     }
 }

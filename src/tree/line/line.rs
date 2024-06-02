@@ -1,16 +1,13 @@
-use crate::tree::{Chunk, Wave};
+use crate::tree::{Chunk, Data, Wave};
 
 /// Constant signal
 #[derive(Copy, Clone, Debug)]
 pub struct Line(pub f32);
 
 impl Wave for Line {
-    fn synthesize(
-        &self,
-        _elapsed: u64,
-        _interval: u64,
-        _vars: &[f32],
-    ) -> Chunk {
+    const STATE_LEN: usize = 0;
+
+    fn synthesize(&self, _data: &mut Data<'_>) -> Chunk {
         Chunk([self.0; 32])
     }
 }

@@ -1,4 +1,4 @@
-use crate::tree::{Chunk, Wave};
+use crate::tree::{Chunk, Data, Wave, consts};
 
 /// Phase oscillator (sawtooth wave)
 ///
@@ -13,21 +13,24 @@ impl<I> Wave for Osc<I>
 where
     I: Wave,
 {
-    fn synthesize(&self, elapsed: u64, interval: u64, vars: &[f32]) -> Chunk {
+    const STATE_LEN: usize = I::STATE_LEN + 1;
+
+    fn synthesize(&self, data: &mut Data<'_>) -> Chunk {
         let mut i = 0;
-
-        self.0
-            .synthesize(elapsed, interval, vars)
+        let mut phase = f32::from_bits(data.state[0]);
+        let chunk = self.0
+            .synthesize(data)
             .for_each_sample(|sample| {
-                let hz_32 = (*sample * 32.0) as u64;
-                let phase = 32_000_000_000 / hz_32;
-                let offset = elapsed % phase;
-                let place = i * interval / 32 + offset;
+                let frequency = *sample;
 
-                *sample = (place as f32 / phase as f32) % 1.0;
+                *sample = phase % 1.0;
+                phase += data.chunk_step * frequency * consts::FRAC_32[1];
                 i += 1;
             })
             .gain(-2.0)
-            .offset(1.0)
+            .offset(1.0);
+
+        data.state[0] = (phase % 1.0).to_bits();
+        chunk
     }
 }

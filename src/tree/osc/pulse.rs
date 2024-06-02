@@ -1,4 +1,4 @@
-use crate::tree::{Chunk, Wave};
+use crate::tree::{Chunk, Data, Wave};
 
 /// Pulse wave
 ///
@@ -12,10 +12,12 @@ where
     J: Wave,
     K: Wave,
 {
-    fn synthesize(&self, elapsed: u64, interval: u64, vars: &[f32]) -> Chunk {
-        let chunk = self.0.synthesize(elapsed, interval, vars);
-        let cycle = self.1.synthesize(elapsed, interval, vars);
-        let alias = self.2.synthesize(elapsed, interval, vars);
+    const STATE_LEN: usize = I::STATE_LEN + J::STATE_LEN + K::STATE_LEN;
+
+    fn synthesize(&self, data: &mut Data<'_>) -> Chunk {
+        let chunk = self.0.synthesize(data);
+        let cycle = self.1.synthesize(data);
+        let alias = self.2.synthesize(data);
         let clip = alias.recip();
         let pulse = chunk
             .abs()
