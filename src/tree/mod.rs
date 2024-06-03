@@ -107,6 +107,7 @@ macro_rules! const_postfix_waveform {
 
 mod chunk;
 mod consts;
+mod conversions;
 pub mod line;
 pub mod osc;
 mod params;

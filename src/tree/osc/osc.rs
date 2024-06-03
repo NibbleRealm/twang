@@ -1,4 +1,4 @@
-use crate::tree::{Chunk, Data, Wave, consts};
+use crate::tree::{consts, Chunk, Data, Wave};
 
 /// Phase oscillator (sawtooth wave)
 ///
@@ -18,7 +18,8 @@ where
     fn synthesize(&self, data: &mut Data<'_>) -> Chunk {
         let mut i = 0;
         let mut phase = f32::from_bits(data.state[0]);
-        let chunk = self.0
+        let chunk = self
+            .0
             .synthesize(data)
             .for_each_sample(|sample| {
                 let frequency = *sample;
