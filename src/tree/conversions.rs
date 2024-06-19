@@ -44,16 +44,16 @@ pub(crate) fn float_to_int(float: f32) -> i32 {
     // Extract 8-bit exponent
     let exponent = (float << 1) >> 24;
     // Calculate positive and negative shift
-    let shift = 119u32.saturating_sub(exponent);
+    let shift = 120u32.saturating_sub(exponent);
     let shift_back = exponent.saturating_sub(119);
     // Apply calculated exponential shift
-    let value = if shift >= 32 { 0 } else { int >> shift };
-    let value = (value << shift_back).saturating_sub(1);
+    let int = (int << shift_back).saturating_sub(1);
+    let int = if shift >= 32 { 0 } else { int >> shift };
 
     if is_negative {
-        -1 - (value as i32)
+        -1 - (int as i32)
     } else {
-        value as i32
+        int as i32
     }
 }
 
@@ -68,6 +68,11 @@ mod tests {
         assert_eq!(int_to_float(i32::MAX), 1.0);
         assert_eq!(int_to_float(i32::MAX / 2), 0.5);
         assert_eq!(int_to_float(i32::MAX / 4), 0.25);
+        assert_eq!(int_to_float(i32::MAX / 8), 0.125);
+        assert_eq!(int_to_float(i32::MAX / 16), 0.0625);
+        assert_eq!(int_to_float(i32::MAX / 32), 0.03125);
+        assert_eq!(int_to_float(i32::MAX / 64), 0.015625);
+        assert_eq!(int_to_float(i32::MAX / 128), 0.0078125);
         assert_eq!(int_to_float(7), 6.9849193e-9);
         assert_eq!(int_to_float(6), 6.0535967e-9);
         assert_eq!(int_to_float(5), 5.122274e-09);
@@ -84,6 +89,11 @@ mod tests {
         assert_eq!(int_to_float(-6), -5.122274e-09);
         assert_eq!(int_to_float(-7), -6.0535967e-9);
         assert_eq!(int_to_float(-8), -6.9849193e-9);
+        assert_eq!(int_to_float(i32::MIN / 128), -0.0078125);
+        assert_eq!(int_to_float(i32::MIN / 64), -0.015625);
+        assert_eq!(int_to_float(i32::MIN / 32), -0.03125);
+        assert_eq!(int_to_float(i32::MIN / 16), -0.0625);
+        assert_eq!(int_to_float(i32::MIN / 8), -0.125);
         assert_eq!(int_to_float(i32::MIN / 4), -0.25);
         assert_eq!(int_to_float(i32::MIN / 2), -0.5);
         assert_eq!(int_to_float(i32::MIN), -1.0);
@@ -92,24 +102,32 @@ mod tests {
         assert_eq!(float_to_int(1.0), i32::MAX);
         assert_eq!(float_to_int(0.5), i32::MAX / 2);
         assert_eq!(float_to_int(0.25), i32::MAX / 4);
-
-        assert_eq!(float_to_int(6.9849193e-9), 14); // 7);
-        assert_eq!(float_to_int(6.0535967e-9), 12); // 6);
-        assert_eq!(float_to_int(5.122274e-09), 10); // 5);
-
-        assert_eq!(float_to_int(4.1909516e-9), 8); // 4);
-        assert_eq!(float_to_int(3.259629e-9), 6); // 3);
-        assert_eq!(float_to_int(2.3283064e-9), 4); // 2);
-        assert_eq!(float_to_int(1.3969839e-9), 2); // 1);
+        assert_eq!(float_to_int(0.125), i32::MAX / 8);
+        assert_eq!(float_to_int(0.0625), i32::MAX / 16);
+        assert_eq!(float_to_int(0.03125), i32::MAX / 32);
+        assert_eq!(float_to_int(0.015625), i32::MAX / 64);
+        assert_eq!(float_to_int(0.0078125), i32::MAX / 128);
+        assert_eq!(float_to_int(6.9849193e-9), 7);
+        assert_eq!(float_to_int(6.0535967e-9), 6);
+        assert_eq!(float_to_int(5.122274e-09), 5);
+        assert_eq!(float_to_int(4.1909516e-9), 4);
+        assert_eq!(float_to_int(3.259629e-9), 3);
+        assert_eq!(float_to_int(2.3283064e-9), 2);
+        assert_eq!(float_to_int(1.3969839e-9), 1);
         assert_eq!(float_to_int(2.0f32.powf(-31.0)), 0);
         assert_eq!(float_to_int(-2.0f32.powf(-31.0)), -1);
-        assert_eq!(float_to_int(-1.3969839e-9), -3); // -2);
-        assert_eq!(float_to_int(-2.3283064e-9), -5); // -3);
-        assert_eq!(float_to_int(-3.259629e-9), -7); // -4);
-        assert_eq!(float_to_int(-4.1909516e-9), -9); // -5);
-
-        // FIXME: Missing
-
+        assert_eq!(float_to_int(-1.3969839e-9), -2);
+        assert_eq!(float_to_int(-2.3283064e-9), -3);
+        assert_eq!(float_to_int(-3.259629e-9), -4);
+        assert_eq!(float_to_int(-4.1909516e-9), -5);
+        assert_eq!(float_to_int(-5.122274e-09), -6);
+        assert_eq!(float_to_int(-6.0535967e-9), -7);
+        assert_eq!(float_to_int(-6.9849193e-9), -8);
+        assert_eq!(float_to_int(-0.0078125), i32::MIN / 128);
+        assert_eq!(float_to_int(-0.015625), i32::MIN / 64);
+        assert_eq!(float_to_int(-0.03125), i32::MIN / 32);
+        assert_eq!(float_to_int(-0.0625), i32::MIN / 16);
+        assert_eq!(float_to_int(-0.125), i32::MIN / 8);
         assert_eq!(float_to_int(-0.25), i32::MIN / 4);
         assert_eq!(float_to_int(-0.5), i32::MIN / 2);
         assert_eq!(float_to_int(-1.0), i32::MIN);
