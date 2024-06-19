@@ -42,7 +42,7 @@ pub(crate) fn float_to_int(float: f32) -> i32 {
     // Add floating point inferred digit 1.x, bringing to 24 bits
     let int = int | (1 << 23);
     // Extract 8-bit exponent
-    let exponent = (float << 1) >> 24;
+    let exponent = std::dbg!((float << 1) >> 24);
     // Calculate positive and negative shift
     let shift = 120u32.saturating_sub(exponent);
     let shift_back = exponent.saturating_sub(119);
@@ -73,6 +73,8 @@ mod tests {
         assert_eq!(int_to_float(i32::MAX / 32), 0.03125);
         assert_eq!(int_to_float(i32::MAX / 64), 0.015625);
         assert_eq!(int_to_float(i32::MAX / 128), 0.0078125);
+        assert_eq!(int_to_float(i32::MAX / 256), 0.0078124995); // 0.00390625);
+        assert_eq!(int_to_float(i32::MAX / 512), 0.0039062495); // 0.001953125);
         assert_eq!(int_to_float(7), 6.9849193e-9);
         assert_eq!(int_to_float(6), 6.0535967e-9);
         assert_eq!(int_to_float(5), 5.122274e-09);
@@ -107,6 +109,8 @@ mod tests {
         assert_eq!(float_to_int(0.03125), i32::MAX / 32);
         assert_eq!(float_to_int(0.015625), i32::MAX / 64);
         assert_eq!(float_to_int(0.0078125), i32::MAX / 128);
+        assert_eq!(float_to_int(0.00390625), i32::MAX / 512); // / 256);
+        assert_eq!(float_to_int(0.001953125), i32::MAX / 1024); // / 512);
         assert_eq!(float_to_int(6.9849193e-9), 7);
         assert_eq!(float_to_int(6.0535967e-9), 6);
         assert_eq!(float_to_int(5.122274e-09), 5);
