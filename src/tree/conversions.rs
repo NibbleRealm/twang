@@ -1,20 +1,19 @@
 /// Convert [`u32`] fraction to [`f32`] (ranged 0 to 1).
 pub(crate) fn u32_to_f32(fraction: u32) -> f32 {
-    // Calculate leading zeros including inferred 1
-    let leading_zeros = fraction.leading_zeros();
-    // Remove leading zeros and extra bit to subtract from exponent
-    let (fraction, leading_zeros) = if leading_zeros >= 32 {
-        (0, 127)
-    } else {
-        (fraction << leading_zeros, leading_zeros + 1)
-    };
+    // Check if fraction is 0
+    let nonzero = u32::from(fraction != 0);
+    // Calculate leading zeros
+    let leading_zeros = nonzero * fraction.leading_zeros();
+    // Remove leading zeros to subtract from exponent
+    let fraction = fraction << leading_zeros;
     // Truncate to 24-bit fraction
     let fraction = fraction >> 8;
-    // Clear 24th bit
+    // Clear 24th (inferred 1) bit
     let fraction = fraction & !(1 << 23);
-    // Calculate -127 bias exponent (plus inferred 1)
-    let exponent = (127 - leading_zeros) << 23;
+    // Calculate -127 bias exponent (minus inferred 1)
+    let exponent = (nonzero * 126 - leading_zeros) << 23;
 
+    // Scale up (u32 max is 2³² - 1, and we want 2³²)
     f32::from_bits(exponent | fraction)
         * f32::from_bits(0b111111100000000000000000000001)
 }
