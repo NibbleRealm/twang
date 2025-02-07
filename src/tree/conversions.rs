@@ -1,33 +1,49 @@
-/// Convert [`u32`] fraction to [`f32`] (ranged 0 to 1).
-pub(crate) fn u32_to_f32(fraction: u32) -> f32 {
-    // Check if fraction is 0
-    let nonzero = u32::from(fraction != 0);
-    // Calculate leading zeros (including inferred 1)
+#[inline(always)]
+fn reinterpret_signed(int: u32) -> i32 {
+    i32::from_ne_bytes(int.to_ne_bytes())
+}
+
+#[inline(always)]
+fn reinterpret_unsigned(int: i32) -> u32 {
+    u32::from_ne_bytes(int.to_ne_bytes())
+}
+
+/// Convert non-zero [`u32`] fraction to [`f32`] (ranged 0 to 1).
+#[inline(always)]
+fn nonzero_u32_to_f32(fraction: u32) -> f32 {
+    // Calculate leading zeros (with inferred 1)
     let leading_zeros = fraction.leading_zeros() + 1;
-    // Remove leading zeros and top (inferred 1) bit to subtract from exponent
-    let fraction = fraction.checked_shl(leading_zeros).unwrap_or(0);
+    // Remove leading zeros and inferred 1 to subtract from exponent
+    let fraction = fraction.wrapping_shl(leading_zeros);
     // Shift right to truncate to 23-bit fraction
     let fraction = fraction >> 9;
     // Calculate -127 bias exponent
     let exponent = (127 - leading_zeros) << 23;
 
     // Scale up (u32 max is 2³² - 1, and we want 2³²)
-    f32::from_bits(nonzero * (exponent | fraction))
+    f32::from_bits(exponent | fraction)
         * f32::from_bits(0b111111100000000000000000000001)
+}
+
+/// Convert [`u32`] fraction to [`f32`] (ranged 0 to 1).
+pub(crate) fn u32_to_f32(fraction: u32) -> f32 {
+    // Check if fraction is 0 or not
+    let nonzero = reinterpret_unsigned(-i32::from(fraction != 0));
+
+    // Make zero if zero, otherwise no-op
+    f32::from_bits(nonzero_u32_to_f32(fraction).to_bits() & nonzero)
 }
 
 /// Convert [`i32`] fraction to [`f32`] (ranged -1 to 1).
 pub(crate) fn i32_to_f32(int: i32) -> f32 {
     // Split sign and magnitude from signed integer
-    let (uint, sign) = if int < 0 {
-        (reinterpret_unsigned(-1 - int), -1.0)
-    } else {
-        (reinterpret_unsigned(int), 1.0)
-    };
+    let sign = -i8::from(int < 0);
+    let uint = int.abs_diff(sign.into());
     // Scale up unsigned integer to full range (without true zero)
     let uint = (uint * 2) + 1;
+
     // Copy sign back into converted float
-    u32_to_f32(uint).copysign(sign)
+    nonzero_u32_to_f32(uint).copysign(sign.into())
 }
 
 /// Convert floating point (-1 to 1) to signed 32-bit integer
@@ -59,16 +75,6 @@ pub(crate) fn float_to_int(float: f32) -> i32 {
     } else {
         int
     }
-}
-
-#[inline(always)]
-fn reinterpret_signed(int: u32) -> i32 {
-    i32::from_ne_bytes(int.to_ne_bytes())
-}
-
-#[inline(always)]
-fn reinterpret_unsigned(int: i32) -> u32 {
-    u32::from_ne_bytes(int.to_ne_bytes())
 }
 
 #[cfg(test)]
