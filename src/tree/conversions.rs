@@ -2,54 +2,32 @@
 pub(crate) fn u32_to_f32(fraction: u32) -> f32 {
     // Check if fraction is 0
     let nonzero = u32::from(fraction != 0);
-    // Calculate leading zeros
-    let leading_zeros = nonzero * fraction.leading_zeros();
-    // Remove leading zeros to subtract from exponent
-    let fraction = fraction << leading_zeros;
-    // Truncate to 24-bit fraction
-    let fraction = fraction >> 8;
-    // Clear 24th (inferred 1) bit
-    let fraction = fraction & !(1 << 23);
-    // Calculate -127 bias exponent (minus inferred 1)
-    let exponent = (nonzero * 126 - leading_zeros) << 23;
-
-    // Scale up (u32 max is 2³² - 1, and we want 2³²)
-    f32::from_bits(exponent | fraction)
-        * f32::from_bits(0b111111100000000000000000000001)
-}
-
-/// Convert signed 32-bit integer counter to floating point (-1 to 1)
-pub(crate) fn int_to_float(int: i32) -> f32 {
-    // Split sign and magnitude from signed integer
-    let (uint, sign_bit) = if int < 0 {
-        (reinterpret_unsigned(-1 - int), 1 << 31)
-    } else {
-        (reinterpret_unsigned(int), 0)
-    };
-    // Remove sign bit, so that it's not counted in leading zeros, add 1 for
-    // rounding accuracy
-    let fraction = (uint << 1) + 1;
-    // Calculate leading zeros including inferred 1.
-    let leading_zeros = fraction.leading_zeros();
-    // Remove leading zeros to subtract from exponent
-    let fraction = if leading_zeros >= 31 {
-        0
-    } else {
-        // Remove inferred one in addition to leading zeros
-        fraction << (leading_zeros + 1)
-    };
-    // Convert to 24-bit fraction
-    let fraction = fraction >> 8;
-    // Round up from extra half
-    let fraction = fraction + (fraction & 1);
-    // Remove zeroed-out bit, bringing fraction to 23/24 bits
-    let fraction = fraction >> 1;
-    // Clear 24th bit
-    let fraction = fraction & !(1 << 23);
+    // Calculate leading zeros (including inferred 1)
+    let leading_zeros = fraction.leading_zeros() + 1;
+    // Remove leading zeros and top (inferred 1) bit to subtract from exponent
+    let fraction = fraction.checked_shl(leading_zeros).unwrap_or(0);
+    // Shift right to truncate to 23-bit fraction
+    let fraction = fraction >> 9;
     // Calculate -127 bias exponent
     let exponent = (127 - leading_zeros) << 23;
 
-    f32::from_bits(sign_bit | exponent | fraction)
+    // Scale up (u32 max is 2³² - 1, and we want 2³²)
+    f32::from_bits(nonzero * (exponent | fraction))
+        * f32::from_bits(0b111111100000000000000000000001)
+}
+
+/// Convert [`i32`] fraction to [`f32`] (ranged -1 to 1).
+pub(crate) fn i32_to_f32(int: i32) -> f32 {
+    // Split sign and magnitude from signed integer
+    let (uint, sign) = if int < 0 {
+        (reinterpret_unsigned(-1 - int), -1.0)
+    } else {
+        (reinterpret_unsigned(int), 1.0)
+    };
+    // Scale up unsigned integer to full range (without true zero)
+    let uint = (uint * 2) + 1;
+    // Copy sign back into converted float
+    u32_to_f32(uint).copysign(sign)
 }
 
 /// Convert floating point (-1 to 1) to signed 32-bit integer
@@ -106,7 +84,6 @@ mod tests {
             );
         }
 
-        //
         assert_eq!(u32_to_f32(0), 0.0);
         assert_eq!(u32_to_f32(1), 2.3283067e-10);
         assert_eq!(u32_to_f32(2), 4.6566134e-10);
@@ -116,49 +93,53 @@ mod tests {
         assert_eq!(u32_to_f32(6), 1.3969841e-9);
         assert_eq!(u32_to_f32(7), 1.6298147e-9);
         assert_eq!(u32_to_f32(8), 1.8626454e-9);
+        assert_eq!(u32_to_f32(9), 2.095476e-9);
+    }
+
+    #[test]
+    fn signed_to_float() {
+        // Since there are more negative than positive integers, zeros are not
+        // an exact match between integer and floating point
+        assert_eq!(i32_to_f32(i32::MAX), 1.0);
+        assert_eq!(i32_to_f32(i32::MAX / 2), 0.5);
+        assert_eq!(i32_to_f32(i32::MAX / 4), 0.25);
+        assert_eq!(i32_to_f32(i32::MAX / 8), 0.125);
+        assert_eq!(i32_to_f32(i32::MAX / 16), 0.0625);
+        assert_eq!(i32_to_f32(i32::MAX / 32), 0.03125);
+        assert_eq!(i32_to_f32(i32::MAX / 64), 0.015625);
+        assert_eq!(i32_to_f32(i32::MAX / 128), 0.0078125);
+        assert_eq!(i32_to_f32(i32::MAX / 256), 0.00390625);
+        assert_eq!(i32_to_f32(i32::MAX / 512), 0.001953125);
+        assert_eq!(i32_to_f32(7), 3.49246e-9);
+        assert_eq!(i32_to_f32(6), 3.0267988e-9);
+        assert_eq!(i32_to_f32(5), 2.5611373e-9);
+        assert_eq!(i32_to_f32(4), 2.095476e-9);
+        assert_eq!(i32_to_f32(3), 1.6298147e-9);
+        assert_eq!(i32_to_f32(2), 1.1641533e-9);
+        assert_eq!(i32_to_f32(1), 6.9849204e-10);
+        assert_eq!(i32_to_f32(0), 2.3283067e-10);
+        assert_eq!(i32_to_f32(-1), -2.3283067e-10);
+        assert_eq!(i32_to_f32(-2), -6.9849204e-10);
+        assert_eq!(i32_to_f32(-3), -1.1641533e-9);
+        assert_eq!(i32_to_f32(-4), -1.6298147e-9);
+        assert_eq!(i32_to_f32(-5), -2.095476e-9);
+        assert_eq!(i32_to_f32(-6), -2.5611373e-9);
+        assert_eq!(i32_to_f32(-7), -3.0267988e-9);
+        assert_eq!(i32_to_f32(-8), -3.49246e-9);
+        assert_eq!(i32_to_f32(i32::MIN / 512), -0.001953125);
+        assert_eq!(i32_to_f32(i32::MIN / 256), -0.00390625);
+        assert_eq!(i32_to_f32(i32::MIN / 128), -0.0078125);
+        assert_eq!(i32_to_f32(i32::MIN / 64), -0.015625);
+        assert_eq!(i32_to_f32(i32::MIN / 32), -0.03125);
+        assert_eq!(i32_to_f32(i32::MIN / 16), -0.0625);
+        assert_eq!(i32_to_f32(i32::MIN / 8), -0.125);
+        assert_eq!(i32_to_f32(i32::MIN / 4), -0.25);
+        assert_eq!(i32_to_f32(i32::MIN / 2), -0.5);
+        assert_eq!(i32_to_f32(i32::MIN), -1.0);
     }
 
     #[test]
     fn conversions() {
-        // Since there are more negative than positive integers, zeros are not
-        // an exact match between integer and floating point
-        assert_eq!(int_to_float(i32::MAX), 1.0);
-        assert_eq!(int_to_float(i32::MAX / 2), 0.5);
-        assert_eq!(int_to_float(i32::MAX / 4), 0.25);
-        assert_eq!(int_to_float(i32::MAX / 8), 0.125);
-        assert_eq!(int_to_float(i32::MAX / 16), 0.0625);
-        assert_eq!(int_to_float(i32::MAX / 32), 0.03125);
-        assert_eq!(int_to_float(i32::MAX / 64), 0.015625);
-        assert_eq!(int_to_float(i32::MAX / 128), 0.0078125);
-        assert_eq!(int_to_float(i32::MAX / 256), 0.0078124995); // 0.00390625);
-        assert_eq!(int_to_float(i32::MAX / 512), 0.0039062495); // 0.001953125);
-        assert_eq!(int_to_float(7), 6.9849193e-9);
-        assert_eq!(int_to_float(6), 6.0535967e-9);
-        assert_eq!(int_to_float(5), 5.122274e-09);
-        assert_eq!(int_to_float(4), 4.1909516e-9);
-        assert_eq!(int_to_float(3), 3.259629e-9);
-        assert_eq!(int_to_float(2), 2.3283064e-9);
-        assert_eq!(int_to_float(1), 1.3969839e-9);
-        assert_eq!(int_to_float(0), 2.0f32.powf(-31.0));
-        assert_eq!(int_to_float(-1), -2.0f32.powf(-31.0));
-        assert_eq!(int_to_float(-2), -1.3969839e-9);
-        assert_eq!(int_to_float(-3), -2.3283064e-9);
-        assert_eq!(int_to_float(-4), -3.259629e-9);
-        assert_eq!(int_to_float(-5), -4.1909516e-9);
-        assert_eq!(int_to_float(-6), -5.122274e-09);
-        assert_eq!(int_to_float(-7), -6.0535967e-9);
-        assert_eq!(int_to_float(-8), -6.9849193e-9);
-        assert_eq!(int_to_float(i32::MIN / 512), -0.0039062495); // -0.001953125);
-        assert_eq!(int_to_float(i32::MIN / 256), -0.0078124995); // -0.00390625);
-        assert_eq!(int_to_float(i32::MIN / 128), -0.0078125);
-        assert_eq!(int_to_float(i32::MIN / 64), -0.015625);
-        assert_eq!(int_to_float(i32::MIN / 32), -0.03125);
-        assert_eq!(int_to_float(i32::MIN / 16), -0.0625);
-        assert_eq!(int_to_float(i32::MIN / 8), -0.125);
-        assert_eq!(int_to_float(i32::MIN / 4), -0.25);
-        assert_eq!(int_to_float(i32::MIN / 2), -0.5);
-        assert_eq!(int_to_float(i32::MIN), -1.0);
-
         assert_eq!(float_to_int(0.0), 0);
         assert_eq!(float_to_int(1.0), i32::MAX);
         assert_eq!(float_to_int(0.5), i32::MAX / 2);
