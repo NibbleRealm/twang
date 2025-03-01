@@ -1,3 +1,0 @@
-[toolchain]
-# MSRV of examples is 1.79
-channel = "1.79"
