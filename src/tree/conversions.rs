@@ -1,16 +1,18 @@
+#![allow(dead_code)]
+
 #[inline(always)]
-fn reinterpret_signed(int: u32) -> i32 {
+const fn reinterpret_signed(int: u32) -> i32 {
     i32::from_ne_bytes(int.to_ne_bytes())
 }
 
 #[inline(always)]
-fn reinterpret_unsigned(int: i32) -> u32 {
+const fn reinterpret_unsigned(int: i32) -> u32 {
     u32::from_ne_bytes(int.to_ne_bytes())
 }
 
 /// Convert non-zero [`u32`] fraction to [`f32`] (ranged 0 to 1).
 #[inline(always)]
-fn nonzero_u32_to_f32(fraction: u32) -> f32 {
+const fn nonzero_u32_to_f32(fraction: u32) -> f32 {
     // Calculate leading zeros (with inferred 1)
     let leading_zeros = fraction.leading_zeros() + 1;
     // Remove leading zeros and inferred 1 to subtract from exponent
