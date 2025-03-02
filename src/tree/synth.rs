@@ -1,11 +1,11 @@
 use alloc::{vec, vec::Vec};
 
 use fon::{
-    chan::{Ch32, Channel},
     Sink,
+    chan::{Ch32, Channel},
 };
 
-use crate::tree::{consts, Chunk, Parameters, Params, Wave};
+use crate::tree::{Chunk, Parameters, Params, Wave, consts};
 
 #[allow(missing_debug_implementations)]
 pub struct Data<'a> {

@@ -1,4 +1,4 @@
-use crate::tree::{consts, Chunk, Data, Wave};
+use crate::tree::{Chunk, Data, Wave, consts};
 
 /// Phase oscillator (sawtooth wave)
 ///

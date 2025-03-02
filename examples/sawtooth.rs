@@ -1,4 +1,4 @@
-use fon::{chan::Ch16, Audio, Frame};
+use fon::{Audio, Frame, chan::Ch16};
 use twang::next::{Synth, Wave};
 
 mod wav;

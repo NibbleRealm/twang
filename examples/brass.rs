@@ -1,9 +1,9 @@
 use fon::chan::{Ch16, Ch32};
 use fon::{Audio, Frame};
+use twang::Synth;
 use twang::noise::Pink;
 use twang::ops::{Clip, Gain};
 use twang::osc::{Sawtooth, Triangle};
-use twang::Synth;
 
 mod wav;
 

@@ -45,6 +45,6 @@ impl<S, const CH: usize> Iterator for SynthIter<'_, S, CH> {
 
     fn next(&mut self) -> Option<Self::Item> {
         assert_eq!(self.1, 48_000);
-        Some(self.0 .1(&mut self.0 .0, Default::default()))
+        Some(self.0.1(&mut self.0.0, Default::default()))
     }
 }

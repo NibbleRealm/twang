@@ -9,9 +9,9 @@ impl ForEachSample for (Chunk, &Chunk) {
     #[inline(always)]
     fn for_each_sample(mut self, f: impl FnMut((&mut f32, f32))) -> Chunk {
         self.0
-             .0
+            .0
             .iter_mut()
-            .zip(self.1 .0.iter().cloned())
+            .zip(self.1.0.iter().cloned())
             .for_each(f);
         self.0
     }

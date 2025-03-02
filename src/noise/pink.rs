@@ -70,7 +70,7 @@ impl Pink {
         self.lfsr ^= self.bit & 0x46000001i32;
         (self.accu
             + PFIRA[(self.lfsr & 0x3fi32) as usize]
-            + PFIRB[(self.lfsr >> 6i32 & 0x3fi32) as usize]) as i16
+            + PFIRB[((self.lfsr >> 6i32) & 0x3fi32) as usize]) as i16
     }
 
     fn c(&mut self) -> i16 {

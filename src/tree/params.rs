@@ -1,4 +1,4 @@
-use crate::tree::{consts, Chunk};
+use crate::tree::{Chunk, consts};
 
 pub(crate) trait Parameters {
     fn chunk(&self, index: usize) -> Chunk;

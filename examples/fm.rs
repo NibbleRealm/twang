@@ -3,8 +3,8 @@
 
 use fon::chan::Ch16;
 use fon::{Audio, Frame};
-use twang::osc::Sine;
 use twang::Synth;
+use twang::osc::Sine;
 
 mod wav;
 

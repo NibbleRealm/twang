@@ -1,5 +1,5 @@
-use fon::{chan::Ch16, Audio};
-use twang::tree::{line::Line, Synth};
+use fon::{Audio, chan::Ch16};
+use twang::tree::{Synth, line::Line};
 
 mod wav;
 //mod plot;

@@ -1,8 +1,8 @@
 use fon::chan::{Ch16, Ch32};
 use fon::{Audio, Frame};
+use twang::Synth;
 use twang::ops::Gain;
 use twang::osc::{Sawtooth, Sine};
-use twang::Synth;
 
 mod wav;
 

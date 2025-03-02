@@ -2,9 +2,9 @@
 //!
 //! http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
 
+use fon::Audio;
 use fon::chan::Ch16;
 use fon::pos::{Left, Right};
-use fon::Audio;
 use std::convert::TryInto;
 use std::{fs, io, mem::size_of};
 

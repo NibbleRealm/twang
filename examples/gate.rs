@@ -16,8 +16,8 @@ use fon::chan::{Ch16, Ch32};
 use fon::pos::{Left, Right};
 use fon::{Audio, Frame};
 use std::convert::TryInto;
-use twang::ops::{Gain, Gate, GateParams, Room};
 use twang::Synth;
+use twang::ops::{Gain, Gate, GateParams, Room};
 
 mod wav;
 
