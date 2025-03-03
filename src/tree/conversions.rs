@@ -1,6 +1,16 @@
 #![allow(dead_code)]
 
 #[inline(always)]
+const fn add_sign(float: f32, sign: i32) -> f32 {
+    f32::from_bits(float.to_bits() | (reinterpret_unsigned(sign) << 31))
+}
+
+#[inline(always)]
+const fn bool_to_word(b: bool) -> i32 {
+    b as i32
+}
+
+#[inline(always)]
 const fn reinterpret_signed(int: u32) -> i32 {
     i32::from_ne_bytes(int.to_ne_bytes())
 }
@@ -29,7 +39,7 @@ const fn nonzero_u32_to_f32(fraction: u32) -> f32 {
 
 /// Convert normal [`f32`] (ranged 0 to 1) to [`u32`] fraction.
 #[inline(always)]
-fn normal_f32_to_u32(float: f32) -> u32 {
+const fn normal_f32_to_u32(float: f32) -> u32 {
     // Scale down (f32 max fraction is 2³², and we want 2³² - 1)
     let float =
         (float * f32::from_bits(0b111111011111111111111111111111)).to_bits();
@@ -42,38 +52,38 @@ fn normal_f32_to_u32(float: f32) -> u32 {
     // Scale by exponent
     let (fraction, overflow) = fraction.overflowing_shr(exponent - 1);
     // Check if fraction should be 0 or not
-    let nonzero = reinterpret_unsigned(-i32::from(!overflow));
+    let nonzero = reinterpret_unsigned(-bool_to_word(!overflow));
 
     // Make zero if zero, otherwise no-op
     fraction & nonzero
 }
 
 /// Convert [`u32`] fraction to [`f32`] (ranged 0 to 1).
-pub(crate) fn u32_to_f32(fraction: u32) -> f32 {
+pub(crate) const fn u32_to_f32(fraction: u32) -> f32 {
     // Check if fraction is 0 or not
-    let nonzero = reinterpret_unsigned(-i32::from(fraction != 0));
+    let nonzero = reinterpret_unsigned(-bool_to_word(fraction != 0));
 
     // Make zero if zero, otherwise no-op
     f32::from_bits(nonzero_u32_to_f32(fraction).to_bits() & nonzero)
 }
 
 /// Convert [`i32`] fraction to [`f32`] (ranged -1 to 1).
-pub(crate) fn i32_to_f32(int: i32) -> f32 {
+pub(crate) const fn i32_to_f32(int: i32) -> f32 {
     // Split sign and magnitude from signed integer
-    let sign = -i8::from(int < 0);
-    let uint = int.abs_diff(sign.into());
+    let sign = -bool_to_word(int < 0);
+    let uint = int.abs_diff(sign);
     // Scale up unsigned integer to full range (without true zero)
     let uint = (uint * 2) + 1;
 
     // Copy sign back into converted float
-    nonzero_u32_to_f32(uint).copysign(sign.into())
+    add_sign(nonzero_u32_to_f32(uint), sign)
 }
 
 /// Convert [`f32`] (ranged 0 to 1) to [`u32`] fraction.
 #[inline(always)]
-fn f32_to_u32(float: f32) -> u32 {
+const fn f32_to_u32(float: f32) -> u32 {
     // Check if fraction is normal or not
-    let normal = reinterpret_unsigned(-i32::from(float.is_normal()));
+    let normal = reinterpret_unsigned(-bool_to_word(float.is_normal()));
     // Flush subnormals, infinity and NaN to zero, and clamp from 0 to 1
     let float = f32::from_bits(float.to_bits() & normal).clamp(0.0, 1.0);
 
@@ -83,15 +93,15 @@ fn f32_to_u32(float: f32) -> u32 {
 
 /// Convert [`f32`] (ranged -1 to 1) to [`i32`] fraction.
 #[inline(always)]
-fn f32_to_i32(float: f32) -> i32 {
+const fn f32_to_i32(float: f32) -> i32 {
     // Check if fraction is normal or not
-    let normal = reinterpret_unsigned(-i32::from(float.is_normal()));
+    let normal = reinterpret_unsigned(-bool_to_word(float.is_normal()));
     // Flush subnormals, infinity and NaN to zero, and clamp from -1 to 1
     let float = f32::from_bits(float.to_bits() & normal).clamp(-1.0, 1.0);
     // Convert to unsigned integer and reduce precision
     let magnitude = reinterpret_signed(normal_f32_to_u32(float.abs()) >> 1);
     // Get offset
-    let offset = -i32::from(float.is_sign_negative());
+    let offset = -bool_to_word(float.is_sign_negative());
     // Get sign
     let sign = (offset * 2) + 1;
 
