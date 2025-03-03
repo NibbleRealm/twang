@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://github.com/AldaronLau/
 
 ## [0.10.0] - Unreleased
 ### Changed
- - Bump MSRV to 1.70.0
+ - Bump MSRV to 1.85.0
 
 ## [0.9.0] - 2022-10-23
 ### Changed

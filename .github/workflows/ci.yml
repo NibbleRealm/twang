@@ -25,7 +25,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        tc: [1.70.0]
+        tc: [1.85.0]
         cc:
         - aarch64-linux-android
         - i686-pc-windows-gnu
@@ -51,7 +51,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        tc: [1.70.0]
+        tc: [1.85.0]
         cc: [aarch64-apple-ios]
     steps:
     - uses: actions/checkout@v2
