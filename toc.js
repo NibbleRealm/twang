@@ -10,7 +10,7 @@ class MDBookSidebarScrollbox extends HTMLElement {
     connectedCallback() {
         this.innerHTML = '<ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="oscillators.html"><strong aria-hidden="true">2.</strong> Oscillators</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="sine.html"><strong aria-hidden="true">2.1.</strong> Sinusoidal Oscillators</a></li><li class="chapter-item expanded "><a href="triangle.html"><strong aria-hidden="true">2.2.</strong> Triangle Oscillators</a></li><li class="chapter-item expanded "><a href="pulse.html"><strong aria-hidden="true">2.3.</strong> Pulse Oscillators</a></li><li class="chapter-item expanded "><a href="bezier.html"><strong aria-hidden="true">2.4.</strong> Bezier Oscillators</a></li></ol></li><li class="chapter-item expanded "><a href="noise.html"><strong aria-hidden="true">3.</strong> Noise</a></li><li class="chapter-item expanded "><a href="additive.html"><strong aria-hidden="true">4.</strong> Additive Synthesis</a></li><li class="chapter-item expanded "><a href="subtractive.html"><strong aria-hidden="true">5.</strong> Subtractive Synthesis</a></li><li class="chapter-item expanded "><a href="modulation.html"><strong aria-hidden="true">6.</strong> Angular Modulation Synthesis</a></li></ol>';
         // Set the current, active page, and reveal it if it's hidden
-        let current_page = document.location.href.toString();
+        let current_page = document.location.href.toString().split("#")[0];
         if (current_page.endsWith("/")) {
             current_page += "index.html";
         }
